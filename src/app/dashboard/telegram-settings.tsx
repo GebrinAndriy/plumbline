@@ -14,7 +14,7 @@ export function TelegramSettings({ chatId }: { chatId: string | null }) {
         Get every new request in Telegram. Start a chat with our bot, then paste your chat ID here.
         Leave it empty to turn notifications off.
       </p>
-      <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
+      <form method="post" onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
         <Field
           label="Chat ID"
           name="chatId"

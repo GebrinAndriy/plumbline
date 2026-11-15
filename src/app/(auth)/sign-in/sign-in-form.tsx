@@ -12,7 +12,7 @@ export function SignInForm() {
   const errors = state.fieldErrors;
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+    <form method="post" onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       <Field label="Email" name="email" type="email" autoComplete="email" required error={errors.email} />
       <Field
         label="Password"

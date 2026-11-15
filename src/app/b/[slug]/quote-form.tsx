@@ -99,7 +99,7 @@ function QuoteRequest({
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-6" noValidate>
+    <form method="post" onSubmit={submit} className="flex flex-col gap-6" noValidate>
       <input type="hidden" name="kind" value={service.rule.kind} />
 
       <label className="flex flex-col gap-1 text-sm">
