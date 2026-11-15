@@ -1,26 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QuoteFlow
 
-## Getting Started
+Instant price quotes and lead management for small service businesses: blinds, cleaning, repairs.
 
-First, run the development server:
+A customer opens the business's public calculator, enters sizes or hours, sees the price immediately
+and sends a request. The owner gets the request on the dashboard and in Telegram, then moves it through
+`new → contacted → quoted → won / lost`.
+
+## Features
+
+- **Public calculator** at `/b/<slug>`: three pricing models (per m², per hour, fixed per item), minimum
+  order, flat and percentage surcharges. The price is recalculated on the server before a lead is saved.
+- **Leads**: duplicate submits are ignored (idempotency key), and each lead keeps a snapshot of the quote
+  the customer saw.
+- **Dashboard**: recent requests and status changes; every change is recorded, and two tabs cannot
+  overwrite each other's change.
+- **Services**: owners add services and hide or show them in the calculator.
+- **Telegram notifications**: "Connect Telegram" with a one-time link or QR code, no chat ID to copy.
+- **Accounts**: sign-up, sign-in and sign-out with database sessions; rate limiting on every public form.
+
+## Tech stack
+
+Next.js 16 (App Router, Server Actions, Cache Components) · TypeScript · PostgreSQL (Neon) with
+Drizzle ORM · Zod · Tailwind CSS · Vitest with PGlite · GitHub Actions.
+
+## Getting started
+
+Requirements: Node.js 22 and a PostgreSQL database (a free [Neon](https://neon.tech) project works).
 
 ```bash
+npm install
+cp .env.example .env.local   # then set DATABASE_URL; TELEGRAM_BOT_TOKEN is optional
+npm run db:migrate
+npm run db:seed              # optional: demo business at /b/demo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000/sign-up to create a business, or http://localhost:3000/b/demo for the
+seeded calculator.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm test` | Unit and repository tests (no database or secrets needed) |
+| `npm run lint` / `npm run typecheck` | ESLint and TypeScript |
+| `npm run build` | Production build |
+| `npm run db:generate` | New migration from `src/db/schema.ts` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+CI runs lint, typecheck, tests and build on every pull request.
+
+## Project structure
+
+```
+src/
+  domain/   Pure TypeScript business logic: pricing, leads, auth, rate limits, Telegram linking.
+            No Next.js, no database, no fetch. Covered by unit tests.
+  db/       Drizzle schema and repositories that implement the domain interfaces.
+  lib/      Server glue: sessions, password hashing, Telegram API, rate limiter, formatting.
+  app/      Routes, Server Actions and components. Input is validated with Zod here.
+drizzle/    SQL migrations.
+```
+
+The domain defines what it needs as interfaces (`LeadRepository`, `PasswordHasher`, ...) and gets the
+implementations passed in, so the same code runs against Postgres in production and fakes in tests.
 
 ## Engineering decisions
+
+### Money in integer kopiykas
+Prices and totals are integers in minor units, never floats: `0.1 + 0.2` problems cannot appear in a
+bill. Form input such as `1 200,50` is parsed into kopiykas without going through a float.
+
+### Pricing models as strategies
+Each pricing kind (per area, per hour, fixed) is a strategy behind one interface, and the rule is stored
+as a discriminated union in a `jsonb` column. A new pricing model is a new strategy, not a new branch in
+every function.
+
+### The server recalculates every price
+The calculator shows a preview, but the lead is saved with a quote calculated on the server from the
+stored service, so a changed request body cannot set its own price. The quote is stored as a snapshot,
+so later price changes do not rewrite old leads.
+
+### Lead status as a state machine
+Allowed transitions live in one table in the domain. A status change is saved with compare-and-set
+(`where status = from`), so two tabs cannot both apply a change; the second one gets a conflict message
+and the latest status.
+
+### Database sessions instead of JWT
+The cookie holds a random token, and the database stores only its SHA-256 hash. Sign-out and revoking
+a session work immediately, and a leaked table cannot be replayed. The session is replaced on every
+sign-in. Passwords are hashed with scrypt.
+
+### Notifications as listeners
+Creating a lead publishes a `lead.created` event; Telegram is one listener. It runs after the response
+is sent (`after()`), so a slow Telegram never delays the customer, and one failing listener does not
+stop the others.
+
+### Tests against real Postgres without Docker
+Repository tests run the real migrations on PGlite (Postgres compiled to WASM), so SQL, constraints and
+upserts are tested without a database server or secrets in CI.
 
 ### Rate limiting in Postgres
 Sign-in (per IP and per email), sign-up (per IP) and lead submission (per IP) are limited with a
@@ -44,17 +120,12 @@ Trade-off: there is no public URL yet, so the dashboard polls and the server rea
 `getUpdates` instead of a webhook. Telegram keeps at most 100 unread updates for 24 hours, which is fine
 for a few owners; after deploy, a webhook replaces only the delivery, the domain logic stays the same.
 
-## Learn More
+## Known limitations
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Sign-up reveals whether an email is registered.** Sign-in hides it (same message, same timing),
+  but sign-up has to tell the user the email is taken. Rate limiting (5 sign-ups per hour per IP) slows
+  down enumeration but does not stop it. The proper fix is email verification: sign-up always answers
+  "check your inbox", and an existing owner gets a "someone tried to register" email instead.
+- **Telegram uses `getUpdates` polling** because there is no public URL yet; a webhook replaces it
+  after deploy.
+- **Services cannot be edited yet**, and surcharges can only be added through the seed script.
