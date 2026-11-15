@@ -68,12 +68,12 @@ export async function checkTelegramLinkAction(): Promise<LinkStatus> {
   try {
     const { commands, acknowledge } = await readStartCommands(token);
     const linked = await linkChats(
-      { links: telegramLinks, hashToken, connect: (id, chatId) => catalog.setTelegramChatId(id, chatId) },
+      { links: telegramLinks, hashToken, connect: (id, chat) => catalog.setTelegramChat(id, chat) },
       commands,
       now,
     );
     await acknowledge();
-    await Promise.allSettled(linked.map(({ chatId }) => sendTelegramMessage(token, chatId, CONNECTED_MESSAGE)));
+    await Promise.allSettled(linked.map(({ chat }) => sendTelegramMessage(token, chat.id, CONNECTED_MESSAGE)));
     if (linked.some(({ businessId }) => businessId === business.id)) return "connected";
   } catch (error) {
     console.error("Telegram link check failed", error);
@@ -84,6 +84,6 @@ export async function checkTelegramLinkAction(): Promise<LinkStatus> {
 export async function disconnectTelegramAction(): Promise<void> {
   const { business } = await requireOwner();
   if (!business) return;
-  await getRepositories().catalog.setTelegramChatId(business.id, null);
+  await getRepositories().catalog.setTelegramChat(business.id, null);
   refresh();
 }

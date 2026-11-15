@@ -1,3 +1,5 @@
+import type { TelegramChat } from "../catalog/catalog";
+
 export interface TelegramLinkRepository {
   // Replaces any earlier link, so only the latest token works.
   save(businessId: string, link: { tokenHash: string; expiresAt: Date }): Promise<void>;
@@ -6,7 +8,7 @@ export interface TelegramLinkRepository {
   delete(businessId: string): Promise<void>;
 }
 
-export type StartCommand = { chatId: string; token: string };
+export type StartCommand = { chat: TelegramChat; token: string };
 
 export const LINK_TTL_MS = 10 * 60_000;
 
@@ -30,7 +32,7 @@ export async function startTelegramLink(
 type LinkDeps = {
   links: TelegramLinkRepository;
   hashToken: (token: string) => string;
-  connect: (businessId: string, chatId: string) => Promise<void>;
+  connect: (businessId: string, chat: TelegramChat) => Promise<void>;
 };
 
 // Pressing Start in the bot proves the chat belongs to whoever opened the dashboard link.
@@ -38,14 +40,14 @@ export async function linkChats(
   { links, hashToken, connect }: LinkDeps,
   commands: StartCommand[],
   now: Date,
-): Promise<{ businessId: string; chatId: string }[]> {
-  const linked: { businessId: string; chatId: string }[] = [];
-  for (const { chatId, token } of commands) {
+): Promise<{ businessId: string; chat: TelegramChat }[]> {
+  const linked: { businessId: string; chat: TelegramChat }[] = [];
+  for (const { chat, token } of commands) {
     const businessId = await links.findBusinessByToken(hashToken(token), now);
     if (!businessId) continue;
-    await connect(businessId, chatId);
+    await connect(businessId, chat);
     await links.delete(businessId);
-    linked.push({ businessId, chatId });
+    linked.push({ businessId, chat });
   }
   return linked;
 }

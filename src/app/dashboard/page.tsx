@@ -48,7 +48,7 @@ async function OwnerDashboard() {
       {business ? (
         <>
           <RecentLeads business={business} />
-          <TelegramSettings chatId={business.telegramChatId} />
+          <TelegramSettings chatId={business.telegramChatId} chatName={business.telegramChatName} />
         </>
       ) : (
         <p className="text-zinc-600 dark:text-zinc-400">This account has no business.</p>

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { TelegramChat } from "../catalog/catalog";
 import { LINK_TTL_MS, linkChats, startTelegramLink, type TelegramLinkRepository } from "./telegram-link";
 
 type Row = { tokenHash: string; expiresAt: Date };
@@ -19,16 +20,17 @@ function fakeLinks(): TelegramLinkRepository & { rows: Map<string, Row> } {
 
 const hashToken = (token: string) => `hash:${token}`;
 const now = new Date("2026-01-01T12:00:00Z");
+const chat555: TelegramChat = { id: "555", name: "@olena" };
 
 function setup() {
   const links = fakeLinks();
-  const connected: { businessId: string; chatId: string }[] = [];
+  const connected: { businessId: string; chat: TelegramChat }[] = [];
   let next = 0;
   const startDeps = { links, hashToken, generateToken: () => `token-${++next}` };
   const linkDeps = {
     links,
     hashToken,
-    connect: async (businessId: string, chatId: string) => void connected.push({ businessId, chatId }),
+    connect: async (businessId: string, chat: TelegramChat) => void connected.push({ businessId, chat }),
   };
   return { links, connected, startDeps, linkDeps };
 }
@@ -48,7 +50,7 @@ describe("startTelegramLink", () => {
     await startTelegramLink(startDeps, "b1", now);
     await startTelegramLink(startDeps, "b1", now);
 
-    await linkChats(linkDeps, [{ chatId: "555", token: "token-1" }], now);
+    await linkChats(linkDeps, [{ chat: chat555, token: "token-1" }], now);
 
     expect(connected).toEqual([]);
   });
@@ -59,10 +61,10 @@ describe("linkChats", () => {
     const { links, connected, startDeps, linkDeps } = setup();
     await startTelegramLink(startDeps, "b1", now);
 
-    const linked = await linkChats(linkDeps, [{ chatId: "555", token: "token-1" }], now);
+    const linked = await linkChats(linkDeps, [{ chat: chat555, token: "token-1" }], now);
 
-    expect(linked).toEqual([{ businessId: "b1", chatId: "555" }]);
-    expect(connected).toEqual([{ businessId: "b1", chatId: "555" }]);
+    expect(linked).toEqual([{ businessId: "b1", chat: chat555 }]);
+    expect(connected).toEqual([{ businessId: "b1", chat: chat555 }]);
     expect(links.rows.size).toBe(0);
   });
 
@@ -73,13 +75,13 @@ describe("linkChats", () => {
     await linkChats(
       linkDeps,
       [
-        { chatId: "555", token: "token-1" },
-        { chatId: "666", token: "token-1" },
+        { chat: chat555, token: "token-1" },
+        { chat: { id: "666", name: null }, token: "token-1" },
       ],
       now,
     );
 
-    expect(connected).toEqual([{ businessId: "b1", chatId: "555" }]);
+    expect(connected).toEqual([{ businessId: "b1", chat: chat555 }]);
   });
 
   it("ignores unknown and expired tokens", async () => {
@@ -87,8 +89,8 @@ describe("linkChats", () => {
     await startTelegramLink(startDeps, "b1", now);
     const later = new Date(now.getTime() + LINK_TTL_MS);
 
-    await linkChats(linkDeps, [{ chatId: "555", token: "guess" }], now);
-    await linkChats(linkDeps, [{ chatId: "555", token: "token-1" }], later);
+    await linkChats(linkDeps, [{ chat: chat555, token: "guess" }], now);
+    await linkChats(linkDeps, [{ chat: chat555, token: "token-1" }], later);
 
     expect(connected).toEqual([]);
   });

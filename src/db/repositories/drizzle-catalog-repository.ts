@@ -21,8 +21,11 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
       return toBusiness(row);
     },
 
-    async setTelegramChatId(businessId, chatId) {
-      await db.update(businesses).set({ telegramChatId: chatId }).where(eq(businesses.id, businessId));
+    async setTelegramChat(businessId, chat) {
+      await db
+        .update(businesses)
+        .set({ telegramChatId: chat?.id ?? null, telegramChatName: chat?.name ?? null })
+        .where(eq(businesses.id, businessId));
     },
 
     async listActiveServices(businessId) {
@@ -78,7 +81,13 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
 }
 
 function toBusiness(row: BusinessRow): Business {
-  return { id: row.id, slug: row.slug, name: row.name, telegramChatId: row.telegramChatId };
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    telegramChatId: row.telegramChatId,
+    telegramChatName: row.telegramChatName,
+  };
 }
 
 function toService(row: ServiceRow): Service {

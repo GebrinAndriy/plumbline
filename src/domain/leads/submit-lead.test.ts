@@ -5,8 +5,8 @@ import type { Lead, LeadRepository } from "./lead";
 import type { LeadEvent } from "./lead-events";
 import { submitLead, type LeadRequest } from "./submit-lead";
 
-const blinds: Business = { id: "b1", slug: "blinds", name: "Blinds", telegramChatId: null };
-const other: Business = { id: "b2", slug: "other", name: "Other", telegramChatId: null };
+const blinds: Business = { id: "b1", slug: "blinds", name: "Blinds", telegramChatId: null, telegramChatName: null };
+const other: Business = { id: "b2", slug: "other", name: "Other", telegramChatId: null, telegramChatName: null };
 
 const rollerBlinds: Service = {
   id: "s1",
@@ -32,7 +32,7 @@ function fakeCatalog(): CatalogRepository {
     createService: async () => {
       throw new Error("not used");
     },
-    setTelegramChatId: async () => {
+    setTelegramChat: async () => {
       throw new Error("not used");
     },
     listAllServices: async () => {
