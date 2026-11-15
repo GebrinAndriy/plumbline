@@ -12,7 +12,7 @@ export function SignUpForm() {
   const errors = state.fieldErrors;
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+    <form method="post" onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       <Field label="Business name" name="businessName" required error={errors.businessName} />
       <Field
         label="Page address"
