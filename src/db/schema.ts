@@ -113,3 +113,12 @@ export const rateLimits = pgTable("rate_limits", {
   windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
   hits: integer("hits").notNull(),
 });
+
+// A one-time token from the "Connect Telegram" link; the chat that sends it back gets linked.
+export const telegramLinks = pgTable("telegram_links", {
+  businessId: uuid("business_id")
+    .primaryKey()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});

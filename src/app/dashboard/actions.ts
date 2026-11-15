@@ -6,7 +6,6 @@ import { getRepositories } from "@/db/get-repositories";
 import { changeLeadStatus } from "@/domain/leads/change-lead-status";
 import { LEAD_STATUSES } from "@/domain/leads/lead-status";
 import { requireOwner } from "@/lib/auth/current-owner";
-import { telegramSettingsSchema } from "./telegram-settings-schema";
 
 export type StatusFormState = { message?: string };
 
@@ -38,21 +37,4 @@ export async function changeLeadStatusAction(
   );
   refresh();
   return result.ok ? {} : { message: MESSAGES[result.reason] };
-}
-
-export type TelegramFormState = { error?: string; saved?: boolean };
-
-export async function saveTelegramChatAction(
-  _previous: TelegramFormState,
-  formData: FormData,
-): Promise<TelegramFormState> {
-  const { business } = await requireOwner();
-  if (!business) return { error: "This account has no business" };
-
-  const parsed = telegramSettingsSchema.safeParse({ chatId: formData.get("chatId") ?? "" });
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
-
-  await getRepositories().catalog.setTelegramChatId(business.id, parsed.data.chatId);
-  refresh();
-  return { saved: true };
 }

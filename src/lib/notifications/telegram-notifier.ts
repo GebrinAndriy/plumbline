@@ -1,8 +1,7 @@
 import type { Lead } from "@/domain/leads/lead";
 import type { LeadEventListener } from "@/domain/leads/lead-events";
 import { formatMoney } from "@/lib/format-money";
-
-const TELEGRAM_API = "https://api.telegram.org";
+import { sendTelegramMessage } from "./telegram-api";
 
 export function leadMessage(lead: Lead, serviceName: string): string {
   return [
@@ -19,15 +18,7 @@ export function telegramNotifier(botToken: string, fetchImpl: typeof fetch = fet
   return {
     async handle({ lead, business, serviceName }) {
       if (!business.telegramChatId) return;
-
-      const response = await fetchImpl(`${TELEGRAM_API}/bot${botToken}/sendMessage`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ chat_id: business.telegramChatId, text: leadMessage(lead, serviceName) }),
-        signal: AbortSignal.timeout(5000),
-      });
-      // The URL holds the bot token, so it is kept out of the error.
-      if (!response.ok) throw new Error(`Telegram sendMessage failed with status ${response.status}`);
+      await sendTelegramMessage(botToken, business.telegramChatId, leadMessage(lead, serviceName), fetchImpl);
     },
   };
 }

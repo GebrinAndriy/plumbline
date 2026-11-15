@@ -5,6 +5,7 @@ import { createDrizzleCatalogRepository } from "./repositories/drizzle-catalog-r
 import { createDrizzleLeadRepository } from "./repositories/drizzle-lead-repository";
 import { createDrizzleRateLimitStore } from "./repositories/drizzle-rate-limit-store";
 import { createDrizzleSessionRepository } from "./repositories/drizzle-session-repository";
+import { createDrizzleTelegramLinkRepository } from "./repositories/drizzle-telegram-link-repository";
 
 export function getRepositories() {
   const db = getDb();
@@ -14,5 +15,6 @@ export function getRepositories() {
     leads: createDrizzleLeadRepository(db),
     rateLimits: createDrizzleRateLimitStore(db),
     sessions: createDrizzleSessionRepository(db),
+    telegramLinks: createDrizzleTelegramLinkRepository(db),
   };
 }
