@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { Business, CatalogRepository } from "../catalog/catalog";
 import type { Service } from "../pricing/types";
 import type { Lead, LeadRepository } from "./lead";
+import type { LeadEvent } from "./lead-events";
 import { submitLead, type LeadRequest } from "./submit-lead";
 
 const blinds: Business = { id: "b1", slug: "blinds", name: "Blinds", telegramChatId: null };
@@ -29,6 +30,9 @@ function fakeCatalog(): CatalogRepository {
       throw new Error("not used");
     },
     createService: async () => {
+      throw new Error("not used");
+    },
+    setTelegramChatId: async () => {
       throw new Error("not used");
     },
   };
@@ -60,10 +64,16 @@ function fakeLeads(): LeadRepository & { saved: Lead[] } {
   };
 }
 
-let deps: { catalog: CatalogRepository; leads: ReturnType<typeof fakeLeads> };
+let deps: {
+  catalog: CatalogRepository;
+  leads: ReturnType<typeof fakeLeads>;
+  publish: (event: LeadEvent) => void;
+};
+let published: LeadEvent[];
 
 beforeEach(() => {
-  deps = { catalog: fakeCatalog(), leads: fakeLeads() };
+  published = [];
+  deps = { catalog: fakeCatalog(), leads: fakeLeads(), publish: (event) => published.push(event) };
 });
 
 function request(overrides: Partial<LeadRequest> = {}): LeadRequest {
@@ -95,6 +105,24 @@ describe("submitLead", () => {
 
     expect(second).toEqual(first);
     expect(deps.leads.saved).toHaveLength(1);
+  });
+
+  it("announces a new lead once, even when the form is sent twice", async () => {
+    await submitLead(deps, "blinds", request());
+    await submitLead(deps, "blinds", request());
+
+    expect(published).toHaveLength(1);
+    expect(published[0]).toMatchObject({
+      type: "lead.created",
+      business: blinds,
+      serviceName: "Roller blinds",
+      lead: { customerName: "Olena", quote: { total: 180_000 } },
+    });
+  });
+
+  it("announces nothing when the request is rejected", async () => {
+    await submitLead(deps, "blinds", request({ surchargeIds: ["gold-plating"] }));
+    expect(published).toEqual([]);
   });
 
   it("rejects an unknown business", async () => {

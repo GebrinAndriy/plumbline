@@ -21,6 +21,10 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
       return toBusiness(row);
     },
 
+    async setTelegramChatId(businessId, chatId) {
+      await db.update(businesses).set({ telegramChatId: chatId }).where(eq(businesses.id, businessId));
+    },
+
     async listActiveServices(businessId) {
       if (!isUuid(businessId)) return [];
       const rows = await db

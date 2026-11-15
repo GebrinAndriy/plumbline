@@ -12,6 +12,7 @@ export type NewService = Omit<Service, "id"> & { businessId: string };
 export interface CatalogRepository {
   findBusinessBySlug(slug: string): Promise<Business | null>;
   createBusiness(business: Omit<Business, "id">): Promise<Business>;
+  setTelegramChatId(businessId: string, chatId: string | null): Promise<void>;
   listActiveServices(businessId: string): Promise<Service[]>;
   findService(businessId: string, serviceId: string): Promise<Service | null>;
   createService(service: NewService): Promise<Service>;

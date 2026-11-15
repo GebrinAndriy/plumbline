@@ -6,6 +6,7 @@ import { requireOwner } from "@/lib/auth/current-owner";
 import { formatMoney } from "@/lib/format-money";
 import { signOutAction } from "../(auth)/actions";
 import { LeadStatusControl } from "./lead-status-control";
+import { TelegramSettings } from "./telegram-settings";
 
 export default function DashboardPage() {
   return (
@@ -41,7 +42,10 @@ async function OwnerDashboard() {
         </form>
       </header>
       {business ? (
-        <RecentLeads business={business} />
+        <>
+          <RecentLeads business={business} />
+          <TelegramSettings chatId={business.telegramChatId} />
+        </>
       ) : (
         <p className="text-zinc-600 dark:text-zinc-400">This account has no business.</p>
       )}

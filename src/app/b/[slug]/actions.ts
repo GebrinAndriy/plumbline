@@ -4,6 +4,7 @@ import { getRepositories } from "@/db/get-repositories";
 import { submitLead } from "@/domain/leads/submit-lead";
 import type { Money } from "@/domain/pricing/types";
 import type { FieldErrors } from "@/lib/field-errors";
+import { publishLeadEvent } from "@/lib/notifications/publish-lead-event";
 import { parseLeadForm } from "./lead-request-schema";
 
 export type LeadFormState =
@@ -27,7 +28,11 @@ export async function submitLeadAction(
   }
 
   try {
-    const result = await submitLead(getRepositories(), businessSlug, parsed.request);
+    const result = await submitLead(
+      { ...getRepositories(), publish: publishLeadEvent },
+      businessSlug,
+      parsed.request,
+    );
     if (!result.ok) {
       return { status: "error", message: result.message, fieldErrors: {} };
     }

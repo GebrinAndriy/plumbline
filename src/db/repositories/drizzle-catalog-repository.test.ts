@@ -31,6 +31,18 @@ describe("businesses", () => {
   it("returns null for an unknown slug", async () => {
     expect(await catalog.findBusinessBySlug("nope")).toBeNull();
   });
+
+  it("connects and disconnects a Telegram chat of one business only", async () => {
+    const own = await createBusiness();
+    await createBusiness("other");
+
+    await catalog.setTelegramChatId(own.id, "123456789");
+    expect(await catalog.findBusinessBySlug("blinds-kyiv")).toMatchObject({ telegramChatId: "123456789" });
+    expect(await catalog.findBusinessBySlug("other")).toMatchObject({ telegramChatId: null });
+
+    await catalog.setTelegramChatId(own.id, null);
+    expect(await catalog.findBusinessBySlug("blinds-kyiv")).toMatchObject({ telegramChatId: null });
+  });
 });
 
 describe("services", () => {
