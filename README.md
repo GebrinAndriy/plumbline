@@ -33,6 +33,17 @@ Trade-offs: a fixed window lets up to twice the limit through around a window ed
 limit lets anyone lock an account's sign-in for 15 minutes; the client IP comes from `x-forwarded-for`,
 which is trustworthy only behind a proxy that sets it (Vercel does).
 
+### Telegram is connected with a one-time deep link
+The owner never types a chat ID. "Connect Telegram" creates a one-time token (stored hashed, valid for
+10 minutes) and shows a `t.me/<bot>?start=<token>` link plus a QR code for owners without Telegram on
+the computer. Pressing Start sends `/start <token>` to the bot, and the chat that sent it is linked.
+Only the owner sees the token, so nobody can point the bot (and customer-written lead text) at someone
+else's chat. Messages are plain text with no `parse_mode`, so lead text cannot inject markup.
+
+Trade-off: there is no public URL yet, so the dashboard polls and the server reads `/start` messages with
+`getUpdates` instead of a webhook. Telegram keeps at most 100 unread updates for 24 hours, which is fine
+for a few owners; after deploy, a webhook replaces only the delivery, the domain logic stays the same.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

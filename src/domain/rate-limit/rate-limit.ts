@@ -14,6 +14,7 @@ export const RATE_LIMITS = {
   signInByEmail: { name: "sign-in:email", limit: 10, windowMs: 15 * MINUTE },
   signUpByIp: { name: "sign-up:ip", limit: 5, windowMs: 60 * MINUTE },
   leadByIp: { name: "lead:ip", limit: 10, windowMs: 60 * MINUTE },
+  telegramLinkByBusiness: { name: "telegram-link:business", limit: 10, windowMs: 60 * MINUTE },
 } satisfies Record<string, RateLimitPolicy>;
 
 export async function consumeRateLimit(
