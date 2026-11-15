@@ -1,0 +1,1 @@
+ALTER TABLE "businesses" ADD COLUMN "telegram_chat_name" text;

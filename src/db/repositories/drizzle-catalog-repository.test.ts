@@ -36,12 +36,18 @@ describe("businesses", () => {
     const own = await createBusiness();
     await createBusiness("other");
 
-    await catalog.setTelegramChatId(own.id, "123456789");
-    expect(await catalog.findBusinessBySlug("blinds-kyiv")).toMatchObject({ telegramChatId: "123456789" });
+    await catalog.setTelegramChat(own.id, { id: "123456789", name: "@olena" });
+    expect(await catalog.findBusinessBySlug("blinds-kyiv")).toMatchObject({
+      telegramChatId: "123456789",
+      telegramChatName: "@olena",
+    });
     expect(await catalog.findBusinessBySlug("other")).toMatchObject({ telegramChatId: null });
 
-    await catalog.setTelegramChatId(own.id, null);
-    expect(await catalog.findBusinessBySlug("blinds-kyiv")).toMatchObject({ telegramChatId: null });
+    await catalog.setTelegramChat(own.id, null);
+    expect(await catalog.findBusinessBySlug("blinds-kyiv")).toMatchObject({
+      telegramChatId: null,
+      telegramChatName: null,
+    });
   });
 });
 

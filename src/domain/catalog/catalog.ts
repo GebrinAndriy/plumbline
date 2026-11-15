@@ -5,7 +5,10 @@ export type Business = {
   slug: string;
   name: string;
   telegramChatId: string | null;
+  telegramChatName: string | null;
 };
+
+export type TelegramChat = { id: string; name: string | null };
 
 export type NewService = Omit<Service, "id"> & { businessId: string };
 
@@ -13,8 +16,8 @@ export type ServiceListing = Service & { isActive: boolean };
 
 export interface CatalogRepository {
   findBusinessBySlug(slug: string): Promise<Business | null>;
-  createBusiness(business: Omit<Business, "id">): Promise<Business>;
-  setTelegramChatId(businessId: string, chatId: string | null): Promise<void>;
+  createBusiness(business: Omit<Business, "id" | "telegramChatName">): Promise<Business>;
+  setTelegramChat(businessId: string, chat: TelegramChat | null): Promise<void>;
   listActiveServices(businessId: string): Promise<Service[]>;
   findService(businessId: string, serviceId: string): Promise<Service | null>;
   createService(service: NewService): Promise<Service>;

@@ -1,13 +1,17 @@
 import { ConnectTelegram } from "./connect-telegram";
 import { disconnectTelegramAction } from "./telegram-actions";
 
-export function TelegramSettings({ chatId }: { chatId: string | null }) {
+type Props = { chatId: string | null; chatName: string | null };
+
+export function TelegramSettings({ chatId, chatName }: Props) {
   return (
     <section className="flex flex-col gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
       <h2 className="text-lg font-semibold">Telegram notifications</h2>
       {chatId ? (
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-          <p className="text-green-700 dark:text-green-400">Connected. New requests arrive in Telegram.</p>
+          <p className="text-green-700 dark:text-green-400">
+            Connected{chatName && <> to <strong>{chatName}</strong></>}. New requests arrive in Telegram.
+          </p>
           <form action={disconnectTelegramAction}>
             <button type="submit" className="font-medium underline underline-offset-4">
               Turn off
