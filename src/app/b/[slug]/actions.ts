@@ -3,8 +3,10 @@
 import { getRepositories } from "@/db/get-repositories";
 import { submitLead } from "@/domain/leads/submit-lead";
 import type { Money } from "@/domain/pricing/types";
+import { RATE_LIMITS, retryMessage } from "@/domain/rate-limit/rate-limit";
 import type { FieldErrors } from "@/lib/field-errors";
 import { publishLeadEvent } from "@/lib/notifications/publish-lead-event";
+import { limitByIp } from "@/lib/rate-limit/rate-limiter";
 import { parseLeadForm } from "./lead-request-schema";
 
 export type LeadFormState =
@@ -28,6 +30,11 @@ export async function submitLeadAction(
   }
 
   try {
+    const limit = await limitByIp(RATE_LIMITS.leadByIp);
+    if (!limit.allowed) {
+      return { status: "error", message: retryMessage(limit.retryAfterMs), fieldErrors: {} };
+    }
+
     const result = await submitLead(
       { ...getRepositories(), publish: publishLeadEvent },
       businessSlug,

@@ -20,6 +20,19 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Engineering decisions
+
+### Rate limiting in Postgres
+Sign-in (per IP and per email), sign-up (per IP) and lead submission (per IP) are limited with a
+fixed window counter in the `rate_limits` table. One atomic upsert per attempt, so parallel requests
+cannot both pass. Postgres instead of in-memory counters, because serverless instances do not share
+memory; instead of Redis, because the app already has a database and the traffic is small.
+The check runs before scrypt, so blocked attempts are cheap. IPs and emails are stored as SHA-256 hashes.
+
+Trade-offs: a fixed window lets up to twice the limit through around a window edge; the per-email
+limit lets anyone lock an account's sign-in for 15 minutes; the client IP comes from `x-forwarded-for`,
+which is trustworthy only behind a proxy that sets it (Vercel does).
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

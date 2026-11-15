@@ -2,6 +2,7 @@ import {
   bigint,
   boolean,
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -105,3 +106,10 @@ export const leadStatusChanges = pgTable(
   },
   (t) => [index("lead_status_changes_lead_idx").on(t.leadId, t.at)],
 );
+
+// One row per key: a new window overwrites the old count, so the table grows only with distinct keys.
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+  hits: integer("hits").notNull(),
+});
