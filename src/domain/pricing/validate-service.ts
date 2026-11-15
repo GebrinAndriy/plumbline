@@ -2,7 +2,7 @@ import { assertNever } from "@/lib/assert-never";
 import { PricingConfigError } from "./errors";
 import type { Money, PricingRule, Service, Surcharge } from "./types";
 
-const MAX_PRICE: Money = 100_000_000; // 1 000 000 UAH
+export const MAX_PRICE: Money = 100_000_000; // 1 000 000 UAH
 const MAX_PERCENT = 100;
 const MAX_MINIMUM_HOURS = 24;
 

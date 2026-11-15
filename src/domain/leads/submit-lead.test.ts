@@ -35,6 +35,12 @@ function fakeCatalog(): CatalogRepository {
     setTelegramChatId: async () => {
       throw new Error("not used");
     },
+    listAllServices: async () => {
+      throw new Error("not used");
+    },
+    setServiceActive: async () => {
+      throw new Error("not used");
+    },
   };
 }
 
