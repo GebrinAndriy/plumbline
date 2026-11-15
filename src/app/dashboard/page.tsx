@@ -32,6 +32,10 @@ async function OwnerDashboard() {
               <Link href={`/b/${business.slug}`} className="font-medium underline underline-offset-4">
                 /b/{business.slug}
               </Link>
+              {" · "}
+              <Link href="/dashboard/services" className="font-medium underline underline-offset-4">
+                Services
+              </Link>
             </p>
           )}
         </div>

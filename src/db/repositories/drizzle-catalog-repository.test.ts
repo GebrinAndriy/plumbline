@@ -96,6 +96,21 @@ describe("services", () => {
     expect(await catalog.findService(own.id, service.id)).toBeNull();
   });
 
+  it("hides and shows a service only for its own business", async () => {
+    const own = await createBusiness();
+    const other = await createBusiness("other");
+    const rule = { kind: "fixed", price: 1_000 } as const;
+    const service = await catalog.createService({ businessId: own.id, name: "A", rule, surcharges: [] });
+
+    await catalog.setServiceActive(other.id, service.id, false);
+    expect(await catalog.listActiveServices(own.id)).toEqual([service]);
+
+    await catalog.setServiceActive(own.id, service.id, false);
+    expect(await catalog.listActiveServices(own.id)).toEqual([]);
+    expect(await catalog.listAllServices(own.id)).toEqual([{ ...service, isActive: false }]);
+    expect(await catalog.listAllServices(other.id)).toEqual([]);
+  });
+
   it("treats a malformed id as not found", async () => {
     const business = await createBusiness();
     expect(await catalog.findService(business.id, "not-a-uuid")).toBeNull();

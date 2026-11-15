@@ -35,6 +35,24 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
       return rows.map(toService);
     },
 
+    async listAllServices(businessId) {
+      if (!isUuid(businessId)) return [];
+      const rows = await db
+        .select()
+        .from(services)
+        .where(eq(services.businessId, businessId))
+        .orderBy(asc(services.createdAt));
+      return rows.map((row) => ({ ...toService(row), isActive: row.isActive }));
+    },
+
+    async setServiceActive(businessId, serviceId, isActive) {
+      if (!isUuid(businessId) || !isUuid(serviceId)) return;
+      await db
+        .update(services)
+        .set({ isActive })
+        .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)));
+    },
+
     async findService(businessId, serviceId) {
       if (!isUuid(businessId) || !isUuid(serviceId)) return null;
       const [row] = await db
