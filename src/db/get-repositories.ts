@@ -3,6 +3,7 @@ import { getDb } from "./client";
 import { createDrizzleAccountRepository } from "./repositories/drizzle-account-repository";
 import { createDrizzleCatalogRepository } from "./repositories/drizzle-catalog-repository";
 import { createDrizzleLeadRepository } from "./repositories/drizzle-lead-repository";
+import { createDrizzleRateLimitStore } from "./repositories/drizzle-rate-limit-store";
 import { createDrizzleSessionRepository } from "./repositories/drizzle-session-repository";
 
 export function getRepositories() {
@@ -11,6 +12,7 @@ export function getRepositories() {
     accounts: createDrizzleAccountRepository(db),
     catalog: createDrizzleCatalogRepository(db),
     leads: createDrizzleLeadRepository(db),
+    rateLimits: createDrizzleRateLimitStore(db),
     sessions: createDrizzleSessionRepository(db),
   };
 }
