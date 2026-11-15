@@ -3,6 +3,7 @@ import { calculateQuote } from "../pricing/calculate-quote";
 import { QuoteInputError } from "../pricing/errors";
 import type { Money, Quote, QuoteInput } from "../pricing/types";
 import type { LeadRepository } from "./lead";
+import type { LeadEvent } from "./lead-events";
 
 export type LeadRequest = {
   serviceId: string;
@@ -18,10 +19,14 @@ export type SubmitLeadResult =
   | { ok: true; leadId: string; total: Money }
   | { ok: false; reason: "not_found" | "invalid_input"; message: string };
 
-type Deps = { catalog: CatalogRepository; leads: LeadRepository };
+type Deps = {
+  catalog: CatalogRepository;
+  leads: LeadRepository;
+  publish: (event: LeadEvent) => void;
+};
 
 export async function submitLead(
-  { catalog, leads }: Deps,
+  { catalog, leads, publish }: Deps,
   businessSlug: string,
   request: LeadRequest,
 ): Promise<SubmitLeadResult> {
@@ -42,7 +47,7 @@ export async function submitLead(
     throw error;
   }
 
-  const { lead } = await leads.create({
+  const { lead, created } = await leads.create({
     businessId: business.id,
     serviceId: service.id,
     customerName: request.customerName,
@@ -53,5 +58,6 @@ export async function submitLead(
     idempotencyKey: request.idempotencyKey,
   });
 
+  if (created) publish({ type: "lead.created", lead, business, serviceName: service.name });
   return { ok: true, leadId: lead.id, total: lead.quote.total };
 }
