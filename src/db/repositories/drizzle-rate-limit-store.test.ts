@@ -34,4 +34,13 @@ describe("drizzle rate limit store", () => {
     const hits = await Promise.all(Array.from({ length: 5 }, () => store.increment("a", firstWindow)));
     expect(hits.sort()).toEqual([1, 2, 3, 4, 5]);
   });
+
+  it("deletes rows whose window started before the cutoff", async () => {
+    await store.increment("old", firstWindow);
+    await store.increment("current", secondWindow);
+
+    expect(await store.deleteWindowsStartedBefore(secondWindow)).toBe(1);
+    expect(await store.increment("old", firstWindow)).toBe(1);
+    expect(await store.increment("current", secondWindow)).toBe(2);
+  });
 });

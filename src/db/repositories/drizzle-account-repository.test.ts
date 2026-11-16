@@ -73,4 +73,15 @@ describe("sessions", () => {
     await sessions.delete("token-hash");
     expect(await sessions.find("token-hash")).toBeNull();
   });
+
+  it("deletes only sessions that have expired", async () => {
+    const { userId } = await accounts.createOwner(owner);
+    const now = new Date("2026-12-14T12:00:00Z");
+    await sessions.create("expired", { userId, expiresAt: now });
+    await sessions.create("live", { userId, expiresAt: new Date("2026-12-14T12:00:01Z") });
+
+    expect(await sessions.deleteExpired(now)).toBe(1);
+    expect(await sessions.find("expired")).toBeNull();
+    expect(await sessions.find("live")).not.toBeNull();
+  });
 });

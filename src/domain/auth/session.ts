@@ -4,6 +4,7 @@ export interface SessionRepository {
   create(tokenHash: string, session: Session): Promise<void>;
   find(tokenHash: string): Promise<Session | null>;
   delete(tokenHash: string): Promise<void>;
+  deleteExpired(now: Date): Promise<number>;
 }
 
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;

@@ -13,6 +13,7 @@ function fakeStore(): RateLimitStore & { keys: string[] } {
       counts.set(id, next);
       return next;
     },
+    deleteWindowsStartedBefore: async () => 0,
   };
 }
 

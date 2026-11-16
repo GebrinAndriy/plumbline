@@ -15,6 +15,7 @@ function fakeSessions(initial: Record<string, Session>): SessionRepository & { r
     create: async (hash, session) => void rows.set(hash, session),
     find: async (hash) => rows.get(hash) ?? null,
     delete: async (hash) => void rows.delete(hash),
+    deleteExpired: async () => 0,
   };
 }
 

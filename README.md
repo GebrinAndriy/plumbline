@@ -120,6 +120,19 @@ Trade-off: there is no public URL yet, so the dashboard polls and the server rea
 `getUpdates` instead of a webhook. Telegram keeps at most 100 unread updates for 24 hours, which is fine
 for a few owners; after deploy, a webhook replaces only the delivery, the domain logic stays the same.
 
+### Expired rows are purged by a daily job
+Expired sessions, unused Telegram link tokens and finished rate limit windows are deleted once a day by
+Vercel Cron calling `/api/cron/purge`. Without it the tables only grow: an expired session is removed
+only if someone presents it, and every email tried at sign-in leaves a `rate_limits` row. The job runs
+outside user requests, so sign-in never pays for cleanup. The route accepts only
+`Authorization: Bearer $CRON_SECRET` (compared in constant time) and stays closed when the secret is
+not set. A rate limit row does not store its policy, so it is kept until the longest window (1 hour)
+has ended; deleting it earlier could reset a live counter.
+
+Trade-off: no index on the timestamp columns. The tables stay small once they are purged daily, and
+an index on `rate_limits.window_start` would slow down every rate-limited request to speed up one
+query a day.
+
 ## Known limitations
 
 - **Sign-up reveals whether an email is registered.** Sign-in hides it (same message, same timing),

@@ -3,6 +3,7 @@ export type RateLimitPolicy = { name: string; limit: number; windowMs: number };
 export interface RateLimitStore {
   // Atomically counts one hit for the key in this window and returns the hits so far.
   increment(key: string, windowStart: Date): Promise<number>;
+  deleteWindowsStartedBefore(cutoff: Date): Promise<number>;
 }
 
 export type RateLimitResult = { allowed: true } | { allowed: false; retryAfterMs: number };
