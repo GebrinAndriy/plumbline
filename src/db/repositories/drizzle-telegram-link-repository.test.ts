@@ -48,4 +48,12 @@ describe("drizzle telegram link repository", () => {
 
     expect(await links.findExpiry(businessId)).toBeNull();
   });
+
+  it("deletes only expired links", async () => {
+    await links.save(businessId, { tokenHash: "hash-1", expiresAt });
+
+    expect(await links.deleteExpired(now)).toBe(0);
+    expect(await links.deleteExpired(expiresAt)).toBe(1);
+    expect(await links.findExpiry(businessId)).toBeNull();
+  });
 });

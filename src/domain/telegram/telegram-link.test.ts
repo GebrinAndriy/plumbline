@@ -15,6 +15,7 @@ function fakeLinks(): TelegramLinkRepository & { rows: Map<string, Row> } {
       return match?.[0] ?? null;
     },
     delete: async (businessId) => void rows.delete(businessId),
+    deleteExpired: async () => 0,
   };
 }
 

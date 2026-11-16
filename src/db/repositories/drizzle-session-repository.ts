@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, lte } from "drizzle-orm";
 import type { SessionRepository } from "@/domain/auth/session";
 import type { Database } from "../database";
 import { sessions } from "../schema";
@@ -20,6 +20,14 @@ export function createDrizzleSessionRepository(db: Database): SessionRepository 
 
     async delete(tokenHash) {
       await db.delete(sessions).where(eq(sessions.tokenHash, tokenHash));
+    },
+
+    async deleteExpired(now) {
+      const rows = await db
+        .delete(sessions)
+        .where(lte(sessions.expiresAt, now))
+        .returning({ tokenHash: sessions.tokenHash });
+      return rows.length;
     },
   };
 }

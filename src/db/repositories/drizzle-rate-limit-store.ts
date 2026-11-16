@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { lt, sql } from "drizzle-orm";
 import type { RateLimitStore } from "@/domain/rate-limit/rate-limit";
 import type { Database } from "../database";
 import { rateLimits } from "../schema";
@@ -19,6 +19,14 @@ export function createDrizzleRateLimitStore(db: Database): RateLimitStore {
         })
         .returning({ hits: rateLimits.hits });
       return row.hits;
+    },
+
+    async deleteWindowsStartedBefore(cutoff) {
+      const rows = await db
+        .delete(rateLimits)
+        .where(lt(rateLimits.windowStart, cutoff))
+        .returning({ key: rateLimits.key });
+      return rows.length;
     },
   };
 }

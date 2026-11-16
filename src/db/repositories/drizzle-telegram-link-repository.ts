@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, lte } from "drizzle-orm";
 import type { TelegramLinkRepository } from "@/domain/telegram/telegram-link";
 import type { Database } from "../database";
 import { telegramLinks } from "../schema";
@@ -32,6 +32,14 @@ export function createDrizzleTelegramLinkRepository(db: Database): TelegramLinkR
 
     async delete(businessId) {
       await db.delete(telegramLinks).where(eq(telegramLinks.businessId, businessId));
+    },
+
+    async deleteExpired(now) {
+      const rows = await db
+        .delete(telegramLinks)
+        .where(lte(telegramLinks.expiresAt, now))
+        .returning({ businessId: telegramLinks.businessId });
+      return rows.length;
     },
   };
 }

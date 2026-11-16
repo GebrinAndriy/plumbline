@@ -6,6 +6,7 @@ export interface TelegramLinkRepository {
   findExpiry(businessId: string): Promise<Date | null>;
   findBusinessByToken(tokenHash: string, now: Date): Promise<string | null>;
   delete(businessId: string): Promise<void>;
+  deleteExpired(now: Date): Promise<number>;
 }
 
 export type StartCommand = { chat: TelegramChat; token: string };
