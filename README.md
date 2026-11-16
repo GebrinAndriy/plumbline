@@ -134,6 +134,19 @@ Trade-off: no index on the timestamp columns. The tables stay small once they ar
 an index on `rate_limits.window_start` would slow down every rate-limited request to speed up one
 query a day.
 
+### Security headers on every response
+`next.config.ts` sends a Content Security Policy, HSTS, `X-Frame-Options: DENY`,
+`X-Content-Type-Options: nosniff`, a strict `Referrer-Policy` and a `Permissions-Policy`, and drops
+`X-Powered-By`. The CSP allows scripts, styles, requests and form posts only to this site, forbids
+plugins and `<base>` changes, and blocks framing (`frame-ancestors 'none'`), so the calculator cannot
+be embedded for clickjacking. The QR code is a `data:` image, which `img-src` allows.
+
+Trade-off: `script-src` includes `'unsafe-inline'`, because Next.js inlines its hydration data. The
+strict alternative, a per-request nonce, makes every page fully dynamic and switches off the
+prerendered shells of Cache Components. So the CSP here limits where code can come from, and XSS
+protection itself relies on React escaping all output (the app never uses `dangerouslySetInnerHTML`).
+HSTS is sent without `preload`: preloading is hard to undo and should wait for a real domain.
+
 ## Known limitations
 
 - **Sign-up reveals whether an email is registered.** Sign-in hides it (same message, same timing),
