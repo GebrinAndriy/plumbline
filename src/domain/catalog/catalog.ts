@@ -14,6 +14,8 @@ export type NewService = Omit<Service, "id"> & { businessId: string };
 
 export type ServiceListing = Service & { isActive: boolean };
 
+export type ServiceDetails = Pick<Service, "name" | "rule">;
+
 export interface CatalogRepository {
   findBusinessBySlug(slug: string): Promise<Business | null>;
   createBusiness(business: Omit<Business, "id" | "telegramChatName">): Promise<Business>;
@@ -23,4 +25,6 @@ export interface CatalogRepository {
   createService(service: NewService): Promise<Service>;
   listAllServices(businessId: string): Promise<ServiceListing[]>;
   setServiceActive(businessId: string, serviceId: string, isActive: boolean): Promise<void>;
+  // False when the service does not exist or belongs to another business.
+  updateService(businessId: string, serviceId: string, details: ServiceDetails): Promise<boolean>;
 }

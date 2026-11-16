@@ -56,6 +56,17 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
         .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)));
     },
 
+    async updateService(businessId, serviceId, { name, rule }) {
+      if (!isUuid(businessId) || !isUuid(serviceId)) return false;
+      validateService({ id: serviceId, name, rule, surcharges: [] });
+      const rows = await db
+        .update(services)
+        .set({ name, rule })
+        .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)))
+        .returning({ id: services.id });
+      return rows.length > 0;
+    },
+
     async findService(businessId, serviceId) {
       if (!isUuid(businessId) || !isUuid(serviceId)) return null;
       const [row] = await db

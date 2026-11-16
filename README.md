@@ -14,7 +14,8 @@ and sends a request. The owner gets the request on the dashboard and in Telegram
   the customer saw.
 - **Dashboard**: recent requests and status changes; every change is recorded, and two tabs cannot
   overwrite each other's change.
-- **Services**: owners add services and hide or show them in the calculator.
+- **Services**: owners add and edit services and hide or show them in the calculator. Editing a price
+  changes only new requests; earlier leads keep the quote they were sent with.
 - **Telegram notifications**: "Connect Telegram" with a one-time link or QR code, no chat ID to copy.
 - **Accounts**: sign-up, sign-in and sign-out with database sessions; rate limiting on every public form.
 
@@ -141,4 +142,4 @@ query a day.
   "check your inbox", and an existing owner gets a "someone tried to register" email instead.
 - **Telegram uses `getUpdates` polling** because there is no public URL yet; a webhook replaces it
   after deploy.
-- **Services cannot be edited yet**, and surcharges can only be added through the seed script.
+- **Surcharges can only be added through the seed script**; editing a service keeps its surcharges.
