@@ -41,6 +41,9 @@ function fakeCatalog(): CatalogRepository {
     setServiceActive: async () => {
       throw new Error("not used");
     },
+    updateService: async () => {
+      throw new Error("not used");
+    },
   };
 }
 

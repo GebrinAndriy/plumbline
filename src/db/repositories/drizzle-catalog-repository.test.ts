@@ -117,6 +117,48 @@ describe("services", () => {
     expect(await catalog.listAllServices(other.id)).toEqual([]);
   });
 
+  it("updates the name and rule but keeps surcharges and visibility", async () => {
+    const business = await createBusiness();
+    const surcharges = [{ id: "install", label: "Installation", kind: "flat", amount: 50_000 }] as const;
+    const service = await catalog.createService({
+      businessId: business.id,
+      name: "Roller blinds",
+      rule: { kind: "per_area", ratePerSqm: 50_000 },
+      surcharges: [...surcharges],
+    });
+
+    const updated = await catalog.updateService(business.id, service.id, {
+      name: "Day-night blinds",
+      rule: { kind: "fixed", price: 90_000 },
+    });
+
+    expect(updated).toBe(true);
+    expect(await catalog.listAllServices(business.id)).toEqual([
+      { id: service.id, name: "Day-night blinds", rule: { kind: "fixed", price: 90_000 }, surcharges, isActive: true },
+    ]);
+  });
+
+  it("does not update another business's service", async () => {
+    const own = await createBusiness();
+    const other = await createBusiness("other");
+    const rule = { kind: "fixed", price: 1_000 } as const;
+    const service = await catalog.createService({ businessId: other.id, name: "Foreign", rule, surcharges: [] });
+
+    expect(await catalog.updateService(own.id, service.id, { name: "Mine now", rule })).toBe(false);
+    expect(await catalog.updateService(own.id, "not-a-uuid", { name: "Mine now", rule })).toBe(false);
+    expect((await catalog.listAllServices(other.id))[0].name).toBe("Foreign");
+  });
+
+  it("refuses to update to an invalid rule", async () => {
+    const business = await createBusiness();
+    const rule = { kind: "fixed", price: 1_000 } as const;
+    const service = await catalog.createService({ businessId: business.id, name: "A", rule, surcharges: [] });
+
+    await expect(
+      catalog.updateService(business.id, service.id, { name: "A", rule: { kind: "fixed", price: 0 } }),
+    ).rejects.toThrow(PricingConfigError);
+  });
+
   it("treats a malformed id as not found", async () => {
     const business = await createBusiness();
     expect(await catalog.findService(business.id, "not-a-uuid")).toBeNull();
