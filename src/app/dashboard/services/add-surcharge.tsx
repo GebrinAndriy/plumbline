@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Field } from "@/components/field";
+import { Field, inputClass } from "@/components/field";
 import { PrimaryButton } from "@/components/primary-button";
 import { useFormSubmit } from "@/components/use-form-submit";
 import type { Surcharge } from "@/domain/pricing/types";
@@ -36,12 +36,12 @@ export function AddSurcharge({ action }: AddSurchargeProps) {
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label="Option name" name="label" placeholder="Installation" error={errors.label} />
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">Adds</span>
+          <span className="font-medium text-ink">Adds</span>
           <select
             name="kind"
             value={kind}
             onChange={(e) => setKind(e.target.value as Surcharge["kind"])}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-900"
+            className={inputClass}
           >
             <option value="flat">A fixed amount</option>
             <option value="percent">A percent of the price</option>
@@ -54,7 +54,7 @@ export function AddSurcharge({ action }: AddSurchargeProps) {
         )}
       </div>
       {state.message && (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+        <p role="alert" className="animate-shake text-sm text-error">
           {state.message}
         </p>
       )}

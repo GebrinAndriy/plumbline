@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 
 export const primaryButtonClass =
-  "rounded-full bg-zinc-900 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300";
+  "rounded-field bg-accent px-6 py-3 font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-accent-hover active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-text";
 
 export function PrimaryButton({ className, ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button className={`${primaryButtonClass} ${className ?? ""}`} {...props} />;

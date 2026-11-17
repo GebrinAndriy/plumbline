@@ -23,7 +23,7 @@ export function SignInForm() {
         error={errors.password}
       />
       {state.message && (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+        <p role="alert" className="animate-shake text-sm text-error">
           {state.message}
         </p>
       )}

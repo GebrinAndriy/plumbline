@@ -11,7 +11,7 @@ import { TelegramSettings } from "./telegram-settings";
 export default function DashboardPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12">
-      <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+      <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <OwnerDashboard />
       </Suspense>
     </main>
@@ -25,9 +25,9 @@ async function OwnerDashboard() {
     <>
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">{business?.name ?? "Dashboard"}</h1>
+          <h1 className="font-serif text-3xl font-semibold tracking-tight">{business?.name ?? "Dashboard"}</h1>
           {business && (
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-muted">
               Your calculator:{" "}
               <Link href={`/b/${business.slug}`} className="font-medium underline underline-offset-4">
                 /b/{business.slug}
@@ -51,7 +51,7 @@ async function OwnerDashboard() {
           <TelegramSettings chatId={business.telegramChatId} chatName={business.telegramChatName} />
         </>
       ) : (
-        <p className="text-zinc-600 dark:text-zinc-400">This account has no business.</p>
+        <p className="text-muted">This account has no business.</p>
       )}
     </>
   );
@@ -68,7 +68,7 @@ async function RecentLeads({ business }: { business: Business }) {
 
   if (leads.length === 0) {
     return (
-      <p className="rounded-xl bg-zinc-100 p-6 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+      <p className="rounded-xl bg-surface p-6 text-muted">
         No requests yet. Share your calculator link with customers.
       </p>
     );
@@ -76,13 +76,13 @@ async function RecentLeads({ business }: { business: Business }) {
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Recent requests</h2>
-      <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+      <h2 className="font-serif text-lg font-semibold">Recent requests</h2>
+      <ul className="divide-y divide-rule rounded-xl border border-rule">
         {leads.map((lead) => (
           <li key={lead.id} className="flex flex-wrap items-center justify-between gap-2 p-4">
             <div>
               <p className="font-medium">{lead.customerName}</p>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-muted">
                 <a href={`tel:${lead.phone}`}>{lead.phone}</a> · {dateFormat.format(lead.createdAt)}
               </p>
             </div>

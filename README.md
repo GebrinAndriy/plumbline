@@ -68,6 +68,7 @@ src/
   app/      Routes, Server Actions and components. Input is validated with Zod here.
 drizzle/    SQL migrations.
 e2e/        Playwright test of the main flow in a real browser.
+design/     Mockups and the design system (pen.dev file).
 ```
 
 The domain defines what it needs as interfaces (`LeadRepository`, `PasswordHasher`, ...) and gets the
@@ -185,6 +186,24 @@ strict alternative, a per-request nonce, makes every page fully dynamic and swit
 prerendered shells of Cache Components. So the CSP here limits where code can come from, and XSS
 protection itself relies on React escaping all output (the app never uses `dangerouslySetInnerHTML`).
 HSTS is sent without `preload`: preloading is hard to undo and should wait for a real domain.
+
+### One design system, as Tailwind tokens
+The mockups in `design/` define a small system: paper and ink colors, one accent for actions and
+totals, status colors, a serif for headings and prices and Inter for the interface. In code these are
+Tailwind theme tokens in `globals.css` (`bg-paper`, `text-muted`, `bg-accent`, ...), and shared
+input and button styles live in `src/components`. Pages use the tokens, never raw palette colors, so
+a color change is one line. Headings use Literata instead of the mockup's first choice, Fraunces,
+because Fraunces has no Cyrillic and business and customer names are usually written in Ukrainian.
+
+Motion follows the same idea: one easing curve, three durations (150, 240 and 400 ms) and a few named
+animations in the theme (`animate-rise`, `animate-pop`, `animate-shake`, `animate-draw`). The total
+in the calculator counts to the new price instead of jumping, so the customer sees that their change
+moved it; every frame is a whole number of kopiykas, and screen readers hear only the final price.
+Under `prefers-reduced-motion` everything appears instantly.
+
+Trade-off: the app is light-only for now. The old dark variant was a set of generic grays; a real dark
+theme needs its own designed palette, and the tokens make it a matter of adding values, not editing
+pages.
 
 ## Known limitations
 

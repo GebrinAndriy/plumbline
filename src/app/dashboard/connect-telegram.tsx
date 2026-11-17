@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { primaryButtonClass } from "@/components/primary-button";
 import { checkTelegramLinkAction, startTelegramLinkAction } from "./telegram-actions";
 
 type State =
@@ -61,18 +62,18 @@ export function ConnectTelegram({ connected }: { connected: boolean }) {
           className="rounded-lg bg-white p-2"
         />
         <div className="flex max-w-xs flex-col gap-3 text-sm">
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-muted">
             Scan the code with your phone or open the link, then press <strong>Start</strong> in the bot.
           </p>
           <a
             href={state.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="self-start rounded-full bg-sky-600 px-4 py-2 font-medium text-white hover:bg-sky-700"
+            className={`self-start ${primaryButtonClass}`}
           >
             Open Telegram
           </a>
-          <p role="status" className="text-zinc-500">
+          <p role="status" className="text-muted">
             Waiting for Telegram…
           </p>
           <button
@@ -90,18 +91,18 @@ export function ConnectTelegram({ connected }: { connected: boolean }) {
   return (
     <div className="flex flex-col gap-2">
       {state.step === "expired" && (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">The link expired. Get a new one.</p>
+        <p className="text-sm text-muted">The link expired. Get a new one.</p>
       )}
       <button
         type="button"
         onClick={start}
         disabled={pending}
-        className="self-start rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+        className="self-start rounded-full border border-rule px-4 py-2 text-sm font-medium hover:bg-surface disabled:opacity-50"
       >
         {pending ? "Preparing…" : connected ? "Connect another chat" : "Connect Telegram"}
       </button>
       {state.step === "idle" && state.error && (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+        <p role="alert" className="animate-shake text-sm text-error">
           {state.error}
         </p>
       )}

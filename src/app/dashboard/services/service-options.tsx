@@ -12,10 +12,10 @@ export function ServiceOptions({ service }: { service: Service }) {
       {surcharges.length > 0 && (
         <ul className="flex flex-col gap-1" aria-label={`Options of ${service.name}`}>
           {surcharges.map((surcharge) => (
-            <li key={surcharge.id} className="flex flex-wrap items-center justify-between gap-2">
+            <li key={surcharge.id} className="flex animate-rise flex-wrap items-center justify-between gap-2">
               <span>
                 {surcharge.label}{" "}
-                <span className="text-zinc-600 dark:text-zinc-400">{describeSurcharge(surcharge)}</span>
+                <span className="text-muted">{describeSurcharge(surcharge)}</span>
               </span>
               <form action={removeSurchargeAction.bind(null, service.id, surcharge.id)}>
                 <button type="submit" className="font-medium underline underline-offset-4">
@@ -30,7 +30,7 @@ export function ServiceOptions({ service }: { service: Service }) {
         // Remounts after each change, so the form closes and clears once an option is added.
         <AddSurcharge key={surcharges.length} action={addSurchargeAction.bind(null, service.id)} />
       ) : (
-        <p className="text-zinc-600 dark:text-zinc-400">This service has the maximum of {MAX_SURCHARGES} options.</p>
+        <p className="text-muted">This service has the maximum of {MAX_SURCHARGES} options.</p>
       )}
     </div>
   );

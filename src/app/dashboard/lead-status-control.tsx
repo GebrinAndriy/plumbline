@@ -20,7 +20,7 @@ export function LeadStatusControl({ leadId, status }: { leadId: string; status: 
     <form action={formAction} className="flex flex-col items-end gap-1">
       <input type="hidden" name="leadId" value={leadId} />
       <input type="hidden" name="from" value={status} />
-      <p className="text-xs uppercase tracking-wide text-zinc-500">{status}</p>
+      <p className="text-xs uppercase tracking-wide text-muted">{status}</p>
       {next.length > 0 && (
         <div className="flex gap-1">
           {next.map((to) => (
@@ -30,7 +30,7 @@ export function LeadStatusControl({ leadId, status }: { leadId: string; status: 
               name="to"
               value={to}
               disabled={pending}
-              className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+              className="rounded-full border border-rule px-3 py-1 text-xs font-medium hover:bg-surface disabled:opacity-50"
             >
               {status === "lost" ? "Reopen" : `→ ${ACTION_LABELS[to]}`}
             </button>
@@ -38,7 +38,7 @@ export function LeadStatusControl({ leadId, status }: { leadId: string; status: 
         </div>
       )}
       {state.message && (
-        <p role="alert" className="text-xs text-red-600">
+        <p role="alert" className="animate-rise text-xs text-error">
           {state.message}
         </p>
       )}

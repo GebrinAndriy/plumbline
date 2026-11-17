@@ -14,8 +14,8 @@ export default function ServicesPage() {
       <Link href="/dashboard" className="text-sm font-medium underline underline-offset-4">
         ← Dashboard
       </Link>
-      <h1 className="text-3xl font-semibold tracking-tight">Services</h1>
-      <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Services</h1>
+      <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <OwnerServices />
       </Suspense>
     </main>
@@ -24,24 +24,24 @@ export default function ServicesPage() {
 
 async function OwnerServices() {
   const { business } = await requireOwner();
-  if (!business) return <p className="text-zinc-600 dark:text-zinc-400">This account has no business.</p>;
+  if (!business) return <p className="text-muted">This account has no business.</p>;
 
   const services = await getRepositories().catalog.listAllServices(business.id);
 
   return (
     <>
       {services.length === 0 ? (
-        <p className="rounded-xl bg-zinc-100 p-6 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+        <p className="rounded-xl bg-surface p-6 text-muted">
           No services yet. Add the first one so customers can get a price.
         </p>
       ) : (
-        <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+        <ul className="divide-y divide-rule rounded-xl border border-rule">
           {services.map((service) => (
             <li key={service.id} className="flex flex-col gap-3 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className={service.isActive ? "" : "opacity-50"}>
                   <p className="font-medium">{service.name}</p>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">{describeRule(service.rule)}</p>
+                  <p className="text-sm text-muted">{describeRule(service.rule)}</p>
                 </div>
                 <form action={setServiceActiveAction.bind(null, service.id, !service.isActive)}>
                   <button type="submit" className="text-sm font-medium underline underline-offset-4">
@@ -55,8 +55,8 @@ async function OwnerServices() {
           ))}
         </ul>
       )}
-      <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-        <h2 className="text-lg font-semibold">Add a service</h2>
+      <section className="flex flex-col gap-4 rounded-xl border border-rule p-4">
+        <h2 className="font-serif text-lg font-semibold">Add a service</h2>
         <ServiceForm
           key={services.length}
           action={createServiceAction}
