@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseStartCommands } from "./telegram-updates";
+import { parseStartCommands, parseStartUpdate } from "./telegram-updates";
 
 const token = "abcdefghijklmnop_1234-XYZ";
 const start = (update_id: number, chat: object, text = `/start ${token}`) => ({
@@ -48,5 +48,21 @@ describe("parseStartCommands", () => {
 
   it("handles an empty batch", () => {
     expect(parseStartCommands({ ok: true, result: [] })).toEqual({ commands: [], lastUpdateId: null });
+  });
+});
+
+describe("parseStartUpdate", () => {
+  it("takes the command from a single webhook update", () => {
+    expect(parseStartUpdate(start(7, { id: 555, username: "olena" }))).toEqual({
+      chat: { id: "555", name: "@olena" },
+      token,
+    });
+  });
+
+  it("ignores other messages, other update types and malformed bodies", () => {
+    expect(parseStartUpdate(start(7, { id: 555 }, "hello"))).toBeNull();
+    expect(parseStartUpdate({ update_id: 8, edited_message: {} })).toBeNull();
+    expect(parseStartUpdate({ message: "nope" })).toBeNull();
+    expect(parseStartUpdate(null)).toBeNull();
   });
 });
