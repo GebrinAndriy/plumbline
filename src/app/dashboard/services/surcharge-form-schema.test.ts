@@ -19,7 +19,7 @@ describe("surchargeFormSchema", () => {
     });
   });
 
-  it.each(["0", "", "101", "12.5", "lots"])("rejects percent %j", (percent) => {
+  it.each(["0", "", "101", "12.5", "lots", "0x14", "2e1"])("rejects percent %j", (percent) => {
     const result = surchargeFormSchema.safeParse({ kind: "percent", label: "Urgent", percent });
     expect(result.success).toBe(false);
     expect(Object.keys(toFieldErrors(result.error!))).toEqual(["percent"]);

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { MAX_PRICE } from "@/domain/pricing/validate-service";
 import type { PricingRule } from "@/domain/pricing/types";
 import { parseMoney } from "@/lib/parse-money";
+import { parseDecimal } from "@/lib/parse-number";
 
 const PRICE_ERROR = "Enter a price in UAH, for example 450 or 450.50";
 
@@ -26,8 +27,8 @@ const optionalHours = z
   .transform((text, ctx) => {
     const trimmed = text?.trim();
     if (!trimmed) return undefined;
-    const hours = Number(trimmed.replace(",", "."));
-    if (!(hours > 0 && hours <= 24)) {
+    const hours = parseDecimal(trimmed);
+    if (hours === null || hours <= 0 || hours > 24) {
       ctx.addIssue({ code: "custom", message: "Enter hours between 0 and 24, for example 3" });
       return z.NEVER;
     }

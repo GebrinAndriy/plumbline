@@ -1,4 +1,5 @@
 import { assertNever } from "@/lib/assert-never";
+import { parseDecimal } from "@/lib/parse-number";
 import { calculateQuote } from "@/domain/pricing/calculate-quote";
 import { QuoteInputError } from "@/domain/pricing/errors";
 import type { PricingKind, Quote, QuoteInput, Service } from "@/domain/pricing/types";
@@ -12,19 +13,22 @@ export type QuoteFields = {
 
 export const EMPTY_FIELDS: QuoteFields = { widthCm: "", heightCm: "", quantity: "1", hours: "" };
 
+// Same parsing as the server, so the preview never shows a price the server would refuse.
+const toNumber = (text: string) => parseDecimal(text) ?? Number.NaN;
+
 export function toQuoteInput(kind: PricingKind, fields: QuoteFields): QuoteInput {
   switch (kind) {
     case "per_area":
       return {
         kind,
-        widthCm: Number(fields.widthCm),
-        heightCm: Number(fields.heightCm),
-        quantity: Number(fields.quantity),
+        widthCm: toNumber(fields.widthCm),
+        heightCm: toNumber(fields.heightCm),
+        quantity: toNumber(fields.quantity),
       };
     case "per_hour":
-      return { kind, hours: Number(fields.hours) };
+      return { kind, hours: toNumber(fields.hours) };
     case "fixed":
-      return { kind, quantity: Number(fields.quantity) };
+      return { kind, quantity: toNumber(fields.quantity) };
     default:
       return assertNever(kind);
   }

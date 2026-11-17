@@ -73,4 +73,9 @@ describe("parseLeadForm", () => {
     data.delete("idempotencyKey");
     expect(parseLeadForm(data).ok).toBe(false);
   });
+
+  it.each(["0x10", "1e3", "Infinity", ""])("rejects size %j instead of guessing a number", (widthCm) => {
+    const result = parseLeadForm(form({ ...valid, widthCm }));
+    expect(!result.ok && result.fieldErrors).toEqual({ widthCm: "Enter a number" });
+  });
 });

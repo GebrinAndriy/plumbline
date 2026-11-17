@@ -22,4 +22,8 @@ describe("previewQuote", () => {
   it("returns null for a value that is not a number", () => {
     expect(previewQuote(cleaning, { ...EMPTY_FIELDS, hours: "abc" }, [])).toBeNull();
   });
+
+  it.each(["0x3", "1e1", "Infinity"])("shows no price for %j, which the server would refuse", (hours) => {
+    expect(previewQuote(cleaning, { ...EMPTY_FIELDS, hours }, [])).toBeNull();
+  });
 });

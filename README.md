@@ -94,6 +94,11 @@ The calculator shows a preview, but the lead is saved with a quote calculated on
 stored service, so a changed request body cannot set its own price. The quote is stored as a snapshot,
 so later price changes do not rewrite old leads.
 
+Numbers typed by people go through one strict parser (`parseDecimal`): digits with an optional `.` or
+`,` part. `Number()` or `z.coerce.number()` would also accept `0x10`, `1e3` or `Infinity` and read an
+empty field as 0. The preview and the server share the parser, so the calculator never shows a price
+the server then refuses.
+
 ### Lead status as a state machine
 Allowed transitions live in one table in the domain. A status change is saved with compare-and-set
 (`where status = from`), so two tabs cannot both apply a change; the second one gets a conflict message
