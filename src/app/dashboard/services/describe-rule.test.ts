@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatMoney } from "@/lib/format-money";
-import { describeRule } from "./describe-rule";
+import { describeRule, describeSurcharge } from "./describe-rule";
 
 describe("describeRule", () => {
   it("describes each pricing kind with its minimum", () => {
@@ -15,5 +15,14 @@ describe("describeRule", () => {
 
   it("skips a minimum that is not set", () => {
     expect(describeRule({ kind: "per_hour", ratePerHour: 45_000 })).toBe(`${formatMoney(45_000)} per hour`);
+  });
+});
+
+describe("describeSurcharge", () => {
+  it("shows a flat amount and a percent", () => {
+    expect(describeSurcharge({ id: "a", label: "Installation", kind: "flat", amount: 50_000 })).toBe(
+      `+${formatMoney(50_000)}`,
+    );
+    expect(describeSurcharge({ id: "b", label: "Urgent", kind: "percent", percent: 20 })).toBe("+20%");
   });
 });

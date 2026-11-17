@@ -159,6 +159,64 @@ describe("services", () => {
     ).rejects.toThrow(PricingConfigError);
   });
 
+  it("adds options in order and removes one by id", async () => {
+    const business = await createBusiness();
+    const rule = { kind: "fixed", price: 1_000 } as const;
+    const service = await catalog.createService({ businessId: business.id, name: "A", rule, surcharges: [] });
+    const install = { id: "install", label: "Installation", kind: "flat", amount: 50_000 } as const;
+    const urgent = { id: "urgent", label: "Urgent", kind: "percent", percent: 20 } as const;
+    const night = { id: "night", label: "Night", kind: "flat", amount: 10_000 } as const;
+
+    for (const option of [install, urgent, night]) {
+      expect(await catalog.addSurcharge(business.id, service.id, option)).toBe("added");
+    }
+    await catalog.removeSurcharge(business.id, service.id, "urgent");
+    expect((await catalog.findService(business.id, service.id))?.surcharges).toEqual([install, night]);
+
+    await catalog.removeSurcharge(business.id, service.id, "install");
+    await catalog.removeSurcharge(business.id, service.id, "night");
+    expect((await catalog.findService(business.id, service.id))?.surcharges).toEqual([]);
+  });
+
+  it("does not lose options added at the same time", async () => {
+    const business = await createBusiness();
+    const rule = { kind: "fixed", price: 1_000 } as const;
+    const service = await catalog.createService({ businessId: business.id, name: "A", rule, surcharges: [] });
+
+    await Promise.all(
+      ["a", "b", "c"].map((id) =>
+        catalog.addSurcharge(business.id, service.id, { id, label: id, kind: "flat", amount: 100 }),
+      ),
+    );
+
+    expect((await catalog.findService(business.id, service.id))?.surcharges).toHaveLength(3);
+  });
+
+  it("stops at the option limit and ignores other businesses", async () => {
+    const own = await createBusiness();
+    const other = await createBusiness("other");
+    const rule = { kind: "fixed", price: 1_000 } as const;
+    const service = await catalog.createService({ businessId: own.id, name: "A", rule, surcharges: [] });
+    const option = (id: string) => ({ id, label: id, kind: "flat", amount: 100 }) as const;
+
+    for (let i = 0; i < 10; i++) await catalog.addSurcharge(own.id, service.id, option(`o${i}`));
+
+    expect(await catalog.addSurcharge(own.id, service.id, option("extra"))).toBe("limit_reached");
+    expect(await catalog.addSurcharge(other.id, service.id, option("x"))).toBe("not_found");
+    await catalog.removeSurcharge(other.id, service.id, "o0");
+    expect((await catalog.findService(own.id, service.id))?.surcharges).toHaveLength(10);
+  });
+
+  it("refuses an invalid option", async () => {
+    const business = await createBusiness();
+    const rule = { kind: "fixed", price: 1_000 } as const;
+    const service = await catalog.createService({ businessId: business.id, name: "A", rule, surcharges: [] });
+
+    await expect(
+      catalog.addSurcharge(business.id, service.id, { id: "x", label: "Bad", kind: "percent", percent: 500 }),
+    ).rejects.toThrow(PricingConfigError);
+  });
+
   it("treats a malformed id as not found", async () => {
     const business = await createBusiness();
     expect(await catalog.findService(business.id, "not-a-uuid")).toBeNull();

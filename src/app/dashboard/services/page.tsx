@@ -6,6 +6,7 @@ import { createServiceAction, setServiceActiveAction, updateServiceAction } from
 import { describeRule } from "./describe-rule";
 import { EditService } from "./edit-service";
 import { ServiceForm } from "./service-form";
+import { ServiceOptions } from "./service-options";
 
 export default function ServicesPage() {
   return (
@@ -48,6 +49,7 @@ async function OwnerServices() {
                   </button>
                 </form>
               </div>
+              <ServiceOptions service={service} />
               <EditService service={service} action={updateServiceAction.bind(null, service.id)} />
             </li>
           ))}

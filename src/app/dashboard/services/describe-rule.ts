@@ -1,4 +1,4 @@
-import type { PricingRule } from "@/domain/pricing/types";
+import type { PricingRule, Surcharge } from "@/domain/pricing/types";
 import { assertNever } from "@/lib/assert-never";
 import { formatMoney } from "@/lib/format-money";
 
@@ -17,4 +17,15 @@ export function describeRule(rule: PricingRule): string {
 
 function withMinimum(text: string, minimum: string | undefined | 0): string {
   return minimum ? `${text}, minimum ${minimum}` : text;
+}
+
+export function describeSurcharge(surcharge: Surcharge): string {
+  switch (surcharge.kind) {
+    case "flat":
+      return `+${formatMoney(surcharge.amount)}`;
+    case "percent":
+      return `+${surcharge.percent}%`;
+    default:
+      return assertNever(surcharge);
+  }
 }
