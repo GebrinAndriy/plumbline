@@ -1,7 +1,7 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, lt, sql } from "drizzle-orm";
 import type { Business, CatalogRepository } from "@/domain/catalog/catalog";
 import type { Service } from "@/domain/pricing/types";
-import { validateService } from "@/domain/pricing/validate-service";
+import { MAX_SURCHARGES, validateService, validateSurcharge } from "@/domain/pricing/validate-service";
 import type { Database } from "../database";
 import { businesses, services } from "../schema";
 import { isUuid } from "./is-uuid";
@@ -65,6 +65,35 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
         .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)))
         .returning({ id: services.id });
       return rows.length > 0;
+    },
+
+    // jsonb is changed in place by one UPDATE, so two tabs adding options cannot overwrite each other.
+    async addSurcharge(businessId, serviceId, surcharge) {
+      if (!isUuid(businessId) || !isUuid(serviceId)) return "not_found";
+      validateSurcharge(surcharge);
+      const ownService = and(eq(services.id, serviceId), eq(services.businessId, businessId));
+      const rows = await db
+        .update(services)
+        .set({ surcharges: sql`${services.surcharges} || ${JSON.stringify([surcharge])}::jsonb` })
+        .where(and(ownService, lt(sql`jsonb_array_length(${services.surcharges})`, MAX_SURCHARGES)))
+        .returning({ id: services.id });
+      if (rows.length > 0) return "added";
+      const [existing] = await db.select({ id: services.id }).from(services).where(ownService).limit(1);
+      return existing ? "limit_reached" : "not_found";
+    },
+
+    async removeSurcharge(businessId, serviceId, surchargeId) {
+      if (!isUuid(businessId) || !isUuid(serviceId)) return;
+      await db
+        .update(services)
+        .set({
+          surcharges: sql`coalesce(
+            (select jsonb_agg(option order by position)
+             from jsonb_array_elements(${services.surcharges}) with ordinality as t(option, position)
+             where option->>'id' <> ${surchargeId}),
+            '[]'::jsonb)`,
+        })
+        .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)));
     },
 
     async findService(businessId, serviceId) {

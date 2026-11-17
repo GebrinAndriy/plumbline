@@ -16,6 +16,8 @@ and sends a request. The owner gets the request on the dashboard and in Telegram
   overwrite each other's change.
 - **Services**: owners add and edit services and hide or show them in the calculator. Editing a price
   changes only new requests; earlier leads keep the quote they were sent with.
+- **Options**: each service can have up to 10 paid options (a fixed amount or a percent of the price),
+  added and removed from the dashboard; customers tick them in the calculator.
 - **Telegram notifications**: "Connect Telegram" with a one-time link or QR code, no chat ID to copy.
 - **Accounts**: sign-up, sign-in and sign-out with database sessions; rate limiting on every public form.
 
@@ -74,6 +76,11 @@ bill. Form input such as `1 200,50` is parsed into kopiykas without going throug
 Each pricing kind (per area, per hour, fixed) is a strategy behind one interface, and the rule is stored
 as a discriminated union in a `jsonb` column. A new pricing model is a new strategy, not a new branch in
 every function.
+
+Options (surcharges) live in a `jsonb` array on the service. Adding or removing one is a single
+`UPDATE` that changes the array in place (`surcharges || new_option`, or rebuilding it without one id),
+not read, modify and write back, so two tabs editing options at once cannot overwrite each other. The
+10-option limit is part of the same `UPDATE`, so it cannot be bypassed by parallel requests either.
 
 ### The server recalculates every price
 The calculator shows a preview, but the lead is saved with a quote calculated on the server from the
@@ -155,4 +162,4 @@ HSTS is sent without `preload`: preloading is hard to undo and should wait for a
   "check your inbox", and an existing owner gets a "someone tried to register" email instead.
 - **Telegram uses `getUpdates` polling** because there is no public URL yet; a webhook replaces it
   after deploy.
-- **Surcharges can only be added through the seed script**; editing a service keeps its surcharges.
+- **Options cannot be edited in place**; to change an option's price, remove it and add it again.

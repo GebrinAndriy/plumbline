@@ -1,4 +1,4 @@
-import type { Service } from "../pricing/types";
+import type { Service, Surcharge } from "../pricing/types";
 
 export type Business = {
   id: string;
@@ -16,6 +16,8 @@ export type ServiceListing = Service & { isActive: boolean };
 
 export type ServiceDetails = Pick<Service, "name" | "rule">;
 
+export type AddSurchargeResult = "added" | "not_found" | "limit_reached";
+
 export interface CatalogRepository {
   findBusinessBySlug(slug: string): Promise<Business | null>;
   createBusiness(business: Omit<Business, "id" | "telegramChatName">): Promise<Business>;
@@ -27,4 +29,6 @@ export interface CatalogRepository {
   setServiceActive(businessId: string, serviceId: string, isActive: boolean): Promise<void>;
   // False when the service does not exist or belongs to another business.
   updateService(businessId: string, serviceId: string, details: ServiceDetails): Promise<boolean>;
+  addSurcharge(businessId: string, serviceId: string, surcharge: Surcharge): Promise<AddSurchargeResult>;
+  removeSurcharge(businessId: string, serviceId: string, surchargeId: string): Promise<void>;
 }

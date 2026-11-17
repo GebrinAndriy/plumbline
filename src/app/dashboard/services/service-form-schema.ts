@@ -5,7 +5,7 @@ import { parseMoney } from "@/lib/parse-money";
 
 const PRICE_ERROR = "Enter a price in UAH, for example 450 or 450.50";
 
-const price = z.string().transform((text, ctx) => {
+export const price = z.string().transform((text, ctx) => {
   const amount = parseMoney(text);
   if (amount === null || amount <= 0 || amount > MAX_PRICE) {
     ctx.addIssue({ code: "custom", message: PRICE_ERROR });

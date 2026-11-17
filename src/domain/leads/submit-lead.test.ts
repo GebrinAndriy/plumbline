@@ -44,6 +44,12 @@ function fakeCatalog(): CatalogRepository {
     updateService: async () => {
       throw new Error("not used");
     },
+    addSurcharge: async () => {
+      throw new Error("not used");
+    },
+    removeSurcharge: async () => {
+      throw new Error("not used");
+    },
   };
 }
 

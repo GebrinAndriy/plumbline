@@ -3,11 +3,16 @@ import { PricingConfigError } from "./errors";
 import type { Money, PricingRule, Service, Surcharge } from "./types";
 
 export const MAX_PRICE: Money = 100_000_000; // 1 000 000 UAH
+export const MAX_SURCHARGES = 10;
 const MAX_PERCENT = 100;
+const MAX_LABEL_LENGTH = 60;
 const MAX_MINIMUM_HOURS = 24;
 
 export function validateService(service: Service): void {
   validateRule(service.rule);
+  if (service.surcharges.length > MAX_SURCHARGES) {
+    throw new PricingConfigError(`A service can have at most ${MAX_SURCHARGES} options`);
+  }
 
   const ids = new Set<string>();
   for (const surcharge of service.surcharges) {
@@ -39,7 +44,11 @@ function validateRule(rule: PricingRule): void {
   }
 }
 
-function validateSurcharge(surcharge: Surcharge): void {
+export function validateSurcharge(surcharge: Surcharge): void {
+  const label = surcharge.label.trim();
+  if (label.length === 0 || label.length > MAX_LABEL_LENGTH) {
+    throw new PricingConfigError(`label must be 1 to ${MAX_LABEL_LENGTH} characters`);
+  }
   switch (surcharge.kind) {
     case "flat":
       assertPrice(surcharge.amount, "amount");

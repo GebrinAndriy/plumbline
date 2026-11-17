@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PricingConfigError } from "./errors";
 import type { PricingRule, Service, Surcharge } from "./types";
-import { validateService } from "./validate-service";
+import { MAX_SURCHARGES, validateService, validateSurcharge } from "./validate-service";
 
 function service(rule: PricingRule, surcharges: Surcharge[] = []): Service {
   return { id: "s1", name: "Service", rule, surcharges };
@@ -47,5 +47,31 @@ describe("validateService", () => {
     expect(() =>
       validateService(service({ kind: "fixed", price: 1_000 }, [duplicate, duplicate])),
     ).toThrow(PricingConfigError);
+  });
+});
+
+describe("validateSurcharge", () => {
+  it("accepts flat and percent options", () => {
+    expect(() => validateSurcharge({ id: "a", label: "Installation", kind: "flat", amount: 50_000 })).not.toThrow();
+    expect(() => validateSurcharge({ id: "b", label: "Urgent", kind: "percent", percent: 100 })).not.toThrow();
+  });
+
+  it.each<Surcharge>([
+    { id: "a", label: "  ", kind: "flat", amount: 100 },
+    { id: "a", label: "x".repeat(61), kind: "flat", amount: 100 },
+    { id: "a", label: "Free", kind: "flat", amount: 0 },
+    { id: "a", label: "Huge", kind: "percent", percent: 101 },
+  ])("rejects %o", (surcharge) => {
+    expect(() => validateSurcharge(surcharge)).toThrow(PricingConfigError);
+  });
+
+  it("limits the number of options per service", () => {
+    const options = Array.from({ length: MAX_SURCHARGES + 1 }, (_, i): Surcharge => ({
+      id: `o${i}`,
+      label: `Option ${i}`,
+      kind: "flat",
+      amount: 100,
+    }));
+    expect(() => validateService(service({ kind: "fixed", price: 1_000 }, options))).toThrow(PricingConfigError);
   });
 });
