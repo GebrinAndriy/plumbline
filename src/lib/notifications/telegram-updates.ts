@@ -10,14 +10,12 @@ const chatSchema = z.object({
   last_name: z.string().optional(),
 });
 
-const updatesSchema = z.object({
-  result: z.array(
-    z.object({
-      update_id: z.number(),
-      message: z.object({ text: z.string().optional(), chat: chatSchema }).optional(),
-    }),
-  ),
+const updateSchema = z.object({
+  update_id: z.number(),
+  message: z.object({ text: z.string().optional(), chat: chatSchema }).optional(),
 });
+
+const updatesSchema = z.object({ result: z.array(updateSchema) });
 
 const START = /^\/start ([A-Za-z0-9_-]{16,64})$/;
 const MAX_NAME_LENGTH = 100;
@@ -33,12 +31,20 @@ function toChat(chat: z.infer<typeof chatSchema>): TelegramChat {
   return { id: String(chat.id), name: chatName(chat) };
 }
 
+function toStartCommand({ message }: z.infer<typeof updateSchema>): StartCommand | null {
+  const token = message?.text?.match(START)?.[1];
+  return message && token ? { chat: toChat(message.chat), token } : null;
+}
+
 export function parseStartCommands(raw: unknown): { commands: StartCommand[]; lastUpdateId: number | null } {
   const { result } = updatesSchema.parse(raw);
-  const commands = result.flatMap(({ message }) => {
-    const token = message?.text?.match(START)?.[1];
-    return message && token ? [{ chat: toChat(message.chat), token }] : [];
-  });
+  const commands = result.map(toStartCommand).filter((command) => command !== null);
   const lastUpdateId = result.length ? Math.max(...result.map((update) => update.update_id)) : null;
   return { commands, lastUpdateId };
+}
+
+// A webhook delivers one update per request; anything that is not a /start command is ignored.
+export function parseStartUpdate(raw: unknown): StartCommand | null {
+  const update = updateSchema.safeParse(raw);
+  return update.success ? toStartCommand(update.data) : null;
 }

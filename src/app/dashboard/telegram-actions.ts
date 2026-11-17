@@ -3,16 +3,17 @@
 import { refresh } from "next/cache";
 import { getRepositories } from "@/db/get-repositories";
 import { RATE_LIMITS, retryMessage } from "@/domain/rate-limit/rate-limit";
-import { linkChats, startTelegramLink } from "@/domain/telegram/telegram-link";
+import { startTelegramLink } from "@/domain/telegram/telegram-link";
 import { requireOwner } from "@/lib/auth/current-owner";
-import { sendTelegramMessage } from "@/lib/notifications/telegram-api";
 import {
   botToken,
   botUsername,
+  connectChats,
   generateToken,
   hashToken,
   qrCodeDataUrl,
   readStartCommands,
+  webhookSecret,
 } from "@/lib/notifications/telegram-link-service";
 import { limitBySubject } from "@/lib/rate-limit/rate-limiter";
 
@@ -49,32 +50,26 @@ export async function startTelegramLinkAction(): Promise<StartLinkResult> {
 
 export type LinkStatus = "waiting" | "connected" | "expired";
 
-const CONNECTED_MESSAGE = "Connected to QuoteFlow. New requests will arrive in this chat.";
-
 export async function checkTelegramLinkAction(): Promise<LinkStatus> {
   const { business } = await requireOwner();
   if (!business) return "expired";
 
   const now = new Date();
-  const { catalog, telegramLinks } = getRepositories();
-  const expiresAt = await telegramLinks.findExpiry(business.id);
+  const expiresAt = await getRepositories().telegramLinks.findExpiry(business.id);
   // No pending link means another check already connected it, or it was never started.
   if (!expiresAt) return business.telegramChatId ? "connected" : "expired";
   if (expiresAt <= now) return "expired";
 
   const token = botToken();
   if (!token) return "expired";
+  // With a webhook the link is made when Telegram calls us; the next check sees it as connected.
+  if (webhookSecret()) return "waiting";
 
   try {
     const { commands, acknowledge } = await readStartCommands(token);
-    const linked = await linkChats(
-      { links: telegramLinks, hashToken, connect: (id, chat) => catalog.setTelegramChat(id, chat) },
-      commands,
-      now,
-    );
+    const linked = await connectChats(token, commands, now);
     await acknowledge();
-    await Promise.allSettled(linked.map(({ chat }) => sendTelegramMessage(token, chat.id, CONNECTED_MESSAGE)));
-    if (linked.some(({ businessId }) => businessId === business.id)) return "connected";
+    if (linked.includes(business.id)) return "connected";
   } catch (error) {
     console.error("Telegram link check failed", error);
   }

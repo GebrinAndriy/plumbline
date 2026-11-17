@@ -6,6 +6,9 @@ A customer opens the business's public calculator, enters sizes or hours, sees t
 and sends a request. The owner gets the request on the dashboard and in Telegram, then moves it through
 `new → contacted → quoted → won / lost`.
 
+**Live demo:** https://quoteflow-khaki.vercel.app. The seeded calculator is at
+[/b/demo](https://quoteflow-khaki.vercel.app/b/demo); sign up to get a dashboard of your own.
+
 ## Features
 
 - **Public calculator** at `/b/<slug>`: three pricing models (per m², per hour, fixed per item), minimum
@@ -48,6 +51,7 @@ seeded calculator.
 | `npm run lint` / `npm run typecheck` | ESLint and TypeScript |
 | `npm run build` | Production build |
 | `npm run db:generate` | New migration from `src/db/schema.ts` |
+| `npm run telegram:webhook` | Register the production webhook with Telegram (`--delete` removes it) |
 
 CI runs lint, typecheck, tests and build on every pull request.
 
@@ -124,9 +128,17 @@ the computer. Pressing Start sends `/start <token>` to the bot, and the chat tha
 Only the owner sees the token, so nobody can point the bot (and customer-written lead text) at someone
 else's chat. Messages are plain text with no `parse_mode`, so lead text cannot inject markup.
 
-Trade-off: there is no public URL yet, so the dashboard polls and the server reads `/start` messages with
-`getUpdates` instead of a webhook. Telegram keeps at most 100 unread updates for 24 hours, which is fine
-for a few owners; after deploy, a webhook replaces only the delivery, the domain logic stays the same.
+In production Telegram delivers `/start` to a webhook, `/api/telegram/webhook`. Telegram sends the
+secret registered with `setWebhook` in the `X-Telegram-Bot-Api-Secret-Token` header; the route compares
+it in constant time and rejects any other caller, so nobody can fake a `/start` from someone else's
+chat. The route answers 200 to updates it does not care about, because any other status makes Telegram
+retry them. Without `TELEGRAM_WEBHOOK_SECRET` (local development has no public URL) the dashboard falls
+back to polling `getUpdates`. Both paths parse the update and call the same linking code; only the
+delivery differs.
+
+Trade-off: the dashboard still polls its own server every few seconds while a link is pending, to
+notice that the webhook has connected the chat. A push channel (Server-Sent Events) would be instant,
+but a pending link lasts at most 10 minutes and each poll is a couple of primary-key lookups.
 
 ### Expired rows are purged by a daily job
 Expired sessions, unused Telegram link tokens and finished rate limit windows are deleted once a day by
@@ -160,6 +172,4 @@ HSTS is sent without `preload`: preloading is hard to undo and should wait for a
   but sign-up has to tell the user the email is taken. Rate limiting (5 sign-ups per hour per IP) slows
   down enumeration but does not stop it. The proper fix is email verification: sign-up always answers
   "check your inbox", and an existing owner gets a "someone tried to register" email instead.
-- **Telegram uses `getUpdates` polling** because there is no public URL yet; a webhook replaces it
-  after deploy.
 - **Options cannot be edited in place**; to change an option's price, remove it and add it again.
