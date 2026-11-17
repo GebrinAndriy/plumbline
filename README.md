@@ -48,12 +48,14 @@ seeded calculator.
 | --- | --- |
 | `npm run dev` | Development server |
 | `npm test` | Unit and repository tests (no database or secrets needed) |
+| `npm run test:e2e` | Browser test of the main flow; needs `npm run build` and a database it may write to |
 | `npm run lint` / `npm run typecheck` | ESLint and TypeScript |
 | `npm run build` | Production build |
 | `npm run db:generate` | New migration from `src/db/schema.ts` |
 | `npm run telegram:webhook` | Register the production webhook with Telegram (`--delete` removes it) |
 
-CI runs lint, typecheck, tests and build on every pull request.
+CI runs lint, typecheck, tests and build on every pull request, and in a parallel job the browser test
+against a fresh Postgres container.
 
 ## Project structure
 
@@ -65,6 +67,7 @@ src/
   lib/      Server glue: sessions, password hashing, Telegram API, rate limiter, formatting.
   app/      Routes, Server Actions and components. Input is validated with Zod here.
 drizzle/    SQL migrations.
+e2e/        Playwright test of the main flow in a real browser.
 ```
 
 The domain defines what it needs as interfaces (`LeadRepository`, `PasswordHasher`, ...) and gets the
@@ -109,6 +112,18 @@ stop the others.
 ### Tests against real Postgres without Docker
 Repository tests run the real migrations on PGlite (Postgres compiled to WASM), so SQL, constraints and
 upserts are tested without a database server or secrets in CI.
+
+### One end-to-end test for the main flow
+A single Playwright test walks the path that makes the product useful: an owner signs up, adds a service
+priced by area with a paid option, a customer in a separate browser context gets the price (2 m² at
+1 000 ₴/m² plus 500 ₴ installation) and sends a request, and the owner sees it on the dashboard and
+marks it contacted. It runs against the production build, so the CSP, cookies and prerendering are the
+real ones, and in CI against a throwaway Postgres container. Each run uses a random business address, so
+it never collides with existing data.
+
+Trade-off: only the main flow is tested in the browser. Every rule (pricing, validation, status
+transitions, rate limits) is already covered by fast unit and repository tests; browser tests are slow
+and flaky by nature, so they check that the pieces are wired together, not every branch.
 
 ### Rate limiting in Postgres
 Sign-in (per IP and per email), sign-up (per IP) and lead submission (per IP) are limited with a
