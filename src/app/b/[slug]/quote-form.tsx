@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useState, type FormEvent } from "react";
-import { Field } from "@/components/field";
+import { Field, inputClass } from "@/components/field";
+import { primaryButtonClass } from "@/components/primary-button";
 import { useFormSubmit } from "@/components/use-form-submit";
 import type { Service } from "@/domain/pricing/types";
 import { formatMoney } from "@/lib/format-money";
@@ -52,8 +53,20 @@ function QuoteRequest({
 
   if (state.status === "sent") {
     return (
-      <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-6 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100">
-        <h2 className="text-lg font-semibold">Request sent</h2>
+      <div className="animate-pop rounded-2xl border border-success/30 bg-success-soft p-6 text-ink">
+        <svg viewBox="0 0 24 24" aria-hidden className="mb-3 size-10 rounded-full bg-success p-2 text-white">
+          <path
+            d="M5 12.5l4.5 4.5L19 7.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="24"
+            className="animate-draw"
+          />
+        </svg>
+        <h2 className="font-serif text-lg font-semibold">Request sent</h2>
         <p className="mt-1">
           We will call you back soon. Your price: <strong>{formatMoney(state.total)}</strong>
         </p>
@@ -103,12 +116,12 @@ function QuoteRequest({
       <input type="hidden" name="kind" value={service.rule.kind} />
 
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">Service</span>
+        <span className="font-medium text-ink">Service</span>
         <select
           name="serviceId"
           value={serviceId}
           onChange={(e) => selectService(e.target.value)}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-900"
+          className={inputClass}
         >
           {services.map((s) => (
             <option key={s.id} value={s.id}>
@@ -130,7 +143,7 @@ function QuoteRequest({
 
       {service.surcharges.length > 0 && (
         <fieldset className="flex flex-col gap-2 text-sm">
-          <legend className="mb-1 font-medium text-zinc-700 dark:text-zinc-300">Options</legend>
+          <legend className="mb-1 font-medium text-ink">Options</legend>
           {service.surcharges.map((s) => (
             <label key={s.id} className="flex items-center gap-2">
               <input
@@ -172,21 +185,21 @@ function QuoteRequest({
       </div>
 
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">Comment (optional)</span>
+        <span className="font-medium text-ink">Comment (optional)</span>
         <textarea
           name="comment"
           rows={3}
           maxLength={1000}
           value={contact.comment}
           onChange={(e) => updateContact("comment", e.target.value)}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-900"
+          className={inputClass}
         />
       </label>
 
       <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
 
       {state.status === "error" && (state.message || Object.keys(errors).length > 0) && (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+        <p role="alert" className="animate-shake text-sm text-error">
           {state.message ?? "Please check the highlighted fields"}
         </p>
       )}
@@ -194,7 +207,7 @@ function QuoteRequest({
       <button
         type="submit"
         disabled={pending || !quote}
-        className="rounded-full bg-zinc-900 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className={primaryButtonClass}
       >
         {pending ? "Sending…" : "Send request"}
       </button>

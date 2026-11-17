@@ -4,8 +4,8 @@ import { primaryButtonClass } from "@/components/primary-button";
 export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-6 px-4 py-16">
-      <h1 className="text-4xl font-semibold tracking-tight">QuoteFlow</h1>
-      <p className="text-lg text-zinc-600 dark:text-zinc-400">
+      <h1 className="font-serif text-4xl font-semibold tracking-tight">QuoteFlow</h1>
+      <p className="text-lg text-muted">
         Instant price quotes and lead management for small service businesses. Customers see the
         price before they call, owners get every request in one place.
       </p>

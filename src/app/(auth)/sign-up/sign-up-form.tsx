@@ -22,7 +22,7 @@ export function SignUpForm() {
         placeholder="blinds-kyiv"
         error={errors.slug}
       />
-      <p className="-mt-2 text-xs text-zinc-500">Customers will open your calculator at /b/your-address</p>
+      <p className="-mt-2 text-xs text-muted">Customers will open your calculator at /b/your-address</p>
       <Field label="Email" name="email" type="email" autoComplete="email" required error={errors.email} />
       <Field
         label="Password"
@@ -34,7 +34,7 @@ export function SignUpForm() {
         error={errors.password}
       />
       {state.message && (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+        <p role="alert" className="animate-shake text-sm text-error">
           {state.message}
         </p>
       )}
