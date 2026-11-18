@@ -2,7 +2,7 @@
 
 import { useAnimatedNumber } from "@/components/use-animated-number";
 import type { Money, Quote } from "@/domain/pricing/types";
-import { formatMoney } from "@/lib/format-money";
+import { formatAnimated, formatMoney } from "@/lib/format-money";
 
 type ReceiptProps = {
   businessName: string;
@@ -56,6 +56,3 @@ function Total({ amount }: { amount: Money | null }) {
 }
 
 // While counting, show whole hryvnias so the width does not jump; land on the exact amount.
-export function formatAnimated(shown: Money, target: Money): string {
-  return shown === target ? formatMoney(target) : formatMoney(Math.round(shown / 100) * 100);
-}
