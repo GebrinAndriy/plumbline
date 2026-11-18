@@ -89,3 +89,43 @@ body {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
 }
+
+/* Range input drawn as a tape measure: ticks every 10 cm, longer ones every 50 cm. */
+.tape-measure {
+  appearance: none;
+  height: 28px;
+  background:
+    linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / var(--fill, 0%) 3px no-repeat,
+    repeating-linear-gradient(to right, var(--color-muted) 0 1px, transparent 1px 10%) 0 0 / 100% 12px no-repeat,
+    repeating-linear-gradient(to right, var(--color-rule) 0 1px, transparent 1px 2%) 0 0 / 100% 7px no-repeat,
+    #fff;
+  border: 1px solid var(--color-rule);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.tape-measure:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+.tape-measure::-webkit-slider-thumb {
+  appearance: none;
+  width: 4px;
+  height: 26px;
+  border-radius: 2px;
+  background: var(--color-accent);
+}
+.tape-measure::-moz-range-thumb {
+  width: 4px;
+  height: 26px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--color-accent);
+}
+
+/* The bottom of the receipt looks torn off. */
+.torn-edge {
+  height: 10px;
+  background:
+    linear-gradient(-45deg, transparent 7px, var(--color-receipt) 0) 0 0 / 14px 10px repeat-x,
+    linear-gradient(45deg, transparent 7px, var(--color-receipt) 0) 0 0 / 14px 10px repeat-x;
+}

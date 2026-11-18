@@ -1,7 +1,7 @@
 import type { Service } from "@/domain/pricing/types";
 import { MAX_SURCHARGES } from "@/domain/pricing/validate-service";
 import { AddSurcharge } from "./add-surcharge";
-import { describeSurcharge } from "./describe-rule";
+import { describeSurcharge } from "@/lib/describe-rule";
 import { addSurchargeAction, removeSurchargeAction } from "./surcharge-actions";
 
 export function ServiceOptions({ service }: { service: Service }) {

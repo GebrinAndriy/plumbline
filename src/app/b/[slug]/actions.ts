@@ -1,5 +1,6 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { getRepositories } from "@/db/get-repositories";
 import { submitLead } from "@/domain/leads/submit-lead";
 import type { Money } from "@/domain/pricing/types";
@@ -41,6 +42,8 @@ export async function submitLeadAction(
       parsed.request,
     );
     if (!result.ok) {
+      // The owner may have changed the service meanwhile; reload it so the form shows what is offered now.
+      refresh();
       return { status: "error", message: result.message, fieldErrors: {} };
     }
     return { status: "sent", total: result.total };

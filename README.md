@@ -100,6 +100,18 @@ Numbers typed by people go through one strict parser (`parseDecimal`): digits wi
 empty field as 0. The preview and the server share the parser, so the calculator never shows a price
 the server then refuses.
 
+### The calculator shows its arithmetic
+The receipt next to the form lists every line and the total, and under it the calculation itself
+(`210 × 160 cm = 3,36 m² × 1 000 ₴ = 3 360 ₴`, or why a minimum applied). A customer who can check
+the price trusts it, and the owner gets fewer "why so much?" calls. The explanation is a pure function
+next to the preview, tested with the same numbers as the pricing rules. Whole prices are shown without
+kopiykas (`3 860 ₴`), partial ones with them (`1 348,54 ₴`).
+
+If the owner removes an option while a customer has it ticked, the server refuses the request (it
+never prices from the browser) and reloads the service. The form then shows the option as no longer
+available, drops it from the total and asks the customer to check the new price and send again,
+instead of failing with a generic error.
+
 ### Lead status as a state machine
 Allowed transitions live in one table in the domain. A status change is saved with compare-and-set
 (`where status = from`), so two tabs cannot both apply a change; the second one gets a conflict message
