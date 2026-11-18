@@ -33,12 +33,12 @@ test("an owner prices a service and receives a customer's request", async ({ pag
     const calculator = await customer.newPage();
     await calculator.goto(`/b/${slug}`);
 
-    await calculator.getByLabel("Width, cm").fill("200");
-    await calculator.getByLabel("Height, cm").fill("100");
+    await calculator.getByLabel("Width, cm", { exact: true }).fill("200");
+    await calculator.getByLabel("Height, cm", { exact: true }).fill("100");
     await calculator.getByLabel("Quantity").fill("1");
     await calculator.getByLabel("Installation").check();
-    await expect(calculator.getByText("Total")).toBeVisible();
-    await expect(calculator.locator("[aria-live=polite]")).toContainText(/2\s500,00/);
+    await expect(calculator.getByRole("button", { name: /Send request · 2\s500\s₴/ })).toBeVisible();
+    await expect(calculator.locator("[aria-live=polite]")).toContainText(/2\s500\s₴/);
 
     await calculator.getByLabel("Your name").fill("Olena Koval");
     await calculator.getByLabel("Phone").fill("+380501234567");
@@ -50,7 +50,7 @@ test("an owner prices a service and receives a customer's request", async ({ pag
   await test.step("owner sees the request and moves it forward", async () => {
     await page.goto("/dashboard");
     const lead = page.getByRole("listitem").filter({ hasText: "Olena Koval" });
-    await expect(lead).toContainText(/2\s500,00/);
+    await expect(lead).toContainText(/2\s500\s₴/);
     await lead.getByRole("button", { name: "→ Contacted" }).click();
     await expect(lead).toContainText("contacted");
   });

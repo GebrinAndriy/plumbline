@@ -5,13 +5,14 @@ import { QuoteForm } from "./quote-form";
 
 export default function BusinessPage({ params }: PageProps<"/b/[slug]">) {
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-8 px-4 py-12">
+    <div className="flex flex-1 flex-col pb-28 lg:pb-0">
       <Suspense fallback={<PageSkeleton />}>
         {params.then(({ slug }) => (
           <BusinessQuote slug={slug} />
         ))}
       </Suspense>
-    </main>
+      <footer className="mt-auto border-t border-rule py-6 text-center text-xs text-muted">Made with QuoteFlow</footer>
+    </div>
   );
 }
 
@@ -24,27 +25,31 @@ async function BusinessQuote({ slug }: { slug: string }) {
 
   return (
     <>
-      <header>
-        <h1 className="font-serif text-3xl font-semibold tracking-tight">{business.name}</h1>
-        <p className="mt-2 text-muted">
-          Get an instant price and leave a request, we will call you back.
-        </p>
+      <header className="border-b border-rule">
+        <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-8 sm:py-12">
+          <h1 className="font-serif text-4xl font-medium tracking-tight sm:text-5xl">{business.name}</h1>
+          <p className="mt-3 text-muted sm:text-lg">
+            Choose a service, enter the details and see the exact price. Send a request — we&apos;ll call you back.
+          </p>
+        </div>
       </header>
-      {services.length > 0 ? (
-        <QuoteForm businessSlug={business.slug} services={services} />
-      ) : (
-        <p className="text-muted">This business has no services yet.</p>
-      )}
+      <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-8 sm:py-14">
+        {services.length > 0 ? (
+          <QuoteForm businessName={business.name} businessSlug={business.slug} services={services} />
+        ) : (
+          <p className="text-muted">This business has no services yet.</p>
+        )}
+      </main>
     </>
   );
 }
 
 function PageSkeleton() {
   return (
-    <div className="flex animate-pulse flex-col gap-4" aria-busy="true">
-      <div className="h-9 w-2/3 rounded bg-disabled" />
-      <div className="h-5 w-full rounded bg-disabled" />
-      <div className="h-64 w-full rounded-2xl bg-disabled" />
+    <div className="mx-auto flex w-full max-w-6xl animate-pulse flex-col gap-4 px-4 py-12 sm:px-8" aria-busy="true">
+      <div className="h-12 w-1/2 rounded bg-disabled" />
+      <div className="h-5 w-2/3 rounded bg-disabled" />
+      <div className="mt-8 h-96 w-full rounded-card bg-disabled" />
     </div>
   );
 }

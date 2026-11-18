@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { getRepositories } from "@/db/get-repositories";
 import { requireOwner } from "@/lib/auth/current-owner";
 import { createServiceAction, setServiceActiveAction, updateServiceAction } from "./actions";
-import { describeRule } from "./describe-rule";
+import { describeRule } from "@/lib/describe-rule";
 import { EditService } from "./edit-service";
 import { ServiceForm } from "./service-form";
 import { ServiceOptions } from "./service-options";

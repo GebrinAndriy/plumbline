@@ -10,8 +10,13 @@ describe("formatMoney", () => {
     expect(normalize(formatMoney(150_050))).toBe("1 500,50 ₴");
   });
 
-  it("formats zero", () => {
-    expect(normalize(formatMoney(0))).toBe("0,00 ₴");
+  it("drops kopiykas when there are none", () => {
+    expect(normalize(formatMoney(386_000))).toBe("3 860 ₴");
+    expect(normalize(formatMoney(0))).toBe("0 ₴");
+  });
+
+  it("keeps two digits for a partial hryvnia", () => {
+    expect(normalize(formatMoney(134_805))).toBe("1 348,05 ₴");
   });
 });
 
