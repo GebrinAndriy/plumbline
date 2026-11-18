@@ -12,7 +12,7 @@ import { explainQuote } from "@/lib/explain-quote";
 import { FormStep } from "./form-step";
 import { MobileTotalBar } from "./mobile-total-bar";
 import { EMPTY_FIELDS, previewQuote, toQuoteInput, type QuoteFields } from "./preview-quote";
-import { Receipt } from "./receipt";
+import { Receipt } from "@/components/receipt";
 import { RequestSent } from "./request-sent";
 import { STEP_TITLES, ServiceFields } from "./service-fields";
 import { SurchargeOptions } from "./surcharge-options";

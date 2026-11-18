@@ -9,7 +9,7 @@ test("an owner prices a service and receives a customer's request", async ({ pag
     await page.getByLabel("Business name").fill("E2E Blinds");
     await page.getByLabel("Page address").fill(slug);
     await page.getByLabel("Email").fill(`${slug}@example.test`);
-    await page.getByLabel("Password").fill(randomUUID());
+    await page.getByLabel("Password", { exact: true }).fill(randomUUID());
     await page.getByRole("button", { name: "Create business" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
   });
