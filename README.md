@@ -124,6 +124,13 @@ Allowed transitions live in one table in the domain. A status change is saved wi
 (`where status = from`), so two tabs cannot both apply a change; the second one gets a conflict message
 and the latest status.
 
+### The page address is suggested from the business name
+Most owners type a Cyrillic name, and a page address has to be latin. While the owner types
+"Штори Київ", the address field fills in `shtory-kyiv` using the national transliteration table
+(the one in passports), until they edit it by hand. The same Zod schema the server uses checks the
+address as they type and shows the final link, so a bad address is caught before the request. Whether
+the address is free is still decided by the server, because only the database knows.
+
 ### Database sessions instead of JWT
 The cookie holds a random token, and the database stores only its SHA-256 hash. Sign-out and revoking
 a session work immediately, and a leaked table cannot be replayed. The session is replaced on every
