@@ -104,13 +104,20 @@ the server then refuses.
 The receipt next to the form lists every line and the total, and under it the calculation itself
 (`210 × 160 cm = 3,36 m² × 1 000 ₴ = 3 360 ₴`, or why a minimum applied). A customer who can check
 the price trusts it, and the owner gets fewer "why so much?" calls. The explanation is a pure function
-next to the preview, tested with the same numbers as the pricing rules. Whole prices are shown without
+in `src/lib`, tested with the same numbers as the pricing rules. Whole prices are shown without
 kopiykas (`3 860 ₴`), partial ones with them (`1 348,54 ₴`).
 
 If the owner removes an option while a customer has it ticked, the server refuses the request (it
 never prices from the browser) and reloads the service. The form then shows the option as no longer
 available, drops it from the total and asks the customer to check the new price and send again,
 instead of failing with a generic error.
+
+### Landing prices come from the pricing engine
+The landing page shows the same calculator a customer would see, with three examples to switch
+between (per m², per hour, fixed price) and the Telegram message the owner would get. Its prices are
+not typed into the markup: each example is a real service passed through `calculateQuote`, and a unit
+test pins the totals. If the pricing rules change, the landing changes with them or the test fails,
+so the marketing page cannot promise a price the product would not give.
 
 ### Lead status as a state machine
 Allowed transitions live in one table in the domain. A status change is saved with compare-and-set

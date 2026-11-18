@@ -8,7 +8,7 @@ import type { Service } from "@/domain/pricing/types";
 import { describeRule } from "@/lib/describe-rule";
 import { formatMoney } from "@/lib/format-money";
 import { submitLeadAction, type LeadFormState } from "./actions";
-import { explainQuote } from "./explain-quote";
+import { explainQuote } from "@/lib/explain-quote";
 import { FormStep } from "./form-step";
 import { MobileTotalBar } from "./mobile-total-bar";
 import { EMPTY_FIELDS, previewQuote, toQuoteInput, type QuoteFields } from "./preview-quote";

@@ -24,3 +24,8 @@ export function formatMoneyInput(kopiykas: Money): string {
   const rest = kopiykas % 100;
   return rest === 0 ? String(hryvnias) : `${hryvnias}.${String(rest).padStart(2, "0")}`;
 }
+
+// While a total is counting up, whole hryvnias keep the digits from flickering.
+export function formatAnimated(shown: Money, target: Money): string {
+  return shown === target ? formatMoney(target) : formatMoney(Math.round(shown / 100) * 100);
+}

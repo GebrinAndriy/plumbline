@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useAnimatedNumber } from "@/components/use-animated-number";
 import type { Quote } from "@/domain/pricing/types";
-import { formatAnimated } from "./receipt";
+import { formatAnimated } from "@/lib/format-money";
 
 // On phones the receipt lives behind a bar pinned to the bottom, so the price is always in view.
 export function MobileTotalBar({ quote, receipt }: { quote: Quote | null; receipt: ReactNode }) {

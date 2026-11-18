@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney, formatMoneyInput } from "./format-money";
+import { formatAnimated, formatMoney, formatMoneyInput } from "./format-money";
 import { parseMoney } from "./parse-money";
 
 // Intl uses non-breaking spaces as thousand separators.
@@ -31,5 +31,12 @@ describe("formatMoneyInput", () => {
     for (const amount of [1, 99, 100, 45_050, 100_000_000]) {
       expect(parseMoney(formatMoneyInput(amount))).toBe(amount);
     }
+  });
+});
+
+describe("formatAnimated", () => {
+  it("rounds to whole hryvnias while counting and shows the exact total at the end", () => {
+    expect(normalize(formatAnimated(123_456, 134_854))).toBe("1 235 ₴");
+    expect(normalize(formatAnimated(134_854, 134_854))).toBe("1 348,54 ₴");
   });
 });
