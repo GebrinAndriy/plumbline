@@ -132,6 +132,13 @@ The same counts label the status filter (`?status=quoted`); an unknown value in 
 to all requests instead of an error. Each request shows the size and options the customer chose,
 so the owner can call back already knowing the job.
 
+### The services form shows what a customer would pay
+While the owner types a price, the form quotes a typical order (200 × 150 cm, 3 hours or 2 items)
+and writes out the arithmetic, including when the minimum order kicks in. It reads the half-filled
+form through the same Zod schema the server uses and prices it with `calculateQuote`, so the example
+is exactly what the calculator will charge. A price typo shows up as a strange total before it reaches
+a customer.
+
 ### The page address is suggested from the business name
 Most owners type a Cyrillic name, and a page address has to be latin. While the owner types
 "Штори Київ", the address field fills in `shtory-kyiv` using the national transliteration table
