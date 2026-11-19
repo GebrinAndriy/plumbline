@@ -1,5 +1,5 @@
-import { and, asc, desc, eq } from "drizzle-orm";
-import { LeadConflictError, type Lead, type LeadRepository } from "@/domain/leads/lead";
+import { and, asc, count, desc, eq, sum } from "drizzle-orm";
+import { emptyStatusTotals, LeadConflictError, type Lead, type LeadRepository } from "@/domain/leads/lead";
 import type { StatusChange } from "@/domain/leads/transition-lead";
 import type { Database } from "../database";
 import { leadStatusChanges, leads } from "../schema";
@@ -84,6 +84,18 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
       return rows.map(toSummary);
     },
 
+    async summarizeByStatus(businessId) {
+      const totals = emptyStatusTotals();
+      if (!isUuid(businessId)) return totals;
+      const rows = await db
+        .select({ status: leads.status, count: count(), total: sum(leads.total).mapWith(Number) })
+        .from(leads)
+        .where(eq(leads.businessId, businessId))
+        .groupBy(leads.status);
+      for (const row of rows) totals[row.status] = { count: row.count, total: row.total ?? 0 };
+      return totals;
+    },
+
     async saveTransition(businessId, leadId, change) {
       await db.transaction(async (tx) => {
         // Compare-and-set on the old status: two managers clicking at once cannot both win.
@@ -115,7 +127,7 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
   };
 }
 
-function toSummary(row: Omit<LeadRow, "input">) {
+function toSummary(row: LeadRow) {
   return {
     id: row.id,
     businessId: row.businessId,
@@ -123,6 +135,7 @@ function toSummary(row: Omit<LeadRow, "input">) {
     customerName: row.customerName,
     phone: row.phone,
     comment: row.comment,
+    input: row.input,
     quote: row.quote,
     status: row.status,
     createdAt: row.createdAt,
@@ -130,5 +143,5 @@ function toSummary(row: Omit<LeadRow, "input">) {
 }
 
 function toLead(row: LeadRow, history: StatusChange[]): Lead {
-  return { ...toSummary(row), input: row.input, history };
+  return { ...toSummary(row), history };
 }

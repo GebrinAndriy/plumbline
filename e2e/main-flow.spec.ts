@@ -52,6 +52,6 @@ test("an owner prices a service and receives a customer's request", async ({ pag
     const lead = page.getByRole("listitem").filter({ hasText: "Olena Koval" });
     await expect(lead).toContainText(/2\s500\s₴/);
     await lead.getByRole("button", { name: "→ Contacted" }).click();
-    await expect(lead).toContainText("contacted");
+    await expect(lead.getByRole("button", { name: "→ Quoted" })).toBeVisible();
   });
 });

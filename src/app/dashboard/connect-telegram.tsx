@@ -52,14 +52,14 @@ export function ConnectTelegram({ connected }: { connected: boolean }) {
 
   if (state.step === "waiting") {
     return (
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-col gap-4">
         <Image
           src={state.qrCode}
           alt="QR code that opens our Telegram bot"
           width={160}
           height={160}
           unoptimized
-          className="rounded-lg bg-white p-2"
+          className="rounded-field border border-rule bg-white p-2"
         />
         <div className="flex max-w-xs flex-col gap-3 text-sm">
           <p className="text-muted">
@@ -97,7 +97,7 @@ export function ConnectTelegram({ connected }: { connected: boolean }) {
         type="button"
         onClick={start}
         disabled={pending}
-        className="self-start rounded-full border border-rule px-4 py-2 text-sm font-medium hover:bg-surface disabled:opacity-50"
+        className={connected ? "self-start text-sm font-medium underline underline-offset-4 disabled:opacity-50" : `self-start ${primaryButtonClass} text-sm`}
       >
         {pending ? "Preparing…" : connected ? "Connect another chat" : "Connect Telegram"}
       </button>
