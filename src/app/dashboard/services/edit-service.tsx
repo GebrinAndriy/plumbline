@@ -13,17 +13,28 @@ type EditServiceProps = {
 export function EditService({ service, action }: EditServiceProps) {
   const [open, setOpen] = useState(false);
 
-  return (
-    <div className="flex flex-col gap-4">
+  if (!open) {
+    return (
       <button
         type="button"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-        className="self-start text-sm font-medium underline underline-offset-4"
+        aria-expanded={false}
+        onClick={() => setOpen(true)}
+        className="self-start rounded-field border border-ink px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface"
       >
-        {open ? "Close" : "Edit"}
+        Edit service
       </button>
-      {open && <ServiceForm action={action} initial={service} submitLabel="Save changes" pendingLabel="Saving…" />}
+    );
+  }
+
+  return (
+    <div className="animate-rise border-t border-rule pt-5">
+      <ServiceForm
+        action={action}
+        initial={service}
+        submitLabel="Save changes"
+        pendingLabel="Saving…"
+        onCancel={() => setOpen(false)}
+      />
     </div>
   );
 }

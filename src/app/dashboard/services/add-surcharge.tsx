@@ -24,18 +24,18 @@ export function AddSurcharge({ action }: AddSurchargeProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="self-start text-sm font-medium underline underline-offset-4"
+        className="self-start text-sm font-semibold text-accent underline-offset-4 hover:underline"
       >
-        Add option
+        <span aria-hidden>+ </span>Add option
       </button>
     );
   }
 
   return (
-    <form method="post" onSubmit={onSubmit} className="flex flex-col gap-3" noValidate>
+    <form method="post" onSubmit={onSubmit} className="flex animate-rise flex-col gap-3 rounded-field bg-surface p-4" noValidate>
       <div className="grid gap-3 sm:grid-cols-3">
         <Field label="Option name" name="label" placeholder="Installation" error={errors.label} />
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1.5 text-sm">
           <span className="font-medium text-ink">Adds</span>
           <select
             name="kind"
@@ -62,7 +62,7 @@ export function AddSurcharge({ action }: AddSurchargeProps) {
         <PrimaryButton type="submit" disabled={pending}>
           {pending ? "Adding…" : "Add option"}
         </PrimaryButton>
-        <button type="button" onClick={() => setOpen(false)} className="text-sm font-medium underline underline-offset-4">
+        <button type="button" onClick={() => setOpen(false)} className="text-sm font-medium text-muted hover:text-ink">
           Cancel
         </button>
       </div>
