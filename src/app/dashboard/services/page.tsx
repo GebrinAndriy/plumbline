@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { getRepositories } from "@/db/get-repositories";
 import { requireOwner } from "@/lib/auth/current-owner";
@@ -10,15 +9,12 @@ import { ServiceOptions } from "./service-options";
 
 export default function ServicesPage() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12">
-      <Link href="/dashboard" className="text-sm font-medium underline underline-offset-4">
-        ← Dashboard
-      </Link>
-      <h1 className="font-serif text-3xl font-semibold tracking-tight">Services</h1>
+    <div className="flex max-w-3xl flex-col gap-8">
+      <h1 className="font-serif text-4xl font-medium tracking-tight">Services</h1>
       <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <OwnerServices />
       </Suspense>
-    </main>
+    </div>
   );
 }
 

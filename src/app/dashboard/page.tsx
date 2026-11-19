@@ -1,98 +1,114 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { z } from "zod";
 import { getRepositories } from "@/db/get-repositories";
 import type { Business } from "@/domain/catalog/catalog";
+import { LEAD_STATUSES, type LeadStatus } from "@/domain/leads/lead-status";
 import { requireOwner } from "@/lib/auth/current-owner";
-import { formatMoney } from "@/lib/format-money";
-import { signOutAction } from "../(auth)/actions";
-import { LeadStatusControl } from "./lead-status-control";
+import { CopyLink } from "./copy-link";
+import { LeadStats, StatusFilter } from "./lead-overview";
+import { LeadRow } from "./lead-row";
 import { TelegramSettings } from "./telegram-settings";
 
-export default function DashboardPage() {
+const PAGE_SIZE = 50;
+
+// An unknown ?status= shows all requests instead of an error page.
+const filterSchema = z.enum(LEAD_STATUSES).optional().catch(undefined);
+
+export default function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12">
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
-        <OwnerDashboard />
-      </Suspense>
-    </main>
+    <Suspense fallback={<DashboardSkeleton />}>
+      {searchParams.then(({ status }) => (
+        <OwnerDashboard status={filterSchema.parse(status)} />
+      ))}
+    </Suspense>
   );
 }
 
-async function OwnerDashboard() {
+async function OwnerDashboard({ status }: { status?: LeadStatus }) {
   const { business } = await requireOwner();
+  if (!business) return <p className="text-muted">This account has no business.</p>;
+
+  const { leads } = getRepositories();
+  const [totals, list] = await Promise.all([
+    leads.summarizeByStatus(business.id),
+    leads.listByBusiness(business.id, { status, limit: PAGE_SIZE }),
+  ]);
 
   return (
     <>
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight">{business?.name ?? "Dashboard"}</h1>
-          {business && (
-            <p className="mt-1 text-sm text-muted">
-              Your calculator:{" "}
-              <Link href={`/b/${business.slug}`} className="font-medium underline underline-offset-4">
-                /b/{business.slug}
-              </Link>
-              {" · "}
-              <Link href="/dashboard/services" className="font-medium underline underline-offset-4">
-                Services
-              </Link>
-            </p>
+      <PageHeader business={business} />
+      <LeadStats totals={totals} />
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section aria-labelledby="requests-title" className="flex min-w-0 flex-col gap-4">
+          <h2 id="requests-title" className="font-serif text-2xl font-medium">
+            Requests
+          </h2>
+          <StatusFilter current={status} totals={totals} />
+          {list.length > 0 ? (
+            <ul className="divide-y divide-rule overflow-hidden rounded-card border border-rule bg-white">
+              {list.map((lead) => (
+                <LeadRow key={lead.id} lead={lead} />
+              ))}
+            </ul>
+          ) : (
+            <EmptyState filtered={status !== undefined} slug={business.slug} />
           )}
-        </div>
-        <form action={signOutAction}>
-          <button type="submit" className="text-sm font-medium underline underline-offset-4">
-            Sign out
-          </button>
-        </form>
-      </header>
-      {business ? (
-        <>
-          <RecentLeads business={business} />
+        </section>
+        <aside className="flex flex-col gap-4">
           <TelegramSettings chatId={business.telegramChatId} chatName={business.telegramChatName} />
-        </>
-      ) : (
-        <p className="text-muted">This account has no business.</p>
-      )}
+        </aside>
+      </div>
     </>
   );
 }
 
-const dateFormat = new Intl.DateTimeFormat("en-GB", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Europe/Kyiv",
-});
-
-async function RecentLeads({ business }: { business: Business }) {
-  const leads = await getRepositories().leads.listByBusiness(business.id, { limit: 20 });
-
-  if (leads.length === 0) {
-    return (
-      <p className="rounded-xl bg-surface p-6 text-muted">
-        No requests yet. Share your calculator link with customers.
-      </p>
-    );
-  }
-
+function PageHeader({ business }: { business: Business }) {
+  const path = `/b/${business.slug}`;
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="font-serif text-lg font-semibold">Recent requests</h2>
-      <ul className="divide-y divide-rule rounded-xl border border-rule">
-        {leads.map((lead) => (
-          <li key={lead.id} className="flex flex-wrap items-center justify-between gap-2 p-4">
-            <div>
-              <p className="font-medium">{lead.customerName}</p>
-              <p className="text-sm text-muted">
-                <a href={`tel:${lead.phone}`}>{lead.phone}</a> · {dateFormat.format(lead.createdAt)}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="font-semibold tabular-nums">{formatMoney(lead.quote.total)}</p>
-              <LeadStatusControl leadId={lead.id} status={lead.status} />
-            </div>
-          </li>
+    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+      <div className="flex flex-col gap-2">
+        <p className="text-xs font-semibold tracking-[0.13em] text-accent uppercase">Your page</p>
+        <h1 className="font-serif text-4xl font-medium tracking-tight sm:text-5xl">{business.name}</h1>
+      </div>
+      <div className="flex items-center gap-3">
+        <Link href={path} className="text-sm font-medium underline-offset-4 hover:underline">
+          {path}
+        </Link>
+        <CopyLink path={path} />
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ filtered, slug }: { filtered: boolean; slug: string }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-card border border-dashed border-rule bg-surface p-8 text-center">
+      {filtered ? (
+        <p className="text-muted">No requests with this status.</p>
+      ) : (
+        <>
+          <p className="font-serif text-xl">No requests yet</p>
+          <p className="text-muted">
+            Share <span className="font-medium text-ink">/b/{slug}</span> in your bio or messages. Requests land here with
+            the price on them.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div aria-busy className="flex animate-pulse flex-col gap-10">
+      <div className="h-14 w-72 rounded-field bg-surface" />
+      <div className="grid gap-3 sm:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-28 rounded-card bg-surface" />
         ))}
-      </ul>
-    </section>
+      </div>
+      <div className="h-80 rounded-card bg-surface" />
+    </div>
   );
 }

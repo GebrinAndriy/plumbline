@@ -1,5 +1,5 @@
-import type { Quote, QuoteInput } from "../pricing/types";
-import type { LeadStatus } from "./lead-status";
+import type { Money, Quote, QuoteInput } from "../pricing/types";
+import { LEAD_STATUSES, type LeadStatus } from "./lead-status";
 import type { StatusChange } from "./transition-lead";
 
 export type Lead = {
@@ -16,7 +16,12 @@ export type Lead = {
   history: StatusChange[];
 };
 
-export type LeadSummary = Omit<Lead, "history" | "input">;
+export type LeadSummary = Omit<Lead, "history">;
+
+export type StatusTotals = Record<LeadStatus, { count: number; total: Money }>;
+
+export const emptyStatusTotals = (): StatusTotals =>
+  Object.fromEntries(LEAD_STATUSES.map((status) => [status, { count: 0, total: 0 }])) as StatusTotals;
 
 export type NewLead = {
   businessId: string;
@@ -44,6 +49,8 @@ export interface LeadRepository {
     businessId: string,
     options?: { status?: LeadStatus; limit?: number },
   ): Promise<LeadSummary[]>;
+  /** Counts and sums every lead of the business, not just one page of them. */
+  summarizeByStatus(businessId: string): Promise<StatusTotals>;
   /** Throws LeadConflictError if the lead's status changed since it was read. */
   saveTransition(businessId: string, leadId: string, change: StatusChange): Promise<void>;
 }

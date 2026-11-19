@@ -124,6 +124,14 @@ Allowed transitions live in one table in the domain. A status change is saved wi
 (`where status = from`), so two tabs cannot both apply a change; the second one gets a conflict message
 and the latest status.
 
+### Dashboard numbers come from one grouped query
+The dashboard shows how many requests are new, in progress and won, and what the won jobs are worth.
+These come from a single `GROUP BY status` with `count` and `sum` over the stored totals, not from
+the page of leads on screen, so they stay right when there are more requests than one page holds.
+The same counts label the status filter (`?status=quoted`); an unknown value in the address falls back
+to all requests instead of an error. Each request shows the size and options the customer chose,
+so the owner can call back already knowing the job.
+
 ### The page address is suggested from the business name
 Most owners type a Cyrillic name, and a page address has to be latin. While the owner types
 "Штори Київ", the address field fills in `shtory-kyiv` using the national transliteration table

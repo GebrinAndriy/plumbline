@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { LeadConflictError, type LeadRepository, type NewLead } from "@/domain/leads/lead";
+import { emptyStatusTotals, LeadConflictError, type LeadRepository, type NewLead } from "@/domain/leads/lead";
 import { transitionLead } from "@/domain/leads/transition-lead";
 import { calculateQuote } from "@/domain/pricing/calculate-quote";
 import type { QuoteInput } from "@/domain/pricing/types";
@@ -124,5 +124,27 @@ describe("listByBusiness", () => {
   it("does not include other businesses' leads", async () => {
     await leads.create(makeLead());
     expect(await leads.listByBusiness(otherBusinessId)).toEqual([]);
+  });
+});
+
+describe("summarizeByStatus", () => {
+  it("counts leads and sums their totals per status", async () => {
+    const { lead: first } = await leads.create(makeLead());
+    await leads.create(makeLead());
+    const { lead: won } = await leads.create(makeLead());
+    for (const to of ["contacted", "quoted", "won"] as const) {
+      const current = (await leads.findById(won.businessId, won.id))!;
+      await leads.saveTransition(won.businessId, won.id, transitionLead(current, to, at).history.at(-1)!);
+    }
+
+    const totals = await leads.summarizeByStatus(first.businessId);
+    expect(totals.new).toEqual({ count: 2, total: 2 * first.quote.total });
+    expect(totals.won).toEqual({ count: 1, total: first.quote.total });
+    expect(totals.lost).toEqual({ count: 0, total: 0 });
+  });
+
+  it("returns zeros for another business", async () => {
+    await leads.create(makeLead());
+    expect(await leads.summarizeByStatus(otherBusinessId)).toEqual(emptyStatusTotals());
   });
 });

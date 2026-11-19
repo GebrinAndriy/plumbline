@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Business, CatalogRepository } from "../catalog/catalog";
 import type { Service } from "../pricing/types";
-import type { Lead, LeadRepository } from "./lead";
+import { emptyStatusTotals, type Lead, type LeadRepository } from "./lead";
 import type { LeadEvent } from "./lead-events";
 import { submitLead, type LeadRequest } from "./submit-lead";
 
@@ -75,6 +75,7 @@ function fakeLeads(): LeadRepository & { saved: Lead[] } {
     },
     findById: async () => null,
     listByBusiness: async () => [],
+    summarizeByStatus: async () => emptyStatusTotals(),
     saveTransition: async () => {},
   };
 }
