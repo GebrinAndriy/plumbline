@@ -67,13 +67,11 @@ function fakeLeads(): LeadRepository & { saved: Lead[] } {
         comment: draft.comment ?? null,
         status: "new",
         createdAt: new Date(),
-        history: [],
       };
       saved.push(lead);
       keys.set(draft.idempotencyKey, lead);
       return { lead, created: true };
     },
-    findById: async () => null,
     listByBusiness: async () => [],
     summarizeByStatus: async () => emptyStatusTotals(),
     saveTransition: async () => {},

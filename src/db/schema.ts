@@ -102,7 +102,6 @@ export const leadStatusChanges = pgTable(
       .references(() => leads.id, { onDelete: "cascade" }),
     fromStatus: leadStatus("from_status").notNull(),
     toStatus: leadStatus("to_status").notNull(),
-    note: text("note"),
     at: timestamp("at", { withTimezone: true }).notNull(),
   },
   (t) => [index("lead_status_changes_lead_idx").on(t.leadId, t.at)],

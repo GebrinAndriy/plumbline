@@ -36,6 +36,13 @@
       "when": 1794770529451,
       "tag": "0004_telegram_chat_name",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795114275872,
+      "tag": "0005_drop_status_change_note",
+      "breakpoints": true
     }
   ]
 }

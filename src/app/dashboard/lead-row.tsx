@@ -1,4 +1,4 @@
-import type { LeadSummary } from "@/domain/leads/lead";
+import type { Lead } from "@/domain/leads/lead";
 import { describeInput } from "@/lib/describe-input";
 import { formatMoney } from "@/lib/format-money";
 import { formatPhone } from "@/lib/format-phone";
@@ -12,7 +12,7 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/Kyiv",
 });
 
-export function LeadRow({ lead }: { lead: LeadSummary }) {
+export function LeadRow({ lead }: { lead: Lead }) {
   const [base, ...options] = lead.quote.lines;
   const details = [base.label, describeInput(lead.input), ...options.map((line) => line.label)].join(" · ");
 

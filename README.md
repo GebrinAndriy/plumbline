@@ -122,7 +122,9 @@ so the marketing page cannot promise a price the product would not give.
 ### Lead status as a state machine
 Allowed transitions live in one table in the domain. A status change is saved with compare-and-set
 (`where status = from`), so two tabs cannot both apply a change; the second one gets a conflict message
-and the latest status.
+and the latest status. Each change is also written to `lead_status_changes` as an audit log. Nothing in
+the app reads it yet, so leads are loaded without their history, and there is no note field until a
+screen asks for one.
 
 ### Dashboard numbers come from one grouped query
 The dashboard shows how many requests are new, in progress and won, and what the won jobs are worth.
