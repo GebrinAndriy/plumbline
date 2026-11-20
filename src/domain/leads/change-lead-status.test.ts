@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { changeLeadStatus } from "./change-lead-status";
-import { LeadConflictError, type LeadRepository } from "./lead";
+import { LeadConflictError, type LeadRepository, type StatusChange } from "./lead";
 import type { LeadStatus } from "./lead-status";
-import type { StatusChange } from "./transition-lead";
 
 const now = new Date("2026-11-14T12:00:00Z");
 
@@ -21,17 +20,13 @@ function fakeLeads(status: LeadStatus) {
 const request = { businessId: "b1", leadId: "l1" };
 
 describe("changeLeadStatus", () => {
-  it("saves an allowed change with its time and note", async () => {
+  it("saves an allowed change with its time", async () => {
     const { leads, saved } = fakeLeads("new");
 
-    const result = await changeLeadStatus(
-      leads,
-      { ...request, from: "new", to: "contacted", note: "Called back" },
-      now,
-    );
+    const result = await changeLeadStatus(leads, { ...request, from: "new", to: "contacted" }, now);
 
     expect(result).toEqual({ ok: true });
-    expect(saved).toEqual([{ from: "new", to: "contacted", at: now, note: "Called back" }]);
+    expect(saved).toEqual([{ from: "new", to: "contacted", at: now }]);
   });
 
   it("rejects a change the funnel does not allow without touching storage", async () => {

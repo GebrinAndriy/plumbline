@@ -1,0 +1,1 @@
+ALTER TABLE "lead_status_changes" DROP COLUMN "note";

@@ -1,6 +1,5 @@
-import { and, asc, count, desc, eq, sum } from "drizzle-orm";
+import { and, count, desc, eq, sum } from "drizzle-orm";
 import { emptyStatusTotals, LeadConflictError, type Lead, type LeadRepository } from "@/domain/leads/lead";
-import type { StatusChange } from "@/domain/leads/transition-lead";
 import type { Database } from "../database";
 import { leadStatusChanges, leads } from "../schema";
 import { isUuid } from "./is-uuid";
@@ -11,20 +10,6 @@ const MAX_PAGE_SIZE = 200;
 type LeadRow = typeof leads.$inferSelect;
 
 export function createDrizzleLeadRepository(db: Database): LeadRepository {
-  async function loadHistory(leadId: string): Promise<StatusChange[]> {
-    const rows = await db
-      .select()
-      .from(leadStatusChanges)
-      .where(eq(leadStatusChanges.leadId, leadId))
-      .orderBy(asc(leadStatusChanges.at));
-    return rows.map((r) => ({
-      from: r.fromStatus,
-      to: r.toStatus,
-      at: r.at,
-      ...(r.note ? { note: r.note } : {}),
-    }));
-  }
-
   return {
     async create(lead) {
       const [inserted] = await db
@@ -44,7 +29,7 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
         .returning();
 
       if (inserted) {
-        return { lead: toLead(inserted, []), created: true };
+        return { lead: toLead(inserted), created: true };
       }
 
       const [existing] = await db
@@ -55,17 +40,7 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
       if (!existing || existing.businessId !== lead.businessId) {
         throw new Error("Idempotency key is already used by another business");
       }
-      return { lead: toLead(existing, await loadHistory(existing.id)), created: false };
-    },
-
-    async findById(businessId, leadId) {
-      if (!isUuid(businessId) || !isUuid(leadId)) return null;
-      const [row] = await db
-        .select()
-        .from(leads)
-        .where(and(eq(leads.id, leadId), eq(leads.businessId, businessId)))
-        .limit(1);
-      return row ? toLead(row, await loadHistory(row.id)) : null;
+      return { lead: toLead(existing), created: false };
     },
 
     async listByBusiness(businessId, options = {}) {
@@ -81,7 +56,7 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
         .orderBy(desc(leads.createdAt))
         .limit(limit);
 
-      return rows.map(toSummary);
+      return rows.map(toLead);
     },
 
     async summarizeByStatus(businessId) {
@@ -119,7 +94,6 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
           leadId,
           fromStatus: change.from,
           toStatus: change.to,
-          note: change.note ?? null,
           at: change.at,
         });
       });
@@ -127,7 +101,7 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
   };
 }
 
-function toSummary(row: LeadRow) {
+function toLead(row: LeadRow): Lead {
   return {
     id: row.id,
     businessId: row.businessId,
@@ -140,8 +114,4 @@ function toSummary(row: LeadRow) {
     status: row.status,
     createdAt: row.createdAt,
   };
-}
-
-function toLead(row: LeadRow, history: StatusChange[]): Lead {
-  return { ...toSummary(row), history };
 }

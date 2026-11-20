@@ -6,7 +6,6 @@ export type StatusChangeRequest = {
   leadId: string;
   from: LeadStatus;
   to: LeadStatus;
-  note?: string;
 };
 
 export type StatusChangeResult = { ok: true } | { ok: false; reason: "forbidden" | "conflict" };
@@ -17,11 +16,11 @@ export async function changeLeadStatus(
   request: StatusChangeRequest,
   now: Date,
 ): Promise<StatusChangeResult> {
-  const { businessId, leadId, from, to, note } = request;
+  const { businessId, leadId, from, to } = request;
   if (!canTransition(from, to)) return { ok: false, reason: "forbidden" };
 
   try {
-    await leads.saveTransition(businessId, leadId, { from, to, at: now, ...(note ? { note } : {}) });
+    await leads.saveTransition(businessId, leadId, { from, to, at: now });
     return { ok: true };
   } catch (error) {
     if (error instanceof LeadConflictError) return { ok: false, reason: "conflict" };
