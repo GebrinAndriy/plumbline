@@ -27,6 +27,8 @@ export interface AccountRepository {
   /** Creates the user and their business atomically; throws EmailTakenError or SlugTakenError. */
   createOwner(owner: NewOwner): Promise<{ userId: string }>;
   findOwnedBusiness(userId: string): Promise<Business | null>;
+  /** Also ends every session of the user, so a stolen session stops working. */
+  changePassword(userId: string, passwordHash: string): Promise<void>;
 }
 
 export interface PasswordHasher {

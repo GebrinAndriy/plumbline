@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { scryptHasher } from "./scrypt-hasher";
-import { generateSessionToken, hashSessionToken } from "./session-token";
+import { generateSecretToken, hashSecretToken } from "./secret-token";
 
 describe("scryptHasher", () => {
   it("verifies the password it hashed", async () => {
@@ -27,10 +27,10 @@ describe("scryptHasher", () => {
 
 describe("session tokens", () => {
   it("are random and stored only as a hash", () => {
-    const token = generateSessionToken();
+    const token = generateSecretToken();
 
-    expect(token).not.toBe(generateSessionToken());
-    expect(hashSessionToken(token)).toMatch(/^[0-9a-f]{64}$/);
-    expect(hashSessionToken(token)).toBe(hashSessionToken(token));
+    expect(token).not.toBe(generateSecretToken());
+    expect(hashSecretToken(token)).toMatch(/^[0-9a-f]{64}$/);
+    expect(hashSecretToken(token)).toBe(hashSecretToken(token));
   });
 });

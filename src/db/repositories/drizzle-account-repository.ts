@@ -1,7 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { EmailTakenError, SlugTakenError, type AccountRepository } from "@/domain/auth/account";
 import type { Database } from "../database";
-import { businesses, users } from "../schema";
+import { businesses, sessions, users } from "../schema";
 import { isUuid } from "./is-uuid";
 
 export function createDrizzleAccountRepository(db: Database): AccountRepository {
@@ -51,6 +51,13 @@ export function createDrizzleAccountRepository(db: Database): AccountRepository 
         .orderBy(asc(businesses.createdAt))
         .limit(1);
       return row ?? null;
+    },
+
+    async changePassword(userId, passwordHash) {
+      await db.transaction(async (tx) => {
+        await tx.update(users).set({ passwordHash }).where(eq(users.id, userId));
+        await tx.delete(sessions).where(eq(sessions.userId, userId));
+      });
     },
   };
 }

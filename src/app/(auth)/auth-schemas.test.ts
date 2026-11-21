@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { signInSchema, signUpSchema } from "./auth-schemas";
+import { resetPasswordSchema, signInSchema, signUpSchema } from "./auth-schemas";
 
 const valid = {
   email: "owner@example.com",
@@ -37,5 +37,13 @@ describe("signUpSchema", () => {
 describe("signInSchema", () => {
   it("requires both fields", () => {
     expect(signInSchema.safeParse({ email: "", password: "" }).success).toBe(false);
+  });
+});
+
+describe("resetPasswordSchema", () => {
+  it("needs the link token and a new password with the sign-up rules", () => {
+    expect(resetPasswordSchema.safeParse({ token: "abc", password: "correct horse" }).success).toBe(true);
+    expect(resetPasswordSchema.safeParse({ token: "", password: "correct horse" }).success).toBe(false);
+    expect(resetPasswordSchema.safeParse({ token: "abc", password: "1234567" }).success).toBe(false);
   });
 });

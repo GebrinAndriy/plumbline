@@ -5,19 +5,19 @@ import { connection } from "next/server";
 import { cache } from "react";
 import { getRepositories } from "@/db/get-repositories";
 import { replaceSession, sessionExpiry, validateSession } from "@/domain/auth/session";
-import { generateSessionToken, hashSessionToken } from "./session-token";
+import { generateSecretToken, hashSecretToken } from "./secret-token";
 
 const SESSION_COOKIE = "qf_session";
 
 export async function startSession(userId: string): Promise<void> {
   const cookieStore = await cookies();
   const previousToken = cookieStore.get(SESSION_COOKIE)?.value;
-  const token = generateSessionToken();
+  const token = generateSecretToken();
   const expiresAt = sessionExpiry(new Date());
   await replaceSession(
     getRepositories().sessions,
-    previousToken ? hashSessionToken(previousToken) : null,
-    hashSessionToken(token),
+    previousToken ? hashSecretToken(previousToken) : null,
+    hashSecretToken(token),
     { userId, expiresAt },
   );
 
@@ -33,7 +33,7 @@ export async function startSession(userId: string): Promise<void> {
 export async function endSession(): Promise<void> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
-  if (token) await getRepositories().sessions.delete(hashSessionToken(token));
+  if (token) await getRepositories().sessions.delete(hashSecretToken(token));
   cookieStore.delete(SESSION_COOKIE);
 }
 
@@ -45,7 +45,7 @@ export const getCurrentOwner = cache(async () => {
   // Expiry depends on the current time, so this must never be part of a prerender.
   await connection();
   const { sessions, accounts } = getRepositories();
-  const session = await validateSession(sessions, hashSessionToken(token), new Date());
+  const session = await validateSession(sessions, hashSecretToken(token), new Date());
   if (!session) return null;
 
   return { userId: session.userId, business: await accounts.findOwnedBusiness(session.userId) };

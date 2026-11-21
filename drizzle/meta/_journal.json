@@ -43,6 +43,13 @@
       "when": 1795114275872,
       "tag": "0005_drop_status_change_note",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795166833770,
+      "tag": "0006_password_resets",
+      "breakpoints": true
     }
   ]
 }

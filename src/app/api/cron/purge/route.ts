@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { sessions, telegramLinks, rateLimits } = getRepositories();
-  const deleted = await purgeExpired({ sessions, telegramLinks, rateLimits }, new Date());
+  const { sessions, passwordResets, telegramLinks, rateLimits } = getRepositories();
+  const deleted = await purgeExpired({ sessions, passwordResets, telegramLinks, rateLimits }, new Date());
   return Response.json({ deleted });
 }

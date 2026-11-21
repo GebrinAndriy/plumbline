@@ -12,6 +12,7 @@ function setup() {
   };
   const deps = {
     sessions: { deleteExpired: recorder("sessions", 2) },
+    passwordResets: { deleteExpired: recorder("passwordResets", 3) },
     telegramLinks: { deleteExpired: recorder("telegramLinks", 1) },
     rateLimits: { deleteWindowsStartedBefore: recorder("rateLimits", 7) },
   };
@@ -19,12 +20,13 @@ function setup() {
 }
 
 describe("purgeExpired", () => {
-  it("deletes sessions and links that expired by now", async () => {
+  it("deletes sessions, password resets and links that expired by now", async () => {
     const { calls, deps } = setup();
 
     await purgeExpired(deps, now);
 
     expect(calls.sessions).toEqual(now);
+    expect(calls.passwordResets).toEqual(now);
     expect(calls.telegramLinks).toEqual(now);
   });
 
@@ -42,6 +44,6 @@ describe("purgeExpired", () => {
   it("reports how many rows were deleted", async () => {
     const { deps } = setup();
 
-    expect(await purgeExpired(deps, now)).toEqual({ sessions: 2, telegramLinks: 1, rateLimits: 7 });
+    expect(await purgeExpired(deps, now)).toEqual({ sessions: 2, passwordResets: 3, telegramLinks: 1, rateLimits: 7 });
   });
 });
