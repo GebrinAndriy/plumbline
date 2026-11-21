@@ -8,7 +8,7 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "cyrillic"] }
 const literata = Literata({ variable: "--font-literata", subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
-  title: "QuoteFlow",
+  title: "Plumbline",
   description: "Instant price quotes and lead management for small service businesses",
 };
 

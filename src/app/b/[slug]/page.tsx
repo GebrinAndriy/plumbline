@@ -11,7 +11,7 @@ export default function BusinessPage({ params }: PageProps<"/b/[slug]">) {
           <BusinessQuote slug={slug} />
         ))}
       </Suspense>
-      <footer className="mt-auto border-t border-rule py-6 text-center text-xs text-muted">Made with QuoteFlow</footer>
+      <footer className="mt-auto border-t border-rule py-6 text-center text-xs text-muted">Made with Plumbline</footer>
     </div>
   );
 }

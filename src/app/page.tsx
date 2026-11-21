@@ -50,7 +50,7 @@ export default function Home() {
               Put your prices online today.
             </h2>
             <p className="max-w-xl text-lg leading-normal text-muted">
-              Create your page, add your services and share the link. Free while QuoteFlow is in early access.
+              Create your page, add your services and share the link. Free while Plumbline is in early access.
             </p>
             <CallToAction className="w-full justify-center sm:w-auto" />
           </div>

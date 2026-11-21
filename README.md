@@ -1,4 +1,4 @@
-# QuoteFlow
+# Plumbline
 
 Instant price quotes and lead management for small service businesses: blinds, cleaning, repairs.
 
@@ -83,7 +83,7 @@ bill. Form input such as `1,200.50` (or `12,50` with a decimal comma) is parsed 
 through a float.
 
 ### One market, set in one file
-QuoteFlow targets small service businesses in Ireland: English interface, prices in euro, Irish mobile
+Plumbline targets small service businesses in Ireland: English interface, prices in euro, Irish mobile
 numbers. The locale (`en-IE`), currency (`EUR`) and time zone (`Europe/Dublin`) live in
 `src/lib/market.ts`, and every price, number and date is formatted through it, so moving to another
 euro country is a one-line change plus the phone format. The currency is not stored with each price:
