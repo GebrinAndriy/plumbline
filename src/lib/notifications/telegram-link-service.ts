@@ -33,7 +33,7 @@ export async function qrCodeDataUrl(link: string): Promise<string> {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-const CONNECTED_MESSAGE = "Connected to QuoteFlow. New requests will arrive in this chat.";
+const CONNECTED_MESSAGE = "Connected to Plumbline. New requests will arrive in this chat.";
 
 export async function connectChats(token: string, commands: StartCommand[], now: Date): Promise<string[]> {
   const { catalog, telegramLinks } = getRepositories();

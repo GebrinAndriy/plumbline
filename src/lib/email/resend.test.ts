@@ -11,11 +11,11 @@ describe("sendWithResend", () => {
       return new Response("{}");
     }) as typeof fetch;
 
-    await sendWithResend("re_key", "QuoteFlow <hi@example.com>", message, fakeFetch);
+    await sendWithResend("re_key", "Plumbline <hi@example.com>", message, fakeFetch);
 
     expect(new Headers(request?.headers).get("authorization")).toBe("Bearer re_key");
     expect(JSON.parse(String(request?.body))).toEqual({
-      from: "QuoteFlow <hi@example.com>",
+      from: "Plumbline <hi@example.com>",
       to: ["owner@example.com"],
       subject: "Hi",
       text: "Body",

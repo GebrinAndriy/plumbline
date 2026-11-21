@@ -26,18 +26,18 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: quoteflow
-          POSTGRES_PASSWORD: quoteflow
-          POSTGRES_DB: quoteflow
+          POSTGRES_USER: plumbline
+          POSTGRES_PASSWORD: plumbline
+          POSTGRES_DB: plumbline
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U quoteflow"
+          --health-cmd "pg_isready -U plumbline"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
       # A throwaway database that lives only for this job.
-      DATABASE_URL: postgresql://quoteflow:quoteflow@localhost:5432/quoteflow
+      DATABASE_URL: postgresql://plumbline:plumbline@localhost:5432/plumbline
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

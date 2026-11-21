@@ -1,4 +1,4 @@
-// The one place that says which market QuoteFlow serves: Ireland, in English, in euro.
+// The one place that says which market Plumbline serves: Ireland, in English, in euro.
 export const MARKET = {
   locale: "en-IE",
   currency: "EUR",

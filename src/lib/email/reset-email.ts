@@ -4,9 +4,9 @@ import type { EmailMessage } from "./resend";
 export function resetEmail(to: string, link: string): EmailMessage {
   return {
     to,
-    subject: "Reset your QuoteFlow password",
+    subject: "Reset your Plumbline password",
     text: [
-      "Someone asked to reset the password of your QuoteFlow account.",
+      "Someone asked to reset the password of your Plumbline account.",
       `Set a new password here (the link works once, for ${RESET_TTL_MS / 60_000} minutes):`,
       link,
       "If it was not you, ignore this email: your password stays the same.",
