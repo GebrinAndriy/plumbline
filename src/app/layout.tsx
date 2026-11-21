@@ -8,6 +8,8 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "cyrillic"] }
 const literata = Literata({ variable: "--font-literata", subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
+  // Explicit, because Vercel's own production URL can still be the project's first address.
+  metadataBase: process.env.APP_URL ? new URL(process.env.APP_URL) : undefined,
   title: "Plumbline",
   description: "Instant price quotes and lead management for small service businesses",
 };

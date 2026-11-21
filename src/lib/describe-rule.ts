@@ -2,14 +2,28 @@ import type { PricingRule, Surcharge } from "@/domain/pricing/types";
 import { assertNever } from "@/lib/assert-never";
 import { formatMoney } from "@/lib/format-money";
 
+// The headline price alone, for places with no room for minimums: "€50 per m²".
+export function describeRate(rule: PricingRule): string {
+  switch (rule.kind) {
+    case "per_area":
+      return `${formatMoney(rule.ratePerSqm)} per m²`;
+    case "per_hour":
+      return `${formatMoney(rule.ratePerHour)} per hour`;
+    case "fixed":
+      return `${formatMoney(rule.price)} per item`;
+    default:
+      return assertNever(rule);
+  }
+}
+
 export function describeRule(rule: PricingRule): string {
   switch (rule.kind) {
     case "per_area":
-      return withMinimum(`${formatMoney(rule.ratePerSqm)} per m²`, rule.minimumTotal && formatMoney(rule.minimumTotal));
+      return withMinimum(describeRate(rule), rule.minimumTotal && formatMoney(rule.minimumTotal));
     case "per_hour":
-      return withMinimum(`${formatMoney(rule.ratePerHour)} per hour`, rule.minimumHours && `${rule.minimumHours} h`);
+      return withMinimum(describeRate(rule), rule.minimumHours && `${rule.minimumHours} h`);
     case "fixed":
-      return `${formatMoney(rule.price)} per item`;
+      return describeRate(rule);
     default:
       return assertNever(rule);
   }
