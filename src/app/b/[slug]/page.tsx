@@ -8,7 +8,7 @@ import { QuoteForm } from "./quote-form";
 export async function generateMetadata({ params }: PageProps<"/b/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const page = await loadBusinessPage(slug);
-  if (!page) return { title: "Page not found · Plumbline" };
+  if (!page) notFound();
 
   const title = previewTitle(page.business.name);
   const description = previewDescription(page.services);

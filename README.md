@@ -173,6 +173,19 @@ JavaScript. Its list includes Facebook (Instagram uses it) and WhatsApp but not 
 `htmlLimitedBots` in `next.config.ts` extends it. `metadataBase` comes from `APP_URL`, because image
 links must be absolute and Vercel's own production URL can still be the project's first address.
 
+### Own pages for missing addresses and errors
+A customer who follows an old or mistyped link lands on `app/not-found.tsx` instead of Next's default
+page. It serves unknown URLs and every `notFound()` call, such as a business address that no longer
+exists, and offers the home page and the demo. A missing business is checked in `generateMetadata`
+too, so link-preview bots, which wait for metadata, get a real 404; browsers get the page shell
+first, so their status stays 200 with a `noindex` tag. `app/error.tsx` catches errors thrown while rendering any
+page under the root layout and offers "Try again", which re-fetches the failed part through `retry()`.
+In production the browser receives only the error's digest, never its message, so the page shows that
+reference and the details stay in the server logs.
+
+Trade-off: there is no `global-error.tsx`. It would only catch errors in the root layout itself, which
+reads no data, and it must ship its own `<html>`, styles and fonts.
+
 ### Database sessions instead of JWT
 The cookie holds a random token, and the database stores only its SHA-256 hash. Sign-out and revoking
 a session work immediately, and a leaked table cannot be replayed. The session is replaced on every
