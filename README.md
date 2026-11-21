@@ -22,7 +22,8 @@ and sends a request. The owner gets the request on the dashboard and in Telegram
 - **Options**: each service can have up to 10 paid options (a fixed amount or a percent of the price),
   added and removed from the dashboard; customers tick them in the calculator.
 - **Telegram notifications**: "Connect Telegram" with a one-time link or QR code, no chat ID to copy.
-- **Accounts**: sign-up, sign-in and sign-out with database sessions; rate limiting on every public form.
+- **Accounts**: sign-up, sign-in and sign-out with database sessions, password reset by email; rate
+  limiting on every public form.
 
 ## Tech stack
 
@@ -153,6 +154,24 @@ The cookie holds a random token, and the database stores only its SHA-256 hash. 
 a session work immediately, and a leaked table cannot be replayed. The session is replaced on every
 sign-in. Passwords are hashed with scrypt.
 
+### Password reset with a one-time email link
+"Forgot password?" emails a link that works once, for 30 minutes. As with sessions, the database keeps
+only the SHA-256 of the token, one row per user (a new request replaces the earlier link), and the link
+is spent with a single `DELETE … RETURNING`, so two tabs cannot both use it. Setting the new password
+also deletes every session of that user in the same transaction: whoever had the old password is
+signed out everywhere, and the owner is signed in on this device.
+
+The form gives the same answer whether or not the email has an account, and the email goes out in
+`after()`, once the response is sent, so the response time does not reveal it either. Requests are
+limited per IP and per email (3 an hour), so the form cannot be used to flood someone's inbox.
+Emails are sent through the Resend HTTP API with `fetch`, without an SDK. Without `RESEND_API_KEY` in
+development the email is printed to the server log; in production it is never logged, because the
+link signs the owner in. Links are built from `APP_URL`, not from the request's `Host` header, which
+an attacker could forge to get a reset link pointing at their own site.
+
+Trade-off: the reset page does not check the token before showing the form. An expired link is
+reported after the owner submits a new password, which saves a query on every page view.
+
 ### Notifications as listeners
 Creating a lead publishes a `lead.created` event; Telegram is one listener. It runs after the response
 is sent (`after()`), so a slow Telegram never delays the customer, and one failing listener does not
@@ -205,7 +224,7 @@ notice that the webhook has connected the chat. A push channel (Server-Sent Even
 but a pending link lasts at most 10 minutes and each poll is a couple of primary-key lookups.
 
 ### Expired rows are purged by a daily job
-Expired sessions, unused Telegram link tokens and finished rate limit windows are deleted once a day by
+Expired sessions, password reset links, unused Telegram link tokens and finished rate limit windows are deleted once a day by
 Vercel Cron calling `/api/cron/purge`. Without it the tables only grow: an expired session is removed
 only if someone presents it, and every email tried at sign-in leaves a `rate_limits` row. The job runs
 outside user requests, so sign-in never pays for cleanup. The route accepts only

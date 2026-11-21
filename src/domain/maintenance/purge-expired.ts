@@ -1,14 +1,21 @@
+import type { PasswordResetRepository } from "../auth/password-reset";
 import type { SessionRepository } from "../auth/session";
 import { RATE_LIMITS, type RateLimitStore } from "../rate-limit/rate-limit";
 import type { TelegramLinkRepository } from "../telegram/telegram-link";
 
 type PurgeDeps = {
   sessions: Pick<SessionRepository, "deleteExpired">;
+  passwordResets: Pick<PasswordResetRepository, "deleteExpired">;
   telegramLinks: Pick<TelegramLinkRepository, "deleteExpired">;
   rateLimits: Pick<RateLimitStore, "deleteWindowsStartedBefore">;
 };
 
-export type PurgeReport = { sessions: number; telegramLinks: number; rateLimits: number };
+export type PurgeReport = {
+  sessions: number;
+  passwordResets: number;
+  telegramLinks: number;
+  rateLimits: number;
+};
 
 // A row's policy is not stored, so it is kept until even the longest window has ended.
 export const RATE_LIMIT_RETENTION_MS = Math.max(
@@ -18,6 +25,7 @@ export const RATE_LIMIT_RETENTION_MS = Math.max(
 export async function purgeExpired(deps: PurgeDeps, now: Date): Promise<PurgeReport> {
   return {
     sessions: await deps.sessions.deleteExpired(now),
+    passwordResets: await deps.passwordResets.deleteExpired(now),
     telegramLinks: await deps.telegramLinks.deleteExpired(now),
     rateLimits: await deps.rateLimits.deleteWindowsStartedBefore(
       new Date(now.getTime() - RATE_LIMIT_RETENTION_MS),

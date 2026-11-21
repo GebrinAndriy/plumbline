@@ -5,18 +5,19 @@ import { inputClass } from "@/components/field";
 
 type PasswordFieldProps = {
   autoComplete: "new-password" | "current-password";
+  label?: string;
   hint?: string;
   error?: string;
 };
 
-export function PasswordField({ autoComplete, hint, error }: PasswordFieldProps) {
+export function PasswordField({ autoComplete, label = "Password", hint, error }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
   const describedBy = error ? "password-error" : hint ? "password-hint" : undefined;
 
   return (
     <div className="flex flex-col gap-1.5 text-sm">
       <label htmlFor="password" className="font-medium">
-        Password
+        {label}
       </label>
       <div className="relative">
         <input

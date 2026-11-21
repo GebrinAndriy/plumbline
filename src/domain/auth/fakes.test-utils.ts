@@ -33,5 +33,6 @@ export function fakeAccounts(): AccountRepository & { owners: NewOwner[] } {
       return { userId: `user-${owners.length}` };
     },
     findOwnedBusiness: async () => null,
+    changePassword: async () => {},
   };
 }

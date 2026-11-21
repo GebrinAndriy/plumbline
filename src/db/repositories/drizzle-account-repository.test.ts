@@ -60,6 +60,20 @@ describe("accounts", () => {
   it("finds no business for a user who owns none", async () => {
     expect(await accounts.findOwnedBusiness("not-a-uuid")).toBeNull();
   });
+
+  it("changes the password and signs the user out everywhere", async () => {
+    const { userId } = await accounts.createOwner(owner);
+    const other = await accounts.createOwner({ ...owner, email: "other@example.com", business: { slug: "other", name: "Other" } });
+    const expiresAt = new Date("2026-12-14T12:00:00Z");
+    await sessions.create("laptop", { userId, expiresAt });
+    await sessions.create("other-user", { userId: other.userId, expiresAt });
+
+    await accounts.changePassword(userId, "scrypt$new");
+
+    expect((await accounts.findUserByEmail(owner.email))?.passwordHash).toBe("scrypt$new");
+    expect(await sessions.find("laptop")).toBeNull();
+    expect(await sessions.find("other-user")).not.toBeNull();
+  });
 });
 
 describe("sessions", () => {

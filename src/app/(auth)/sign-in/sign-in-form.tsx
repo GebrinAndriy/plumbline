@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Field } from "@/components/field";
 import { PrimaryButton } from "@/components/primary-button";
 import { useFormSubmit } from "@/components/use-form-submit";
@@ -15,7 +16,12 @@ export function SignInForm() {
   return (
     <form method="post" onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
       <Field label="Email" name="email" type="email" autoComplete="email" required error={errors.email} />
-      <PasswordField autoComplete="current-password" error={errors.password} />
+      <div className="flex flex-col gap-2">
+        <PasswordField autoComplete="current-password" error={errors.password} />
+        <Link href="/forgot-password" className="self-end text-sm font-semibold text-accent underline-offset-4 hover:underline">
+          Forgot password?
+        </Link>
+      </div>
       {state.message && (
         <p role="alert" className="animate-shake text-sm text-error">
           {state.message}

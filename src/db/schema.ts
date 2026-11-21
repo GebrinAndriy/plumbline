@@ -38,6 +38,15 @@ export const sessions = pgTable(
   (t) => [index("sessions_user_idx").on(t.userId)],
 );
 
+// Keyed by user: a new reset request overwrites the earlier link instead of adding one.
+export const passwordResets = pgTable("password_resets", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
 export const businesses = pgTable(
   "businesses",
   {
