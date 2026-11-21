@@ -6,8 +6,8 @@ A customer opens the business's public calculator, enters sizes or hours, sees t
 and sends a request. The owner gets the request on the dashboard and in Telegram, then moves it through
 `new → contacted → quoted → won / lost`.
 
-**Live demo:** https://quoteflow-khaki.vercel.app. The seeded calculator is at
-[/b/demo](https://quoteflow-khaki.vercel.app/b/demo); sign up to get a dashboard of your own.
+**Live demo:** https://plumblinebusiness.vercel.app. The seeded calculator is at
+[/b/demo](https://plumblinebusiness.vercel.app/b/demo); sign up to get a dashboard of your own.
 
 ## Features
 
