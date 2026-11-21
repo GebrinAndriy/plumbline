@@ -23,9 +23,9 @@ async function seed() {
   await catalog.createService({
     businessId: business.id,
     name: "Roller blinds",
-    rule: { kind: "per_area", ratePerSqm: 120_000, minimumTotal: 150_000 },
+    rule: { kind: "per_area", ratePerSqm: 5_000, minimumTotal: 8_000 },
     surcharges: [
-      { id: "install", label: "Installation", kind: "flat", amount: 30_000 },
+      { id: "install", label: "Installation", kind: "flat", amount: 3_000 },
       { id: "blackout", label: "Blackout fabric", kind: "percent", percent: 15 },
     ],
   });
@@ -33,15 +33,15 @@ async function seed() {
   await catalog.createService({
     businessId: business.id,
     name: "Apartment cleaning",
-    rule: { kind: "per_hour", ratePerHour: 45_000, minimumHours: 3 },
+    rule: { kind: "per_hour", ratePerHour: 3_000, minimumHours: 3 },
     surcharges: [{ id: "windows", label: "Window cleaning", kind: "percent", percent: 20 }],
   });
 
   await catalog.createService({
     businessId: business.id,
     name: "Furniture assembly",
-    rule: { kind: "fixed", price: 80_000 },
-    surcharges: [{ id: "express", label: "Same-day visit", kind: "flat", amount: 50_000 }],
+    rule: { kind: "fixed", price: 6_000 },
+    surcharges: [{ id: "express", label: "Same-day visit", kind: "flat", amount: 2_500 }],
   });
 
   console.log(`Created business "${DEMO_SLUG}" with 3 services`);

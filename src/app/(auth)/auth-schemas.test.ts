@@ -4,20 +4,20 @@ import { resetPasswordSchema, signInSchema, signUpSchema } from "./auth-schemas"
 const valid = {
   email: "owner@example.com",
   password: "correct horse",
-  businessName: " Blinds Kyiv ",
-  slug: " Blinds-Kyiv ",
+  businessName: " Blinds Dublin ",
+  slug: " Blinds-Dublin ",
 };
 
 describe("signUpSchema", () => {
   it("accepts valid input and normalizes the address", () => {
     expect(signUpSchema.parse(valid)).toEqual({
       ...valid,
-      businessName: "Blinds Kyiv",
-      slug: "blinds-kyiv",
+      businessName: "Blinds Dublin",
+      slug: "blinds-dublin",
     });
   });
 
-  it.each(["ab", "-blinds", "blinds-", "блайнди", "blinds kyiv", "a".repeat(41)])(
+  it.each(["ab", "-blinds", "blinds-", "блайнди", "blinds dublin", "a".repeat(41)])(
     "rejects the address %j",
     (slug) => {
       expect(signUpSchema.safeParse({ ...valid, slug }).success).toBe(false);

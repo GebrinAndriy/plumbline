@@ -11,7 +11,7 @@ const rules: PricingRule[] = [
 ];
 
 describe("ruleFormValues", () => {
-  it("shows prices as hryvnias", () => {
+  it("shows prices in euro", () => {
     expect(ruleFormValues(rules[0])).toEqual({ ratePerSqm: "1200.50", minimumTotal: "1500" });
   });
 

@@ -16,7 +16,7 @@ describe("tween", () => {
     expect(tween(150_000, 386_000, 1)).toBe(386_000);
   });
 
-  it("returns whole kopiykas in between, also when the price goes down", () => {
+  it("returns whole cents in between, also when the price goes down", () => {
     const up = tween(0, 1_001, 0.3);
     const down = tween(386_000, 336_000, 0.3);
     expect(Number.isInteger(up)).toBe(true);

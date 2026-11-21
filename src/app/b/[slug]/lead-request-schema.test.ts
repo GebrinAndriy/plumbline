@@ -15,8 +15,8 @@ function form(fields: Record<string, string | string[]>): FormData {
 const valid = {
   serviceId,
   idempotencyKey,
-  customerName: "  Olena  ",
-  phone: "+38 (050) 123-45-67",
+  customerName: "  Aoife  ",
+  phone: "+353 (87) 123-4567",
   kind: "per_area",
   widthCm: "150",
   heightCm: "200.5",
@@ -31,8 +31,8 @@ describe("parseLeadForm", () => {
       request: {
         serviceId,
         idempotencyKey,
-        customerName: "Olena",
-        phone: "+380501234567",
+        customerName: "Aoife",
+        phone: "+353871234567",
         input: { kind: "per_area", widthCm: 150, heightCm: 200.5, quantity: 2 },
         surchargeIds: ["install", "motor"],
       },

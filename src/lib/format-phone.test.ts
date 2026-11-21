@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import { formatPhone } from "./format-phone";
 
 describe("formatPhone", () => {
-  it("groups a Ukrainian mobile number", () => {
-    expect(formatPhone("+380671234567")).toBe("+380 67 123 45 67");
+  it("groups an Irish mobile number", () => {
+    expect(formatPhone("+353871234567")).toBe("+353 87 123 4567");
   });
 
   it("leaves other numbers as they are", () => {
-    expect(formatPhone("+48123456789")).toBe("+48123456789");
+    expect(formatPhone("+4915112345678")).toBe("+4915112345678");
+    expect(formatPhone("+35312345678")).toBe("+35312345678");
   });
 });

@@ -11,11 +11,11 @@ describe("parseStartCommands", () => {
   it("takes the token and chat from /start messages", () => {
     const raw = {
       ok: true,
-      result: [start(10, { id: 555, username: "olena", first_name: "Olena" }), start(11, { id: 666 }, "hello")],
+      result: [start(10, { id: 555, username: "aoife", first_name: "Aoife" }), start(11, { id: 666 }, "hello")],
     };
 
     expect(parseStartCommands(raw)).toEqual({
-      commands: [{ chat: { id: "555", name: "@olena" }, token }],
+      commands: [{ chat: { id: "555", name: "@aoife" }, token }],
       lastUpdateId: 11,
     });
   });
@@ -24,14 +24,14 @@ describe("parseStartCommands", () => {
     const raw = {
       ok: true,
       result: [
-        start(1, { id: 555, first_name: "Olena", last_name: "Koval" }),
+        start(1, { id: 555, first_name: "Aoife", last_name: "Kelly" }),
         start(2, { id: -100123, type: "group", title: "Blinds team" }),
         start(3, { id: 777 }),
       ],
     };
 
     expect(parseStartCommands(raw).commands.map(({ chat }) => chat)).toEqual([
-      { id: "555", name: "Olena Koval" },
+      { id: "555", name: "Aoife Kelly" },
       { id: "-100123", name: "Blinds team" },
       { id: "777", name: null },
     ]);
@@ -53,8 +53,8 @@ describe("parseStartCommands", () => {
 
 describe("parseStartUpdate", () => {
   it("takes the command from a single webhook update", () => {
-    expect(parseStartUpdate(start(7, { id: 555, username: "olena" }))).toEqual({
-      chat: { id: "555", name: "@olena" },
+    expect(parseStartUpdate(start(7, { id: 555, username: "aoife" }))).toEqual({
+      chat: { id: "555", name: "@aoife" },
       token,
     });
   });

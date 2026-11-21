@@ -3,7 +3,7 @@ import { toFieldErrors } from "@/lib/field-errors";
 import { surchargeFormSchema } from "./surcharge-form-schema";
 
 describe("surchargeFormSchema", () => {
-  it("builds a flat option in kopiykas", () => {
+  it("builds a flat option in cents", () => {
     expect(surchargeFormSchema.parse({ kind: "flat", label: " Installation ", amount: "500,50" })).toEqual({
       kind: "flat",
       label: "Installation",

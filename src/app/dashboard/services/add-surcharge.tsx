@@ -48,7 +48,7 @@ export function AddSurcharge({ action }: AddSurchargeProps) {
           </select>
         </label>
         {kind === "flat" ? (
-          <Field label="Amount, UAH" name="amount" inputMode="decimal" error={errors.amount} />
+          <Field label="Amount, €" name="amount" inputMode="decimal" error={errors.amount} />
         ) : (
           <Field label="Percent" name="percent" inputMode="numeric" error={errors.percent} />
         )}

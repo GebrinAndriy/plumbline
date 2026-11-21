@@ -2,14 +2,15 @@ import type { Lead } from "@/domain/leads/lead";
 import { describeInput } from "@/lib/describe-input";
 import { formatMoney } from "@/lib/format-money";
 import { formatPhone } from "@/lib/format-phone";
+import { MARKET } from "@/lib/market";
 import { LeadStatusControl } from "./lead-status-control";
 
-const dateFormat = new Intl.DateTimeFormat("en-GB", {
+const dateFormat = new Intl.DateTimeFormat(MARKET.locale, {
   day: "numeric",
   month: "short",
   hour: "2-digit",
   minute: "2-digit",
-  timeZone: "Europe/Kyiv",
+  timeZone: MARKET.timeZone,
 });
 
 export function LeadRow({ lead }: { lead: Lead }) {

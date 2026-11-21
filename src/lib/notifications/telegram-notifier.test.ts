@@ -6,8 +6,8 @@ import { formatMoney } from "@/lib/format-money";
 import { telegramNotifier } from "./telegram-notifier";
 
 const lead = {
-  customerName: "Olena",
-  phone: "+380501234567",
+  customerName: "Aoife",
+  phone: "+353871234567",
   comment: "After 6 pm, please",
   quote: { lines: [], total: 180_000 },
 } as unknown as Lead;
@@ -36,7 +36,7 @@ describe("telegramNotifier", () => {
     expect(calls[0].url).toBe("https://api.telegram.org/botbot-token/sendMessage");
     expect(calls[0].body).toEqual({
       chat_id: "123456789",
-      text: `New request: Roller blinds\nOlena, +380501234567\nTotal: ${formatMoney(180_000)}\nComment: After 6 pm, please`,
+      text: `New request: Roller blinds\nAoife, +353871234567\nTotal: ${formatMoney(180_000)}\nComment: After 6 pm, please`,
     });
   });
 

@@ -18,14 +18,14 @@ beforeEach(async () => {
 
 afterEach(() => close());
 
-async function createBusiness(slug = "blinds-kyiv") {
-  return catalog.createBusiness({ slug, name: "Blinds Kyiv", telegramChatId: null });
+async function createBusiness(slug = "blinds-dublin") {
+  return catalog.createBusiness({ slug, name: "Blinds Dublin", telegramChatId: null });
 }
 
 describe("businesses", () => {
   it("finds a business by slug", async () => {
     const created = await createBusiness();
-    expect(await catalog.findBusinessBySlug("blinds-kyiv")).toEqual(created);
+    expect(await catalog.findBusinessBySlug("blinds-dublin")).toEqual(created);
   });
 
   it("returns null for an unknown slug", async () => {
@@ -37,14 +37,14 @@ describe("businesses", () => {
     await createBusiness("other");
 
     await catalog.setTelegramChat(own.id, { id: "123456789", name: "@olena" });
-    expect(await catalog.findBusinessBySlug("blinds-kyiv")).toMatchObject({
+    expect(await catalog.findBusinessBySlug("blinds-dublin")).toMatchObject({
       telegramChatId: "123456789",
       telegramChatName: "@olena",
     });
     expect(await catalog.findBusinessBySlug("other")).toMatchObject({ telegramChatId: null });
 
     await catalog.setTelegramChat(own.id, null);
-    expect(await catalog.findBusinessBySlug("blinds-kyiv")).toMatchObject({
+    expect(await catalog.findBusinessBySlug("blinds-dublin")).toMatchObject({
       telegramChatId: null,
       telegramChatName: null,
     });

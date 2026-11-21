@@ -1,4 +1,4 @@
-// Integer kopiykas: floats lose precision on money.
+// Integer cents: floats lose precision on money.
 export type Money = number;
 
 export type PricingRule =

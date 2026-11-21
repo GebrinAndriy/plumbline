@@ -16,7 +16,7 @@ describe("per_area strategy", () => {
     expect(price).toBe(300_000);
   });
 
-  it("rounds to whole kopiykas", () => {
+  it("rounds to whole cents", () => {
     const cheap = createPricingStrategy({ kind: "per_area", ratePerSqm: 12_345 });
     expect(cheap.basePrice({ kind: "per_area", widthCm: 10, heightCm: 10, quantity: 1 })).toBe(123);
   });

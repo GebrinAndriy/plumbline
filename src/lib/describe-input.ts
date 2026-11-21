@@ -1,7 +1,8 @@
 import type { QuoteInput } from "@/domain/pricing/types";
 import { assertNever } from "@/lib/assert-never";
+import { MARKET } from "@/lib/market";
 
-const decimal = new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 2 });
+const decimal = new Intl.NumberFormat(MARKET.locale, { maximumFractionDigits: 2 });
 
 export function describeInput(input: QuoteInput): string {
   switch (input.kind) {

@@ -2,7 +2,7 @@ import { assertNever } from "@/lib/assert-never";
 import { PricingConfigError } from "./errors";
 import type { Money, PricingRule, Service, Surcharge } from "./types";
 
-export const MAX_PRICE: Money = 100_000_000; // 1 000 000 UAH
+export const MAX_PRICE: Money = 100_000_000; // €1,000,000
 export const MAX_SURCHARGES = 10;
 const MAX_PERCENT = 100;
 const MAX_LABEL_LENGTH = 60;
@@ -63,7 +63,7 @@ export function validateSurcharge(surcharge: Surcharge): void {
 
 function assertPrice(value: Money, field: string): void {
   if (!Number.isInteger(value) || value <= 0 || value > MAX_PRICE) {
-    throw new PricingConfigError(`${field} must be a whole number of kopiykas between 1 and ${MAX_PRICE}`);
+    throw new PricingConfigError(`${field} must be a whole number of cents between 1 and ${MAX_PRICE}`);
   }
 }
 

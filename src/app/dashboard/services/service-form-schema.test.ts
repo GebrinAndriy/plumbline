@@ -3,7 +3,7 @@ import { toFieldErrors } from "@/lib/field-errors";
 import { serviceFormSchema } from "./service-form-schema";
 
 describe("serviceFormSchema", () => {
-  it("builds a per-area rule in kopiykas", () => {
+  it("builds a per-area rule in cents", () => {
     const parsed = serviceFormSchema.parse({
       name: " Roller blinds ",
       kind: "per_area",

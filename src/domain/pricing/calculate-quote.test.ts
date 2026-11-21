@@ -13,7 +13,7 @@ const rollerBlinds: Service = {
   ],
 };
 
-// 3 m² → 1500 UAH base
+// 3 m² → €1,500 base
 const windowInput: QuoteInput = { kind: "per_area", widthCm: 150, heightCm: 200, quantity: 1 };
 
 describe("calculateQuote", () => {

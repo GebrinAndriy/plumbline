@@ -30,7 +30,7 @@ const phone = z
   .string()
   .trim()
   .transform((value) => value.replace(/[\s()-]/g, ""))
-  .pipe(z.string().regex(/^\+?\d{10,15}$/, "Enter a phone number, e.g. +380501234567"));
+  .pipe(z.string().regex(/^\+?\d{10,15}$/, "Enter a phone number, e.g. +353871234567"));
 
 const leadRequestSchema = z.object({
   serviceId: z.uuid("Choose a service"),

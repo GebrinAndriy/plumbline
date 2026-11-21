@@ -28,36 +28,36 @@ const sources: ExampleSource[] = [
     service: {
       id: "blinds",
       name: "Roller blinds",
-      rule: { kind: "per_area", ratePerSqm: 100_000 },
-      surcharges: [{ id: "installation", label: "Installation", kind: "flat", amount: 50_000 }],
+      rule: { kind: "per_area", ratePerSqm: 5_000 },
+      surcharges: [{ id: "installation", label: "Installation", kind: "flat", amount: 3_000 }],
     },
     input: { kind: "per_area", widthCm: 210, heightCm: 160, quantity: 1 },
     selected: ["installation"],
-    customer: "Olena K. · +380 67 123 45 67",
+    customer: "Aoife K. · +353 87 123 4567",
   },
   {
     tab: "Cleaning · per hour",
     service: {
       id: "cleaning",
       name: "Apartment cleaning",
-      rule: { kind: "per_hour", ratePerHour: 40_000, minimumHours: 2 },
+      rule: { kind: "per_hour", ratePerHour: 3_000, minimumHours: 2 },
       surcharges: [{ id: "weekend", label: "Weekend visit", kind: "percent", percent: 20 }],
     },
     input: { kind: "per_hour", hours: 4 },
     selected: ["weekend"],
-    customer: "Andrii M. · +380 50 418 22 09",
+    customer: "Liam M. · +353 85 418 2209",
   },
   {
     tab: "Repairs · fixed price",
     service: {
       id: "mounting",
       name: "TV wall mounting",
-      rule: { kind: "fixed", price: 65_000 },
-      surcharges: [{ id: "cables", label: "Hide the cables", kind: "flat", amount: 30_000 }],
+      rule: { kind: "fixed", price: 6_500 },
+      surcharges: [{ id: "cables", label: "Hide the cables", kind: "flat", amount: 2_000 }],
     },
     input: { kind: "fixed", quantity: 2 },
     selected: ["cables"],
-    customer: "Taras V. · +380 66 205 88 31",
+    customer: "Conor V. · +353 86 205 8831",
   },
 ];
 
@@ -83,17 +83,17 @@ const model = (fields: Omit<PricingModel, "result">, service: Service, input: Qu
 
 export const PRICING_MODELS: PricingModel[] = [
   model(
-    { kind: "Per area", usedFor: "Blinds, curtains, flooring", formula: ["210 × 160 cm", "× 1 000 ₴ per m²"], note: "Minimum order if a job is small." },
+    { kind: "Per area", usedFor: "Blinds, curtains, flooring", formula: ["210 × 160 cm", "× €50 per m²"], note: "Minimum order if a job is small." },
     blinds,
     { kind: "per_area", widthCm: 210, heightCm: 160, quantity: 1 },
   ),
   model(
-    { kind: "Per hour", usedFor: "Cleaning, repairs, moving", formula: ["3 hours", "× 400 ₴ per hour"], note: "Minimum hours for short visits." },
+    { kind: "Per hour", usedFor: "Cleaning, repairs, moving", formula: ["3 hours", "× €30 per hour"], note: "Minimum hours for short visits." },
     cleaning,
     { kind: "per_hour", hours: 3 },
   ),
   model(
-    { kind: "Fixed price", usedFor: "Assembly, mounting, installs", formula: ["2 items", "× 650 ₴ per item"], note: "Same price for every piece." },
+    { kind: "Fixed price", usedFor: "Assembly, mounting, installs", formula: ["2 items", "× €65 per item"], note: "Same price for every piece." },
     mounting,
     { kind: "fixed", quantity: 2 },
   ),
