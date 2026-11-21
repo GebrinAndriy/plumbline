@@ -160,6 +160,19 @@ The owner can edit it by hand. The same Zod schema the server uses checks the
 address as they type and shows the final link, so a bad address is caught before the request. Whether
 the address is free is still decided by the server, because only the database knows.
 
+### Shared links show the business and its prices
+Owners share their page in Instagram, WhatsApp, Telegram and Viber, so the link preview is the first
+thing a customer sees. Each `/b/<slug>` page sets its own title ("Ó Briain Blinds · Instant prices")
+and a description with up to three headline prices, and `opengraph-image.tsx` draws a 1200×630 card
+with the same prices through `next/og`. Both come from the services in the database, so the preview
+changes with the prices. The page and its metadata share one lookup per request through React
+`cache()`.
+
+Next.js streams metadata to most clients and puts it in `<head>` only for bots that cannot run
+JavaScript. Its list includes Facebook (Instagram uses it) and WhatsApp but not Telegram or Viber, so
+`htmlLimitedBots` in `next.config.ts` extends it. `metadataBase` comes from `APP_URL`, because image
+links must be absolute and Vercel's own production URL can still be the project's first address.
+
 ### Database sessions instead of JWT
 The cookie holds a random token, and the database stores only its SHA-256 hash. Sign-out and revoking
 a session work immediately, and a leaked table cannot be replayed. The session is replaced on every

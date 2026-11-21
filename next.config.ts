@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Next's default list plus Telegram and Viber: their link previews read only the first <head>, not streamed tags.
+  htmlLimitedBots:
+    /facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight|TelegramBot|Viber/i,
   turbopack: {
     rules: {
       "*.css": {

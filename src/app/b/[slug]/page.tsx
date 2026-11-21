@@ -1,7 +1,26 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getRepositories } from "@/db/get-repositories";
+import { previewDescription, previewTitle } from "./link-preview";
+import { loadBusinessPage } from "./load-business-page";
 import { QuoteForm } from "./quote-form";
+
+export async function generateMetadata({ params }: PageProps<"/b/[slug]">): Promise<Metadata> {
+  const { slug } = await params;
+  const page = await loadBusinessPage(slug);
+  if (!page) return { title: "Page not found · Plumbline" };
+
+  const title = previewTitle(page.business.name);
+  const description = previewDescription(page.services);
+  const url = `/b/${page.business.slug}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url, type: "website", siteName: "Plumbline", locale: "en_IE" },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export default function BusinessPage({ params }: PageProps<"/b/[slug]">) {
   return (
@@ -17,11 +36,9 @@ export default function BusinessPage({ params }: PageProps<"/b/[slug]">) {
 }
 
 async function BusinessQuote({ slug }: { slug: string }) {
-  const { catalog } = getRepositories();
-  const business = await catalog.findBusinessBySlug(slug);
-  if (!business) notFound();
-
-  const services = await catalog.listActiveServices(business.id);
+  const page = await loadBusinessPage(slug);
+  if (!page) notFound();
+  const { business, services } = page;
 
   return (
     <>
