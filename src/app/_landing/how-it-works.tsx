@@ -24,10 +24,10 @@ export function HowItWorks() {
             <div className="rounded-card border border-rule bg-surface px-5 py-4">
               <p className="text-[11px] font-semibold tracking-[0.14em] text-muted">PER AREA</p>
               <p className="mt-1 font-serif text-xl font-medium">Roller blinds</p>
-              <p className="mt-1 text-sm text-muted">1 000 ₴ per m², minimum 1 500 ₴</p>
+              <p className="mt-1 text-sm text-muted">€50 per m², minimum €80</p>
             </div>
           </Step>
-          <Step number={2} title="Share your page link" body="Put it in your Instagram bio, Viber status or on a business card. Customers open it on their phone.">
+          <Step number={2} title="Share your page link" body="Put it in your Instagram bio, WhatsApp status or on a business card. Customers open it on their phone.">
             <div className="flex gap-2">
               <span className="flex-1 rounded-field border border-rule bg-white px-3.5 py-3 text-[15px]">/b/your-business</span>
               <span className="rounded-field border border-ink px-4 py-3 text-[15px] font-semibold">Copy link</span>

@@ -17,12 +17,12 @@ test("an owner prices a service and receives a customer's request", async ({ pag
   await test.step("owner adds a service priced by area with a paid option", async () => {
     await page.getByRole("link", { name: "Services" }).click();
     await page.getByLabel("Service name").fill("Roller blinds");
-    await page.getByLabel("Price per m², UAH").fill("1000");
+    await page.getByLabel("Price per m², €").fill("50");
     await page.getByRole("button", { name: "Add service" }).click();
 
     await page.getByRole("button", { name: "Add option" }).click();
     await page.getByLabel("Option name").fill("Installation");
-    await page.getByLabel("Amount, UAH").fill("500");
+    await page.getByLabel("Amount, €").fill("30");
     await page.getByRole("button", { name: "Add option" }).click();
     await expect(page.getByRole("list", { name: "Options of Roller blinds" })).toContainText("Installation");
   });
@@ -37,11 +37,11 @@ test("an owner prices a service and receives a customer's request", async ({ pag
     await calculator.getByLabel("Height, cm", { exact: true }).fill("100");
     await calculator.getByLabel("Quantity").fill("1");
     await calculator.getByLabel("Installation").check();
-    await expect(calculator.getByRole("button", { name: /Send request · 2\s500\s₴/ })).toBeVisible();
-    await expect(calculator.locator("[aria-live=polite]")).toContainText(/2\s500\s₴/);
+    await expect(calculator.getByRole("button", { name: /Send request · €130/ })).toBeVisible();
+    await expect(calculator.locator("[aria-live=polite]")).toContainText("€130");
 
-    await calculator.getByLabel("Your name").fill("Olena Koval");
-    await calculator.getByLabel("Phone").fill("+380501234567");
+    await calculator.getByLabel("Your name").fill("Aoife Kelly");
+    await calculator.getByLabel("Phone").fill("+353871234567");
     await calculator.getByRole("button", { name: "Send request" }).click();
     await expect(calculator.getByRole("heading", { name: "Request sent" })).toBeVisible();
     await customer.close();
@@ -49,8 +49,8 @@ test("an owner prices a service and receives a customer's request", async ({ pag
 
   await test.step("owner sees the request and moves it forward", async () => {
     await page.goto("/dashboard");
-    const lead = page.getByRole("listitem").filter({ hasText: "Olena Koval" });
-    await expect(lead).toContainText(/2\s500\s₴/);
+    const lead = page.getByRole("listitem").filter({ hasText: "Aoife Kelly" });
+    await expect(lead).toContainText("€130");
     await lead.getByRole("button", { name: "→ Contacted" }).click();
     await expect(lead.getByRole("button", { name: "→ Quoted" })).toBeVisible();
   });

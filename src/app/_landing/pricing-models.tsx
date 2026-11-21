@@ -33,7 +33,7 @@ export function PricingModels() {
           <span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-full border-2 border-accent text-xs leading-none font-bold text-accent">
             +
           </span>
-          Add paid options to any service: a fixed amount like Installation +500 ₴, or a percent like Urgent +20%. Customers
+          Add paid options to any service: a fixed amount like Installation +€30, or a percent like Urgent +20%. Customers
           tick them and the price updates.
         </p>
       </div>

@@ -24,7 +24,7 @@ export function MobileTotalBar({ quote, receipt }: { quote: Quote | null; receip
             Total{items > 0 && ` · ${items} ${items === 1 ? "item" : "items"}`}
           </p>
           <p className={`font-serif text-3xl font-semibold tabular-nums ${quote ? "text-accent" : "text-rule"}`}>
-            {quote ? formatAnimated(shown, quote.total) : "— ₴"}
+            {quote ? formatAnimated(shown, quote.total) : "€ —"}
           </p>
         </div>
         <button

@@ -50,9 +50,9 @@ function Total({ amount }: { amount: Money | null }) {
   const shown = useAnimatedNumber(amount ?? 0);
   return (
     <span aria-hidden className={`font-serif text-5xl font-semibold tabular-nums ${amount === null ? "text-rule" : "text-accent"}`}>
-      {amount === null ? "— ₴" : formatAnimated(shown, amount)}
+      {amount === null ? "€ —" : formatAnimated(shown, amount)}
     </span>
   );
 }
 
-// While counting, show whole hryvnias so the width does not jump; land on the exact amount.
+// While counting, show whole euros so the width does not jump; land on the exact amount.

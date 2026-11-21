@@ -7,8 +7,8 @@ describe("describeInput", () => {
     expect(describeInput({ kind: "per_area", widthCm: 120, heightCm: 150, quantity: 3 })).toBe("3 × 120 × 150 cm");
   });
 
-  it("shows hours with a decimal comma and items as pieces", () => {
-    expect(describeInput({ kind: "per_hour", hours: 2.5 })).toBe("2,5 h");
+  it("shows hours with a decimal point and items as pieces", () => {
+    expect(describeInput({ kind: "per_hour", hours: 2.5 })).toBe("2.5 h");
     expect(describeInput({ kind: "fixed", quantity: 2 })).toBe("2 pcs");
   });
 });

@@ -11,14 +11,14 @@ const POINTS = [
 const STATS = [
   ["New requests", "3"],
   ["Won this month", "7"],
-  ["Value of won jobs", "41 200 ₴"],
+  ["Value of won jobs", "€2,480"],
 ];
 
 const LEADS: { name: string; phone: string; what: string; total: string; status: LeadStatus }[] = [
-  { name: "Olena K.", phone: "+380 67 123 45 67", what: "Roller blinds · 210 × 160 cm · Installation", total: "3 860 ₴", status: "new" },
-  { name: "Andrii M.", phone: "+380 50 418 22 09", what: "Apartment cleaning · 4 h", total: "1 600 ₴", status: "contacted" },
-  { name: "Iryna P.", phone: "+380 93 771 40 15", what: "Roller blinds · 3 × 120 × 150 cm", total: "5 400 ₴", status: "quoted" },
-  { name: "Taras V.", phone: "+380 66 205 88 31", what: "TV wall mounting · 2 pcs", total: "1 300 ₴", status: "won" },
+  { name: "Aoife K.", phone: "+353 87 123 4567", what: "Roller blinds · 210 × 160 cm · Installation", total: "€198", status: "new" },
+  { name: "Liam M.", phone: "+353 85 418 2209", what: "Apartment cleaning · 4 h", total: "€120", status: "contacted" },
+  { name: "Niamh P.", phone: "+353 83 771 4015", what: "Roller blinds · 3 × 120 × 150 cm", total: "€270", status: "quoted" },
+  { name: "Conor V.", phone: "+353 86 205 8831", what: "TV wall mounting · 2 pcs", total: "€130", status: "won" },
 ];
 
 const nextStep = (status: LeadStatus) => allowedTransitions(status).find((s) => s !== "lost");

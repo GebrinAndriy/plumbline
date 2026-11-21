@@ -11,8 +11,8 @@ beforeEach(() => {
 const input: SignUpInput = {
   email: "  Owner@Example.com ",
   password: "correct horse battery",
-  businessName: "Blinds Kyiv",
-  slug: "blinds-kyiv",
+  businessName: "Blinds Dublin",
+  slug: "blinds-dublin",
 };
 
 describe("signUp", () => {
@@ -23,7 +23,7 @@ describe("signUp", () => {
     expect(deps.accounts.owners[0]).toEqual({
       email: "owner@example.com",
       passwordHash: "hashed:correct horse battery",
-      business: { slug: "blinds-kyiv", name: "Blinds Kyiv" },
+      business: { slug: "blinds-dublin", name: "Blinds Dublin" },
     });
   });
 

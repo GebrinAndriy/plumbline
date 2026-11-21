@@ -1,14 +1,15 @@
 import type { Money, PricingRule, QuoteInput } from "@/domain/pricing/types";
 import { assertNever } from "@/lib/assert-never";
 import { formatMoney } from "@/lib/format-money";
+import { MARKET } from "@/lib/market";
 
-const decimal = new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 2 });
+const decimal = new Intl.NumberFormat(MARKET.locale, { maximumFractionDigits: 2 });
 const CM2_PER_SQM = 10_000;
 
 type InputOf<K extends QuoteInput["kind"]> = Extract<QuoteInput, { kind: K }>;
 
 export type QuoteExplanation = {
-  // Short detail for the receipt line: "3,36 m²", "3 h", "2 pcs".
+  // Short detail for the receipt line: "3.36 m²", "3 h", "2 pcs".
   detail: string;
   // The arithmetic behind the base price, so the customer can check it.
   formula: string;

@@ -38,8 +38,8 @@ beforeEach(async () => {
   makeLead = (overrides = {}) => ({
     businessId: business.id,
     serviceId: service.id,
-    customerName: "Olena",
-    phone: "+380501234567",
+    customerName: "Aoife",
+    phone: "+353871234567",
     input,
     quote: calculateQuote(service, input),
     idempotencyKey: `key-${++counter}`,

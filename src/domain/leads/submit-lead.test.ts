@@ -93,8 +93,8 @@ beforeEach(() => {
 function request(overrides: Partial<LeadRequest> = {}): LeadRequest {
   return {
     serviceId: rollerBlinds.id,
-    customerName: "Olena",
-    phone: "+380501234567",
+    customerName: "Aoife",
+    phone: "+353871234567",
     input: { kind: "per_area", widthCm: 150, heightCm: 200, quantity: 1 },
     surchargeIds: ["install"],
     idempotencyKey: "key-1",
@@ -130,7 +130,7 @@ describe("submitLead", () => {
       type: "lead.created",
       business: blinds,
       serviceName: "Roller blinds",
-      lead: { customerName: "Olena", quote: { total: 180_000 } },
+      lead: { customerName: "Aoife", quote: { total: 180_000 } },
     });
   });
 

@@ -4,7 +4,7 @@ import type { PricingRule } from "@/domain/pricing/types";
 import { parseMoney } from "@/lib/parse-money";
 import { parseDecimal } from "@/lib/parse-number";
 
-const PRICE_ERROR = "Enter a price in UAH, for example 450 or 450.50";
+const PRICE_ERROR = "Enter a price in euro, for example 45 or 45.50";
 
 export const price = z.string().transform((text, ctx) => {
   const amount = parseMoney(text);

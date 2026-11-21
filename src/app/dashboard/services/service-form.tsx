@@ -48,9 +48,9 @@ export function ServiceForm({ action, initial, submitLabel, pendingLabel, onCanc
       <Field label="Service name" name="name" required placeholder="Roller blinds" defaultValue={initial?.name} error={errors.name} />
       <PricingKindPicker value={kind} onChange={setKind} />
       <div className="grid items-end gap-4 sm:grid-cols-2">
-        {kind === "per_area" && [money("Price per m², UAH", "ratePerSqm"), money("Minimum order, UAH", "minimumTotal", true)]}
-        {kind === "per_hour" && [money("Price per hour, UAH", "ratePerHour"), money("Minimum hours", "minimumHours", true)]}
-        {kind === "fixed" && money("Price per item, UAH", "price")}
+        {kind === "per_area" && [money("Price per m², €", "ratePerSqm"), money("Minimum order, €", "minimumTotal", true)]}
+        {kind === "per_hour" && [money("Price per hour, €", "ratePerHour"), money("Minimum hours", "minimumHours", true)]}
+        {kind === "fixed" && money("Price per item, €", "price")}
       </div>
       <p aria-live="polite" className="rounded-field border border-dashed border-rule bg-receipt px-4 py-3 text-sm">
         <span className="block text-xs font-semibold tracking-[0.13em] text-muted uppercase">A typical order</span>
