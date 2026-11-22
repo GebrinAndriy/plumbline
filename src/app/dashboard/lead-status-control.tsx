@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { StatusBadge, statusLabel } from "@/components/status-badge";
-import { allowedTransitions, type LeadStatus } from "@/domain/leads/lead-status";
+import { allowedTransitions, isClosed, type LeadStatus } from "@/domain/leads/lead-status";
 import { changeLeadStatusAction } from "./actions";
 
 const button = "rounded-field border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50";
@@ -26,7 +26,7 @@ export function LeadStatusControl({ leadId, status }: { leadId: string; status: 
           )}
           {forward.map((to) => (
             <button key={to} type="submit" name="to" value={to} disabled={pending} className={`${button} border-ink hover:bg-surface`}>
-              {status === "lost" ? "Reopen" : `→ ${statusLabel(to)}`}
+              {isClosed(status) ? "Reopen" : `→ ${statusLabel(to)}`}
             </button>
           ))}
         </div>

@@ -1,5 +1,5 @@
 import { StatusBadge, statusLabel } from "@/components/status-badge";
-import { allowedTransitions, type LeadStatus } from "@/domain/leads/lead-status";
+import { allowedTransitions, isClosed, type LeadStatus } from "@/domain/leads/lead-status";
 import { Overline } from "./overline";
 
 const POINTS = [
@@ -21,7 +21,10 @@ const LEADS: { name: string; phone: string; what: string; total: string; status:
   { name: "Conor V.", phone: "+353 86 205 8831", what: "TV wall mounting · 2 pcs", total: "€130", status: "won" },
 ];
 
-const nextStep = (status: LeadStatus) => allowedTransitions(status).find((s) => s !== "lost");
+function nextStep(status: LeadStatus): LeadStatus | undefined {
+  if (isClosed(status)) return undefined;
+  return allowedTransitions(status).find((to) => to !== "lost");
+}
 
 export function DashboardSection() {
   return (
