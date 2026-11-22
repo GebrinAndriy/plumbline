@@ -2,6 +2,7 @@ import type { Service } from "@/domain/pricing/types";
 import { MAX_SURCHARGES } from "@/domain/pricing/validate-service";
 import { describeSurcharge } from "@/lib/describe-rule";
 import { AddSurcharge } from "./add-surcharge";
+import { RemoveOption } from "./remove-option";
 import { addSurchargeAction, removeSurchargeAction } from "./surcharge-actions";
 
 export function ServiceOptions({ service }: { service: Service }) {
@@ -16,15 +17,10 @@ export function ServiceOptions({ service }: { service: Service }) {
             <li key={surcharge.id} className="flex animate-rise items-center gap-3 px-3.5 py-2.5">
               <span className="flex-1">{surcharge.label}</span>
               <span className="font-semibold tabular-nums">{describeSurcharge(surcharge)}</span>
-              <form action={removeSurchargeAction.bind(null, service.id, surcharge.id)}>
-                <button
-                  type="submit"
-                  aria-label={`Remove ${surcharge.label}`}
-                  className="grid size-7 place-items-center rounded-full text-muted transition-colors hover:bg-error-soft hover:text-error"
-                >
-                  <span aria-hidden>×</span>
-                </button>
-              </form>
+              <RemoveOption
+                label={surcharge.label}
+                action={removeSurchargeAction.bind(null, service.id, surcharge.id)}
+              />
             </li>
           ))}
         </ul>

@@ -6,10 +6,12 @@ const TRANSITIONS: Record<LeadStatus, readonly LeadStatus[]> = {
   new: ["contacted", "lost"],
   contacted: ["quoted", "lost"],
   quoted: ["won", "lost"],
-  won: [],
-  // A lost lead can come back, e.g. the customer calls again a month later.
+  // Closed leads can be reopened: a mis-click, a cancelled job, a customer who calls again.
+  won: ["quoted"],
   lost: ["contacted"],
 };
+
+const CLOSED: readonly LeadStatus[] = ["won", "lost"];
 
 export function allowedTransitions(from: LeadStatus): readonly LeadStatus[] {
   return TRANSITIONS[from];
@@ -17,6 +19,10 @@ export function allowedTransitions(from: LeadStatus): readonly LeadStatus[] {
 
 export function canTransition(from: LeadStatus, to: LeadStatus): boolean {
   return TRANSITIONS[from].includes(to);
+}
+
+export function isClosed(status: LeadStatus): boolean {
+  return CLOSED.includes(status);
 }
 
 export function isLeadStatus(value: unknown): value is LeadStatus {

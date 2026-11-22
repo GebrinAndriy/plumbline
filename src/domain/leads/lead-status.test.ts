@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allowedTransitions, canTransition, isLeadStatus, LEAD_STATUSES } from "./lead-status";
+import { allowedTransitions, canTransition, isClosed, isLeadStatus, LEAD_STATUSES } from "./lead-status";
 
 describe("lead status rules", () => {
   it("follows the sales funnel", () => {
@@ -13,12 +13,16 @@ describe("lead status rules", () => {
     expect(canTransition("new", "quoted")).toBe(false);
   });
 
-  it("treats won as final", () => {
-    expect(allowedTransitions("won")).toEqual([]);
+  it("lets a won lead go back to quoted only", () => {
+    expect(allowedTransitions("won")).toEqual(["quoted"]);
   });
 
   it("lets a lost lead be reopened", () => {
     expect(canTransition("lost", "contacted")).toBe(true);
+  });
+
+  it("treats only won and lost as closed", () => {
+    expect(LEAD_STATUSES.filter(isClosed)).toEqual(["won", "lost"]);
   });
 
   it("allows losing a lead at any open stage", () => {

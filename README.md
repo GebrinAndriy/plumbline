@@ -136,9 +136,18 @@ so the marketing page cannot promise a price the product would not give.
 ### Lead status as a state machine
 Allowed transitions live in one table in the domain. A status change is saved with compare-and-set
 (`where status = from`), so two tabs cannot both apply a change; the second one gets a conflict message
-and the latest status. Each change is also written to `lead_status_changes` as an audit log. Nothing in
+and the latest status. Won and lost are closed but not final: a won lead can go back to quoted
+(a mis-click or a cancelled job) and a lost one back to contacted, so no click is irreversible. The
+dashboard totals follow the current status, so reopening a won lead takes it out of the won value.
+Each change is also written to `lead_status_changes` as an audit log. Nothing in
 the app reads it yet, so leads are loaded without their history, and there is no note field until a
 screen asks for one.
+
+### Removing an option asks first
+Removing a paid option changes the price customers see, and there is no undo. The × button turns into
+an inline "Remove? / Keep" pair instead of a browser `confirm()` dialog: it matches the design, does
+not block the page, and keyboard users land on "Keep", with Escape to cancel. Reversible actions, like
+status changes, stay one click.
 
 ### Dashboard numbers come from one grouped query
 The dashboard shows how many requests are new, in progress and won, and what the won jobs are worth.
