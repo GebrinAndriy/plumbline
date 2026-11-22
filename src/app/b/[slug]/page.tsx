@@ -47,7 +47,7 @@ async function BusinessQuote({ slug }: { slug: string }) {
   return (
     <>
       <header className="border-b border-rule">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-end sm:justify-between sm:gap-10 sm:px-8 sm:py-12">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-7 sm:flex-row sm:items-end sm:justify-between sm:gap-10 sm:px-8 sm:py-12">
           <div>
             <h1 className="font-serif text-4xl font-medium tracking-tight sm:text-5xl">{business.name}</h1>
             <p className="mt-3 max-w-2xl text-muted sm:text-lg">
@@ -57,7 +57,7 @@ async function BusinessQuote({ slug }: { slug: string }) {
           <BusinessContacts phone={business.phone} address={business.address} />
         </div>
       </header>
-      <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-8 sm:py-14">
+      <main className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-8 sm:py-14">
         {services.length > 0 ? (
           <QuoteForm businessName={business.name} businessSlug={business.slug} services={services} />
         ) : (

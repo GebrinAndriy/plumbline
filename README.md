@@ -31,7 +31,7 @@ and sends a request. The owner gets the request on the dashboard and in Telegram
 ## Tech stack
 
 Next.js 16 (App Router, Server Actions, Cache Components) · TypeScript · PostgreSQL (Neon) with
-Drizzle ORM · Zod · Tailwind CSS · Vitest with PGlite · GitHub Actions.
+Drizzle ORM · Zod · Tailwind CSS · Phosphor Icons · Vitest with PGlite · GitHub Actions.
 
 ## Getting started
 
@@ -213,6 +213,11 @@ phones, so both are stored without spaces and shown in one format.
 
 Trade-off: owners cannot upload their own logo yet. That needs file storage (for example Vercel Blob)
 and is a separate change; the page header has room for it next to the name.
+
+On phones the contacts shrink to one row of two buttons, Call and Map, and the address opens under
+Map. The full block took half of the first screen, so a customer had to scroll before seeing the
+service picker. The icons come from Phosphor, imported one file per icon so the bundle carries only
+the four in use.
 
 ### Own pages for missing addresses and errors
 A customer who follows an old or mistyped link lands on `app/not-found.tsx` instead of Next's default
