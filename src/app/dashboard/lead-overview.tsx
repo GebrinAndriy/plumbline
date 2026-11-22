@@ -3,6 +3,7 @@ import { statusLabel } from "@/components/status-badge";
 import type { StatusTotals } from "@/domain/leads/lead";
 import { LEAD_STATUSES, type LeadStatus } from "@/domain/leads/lead-status";
 import { formatMoney } from "@/lib/format-money";
+import { leadListHref } from "./lead-list-query";
 
 export function LeadStats({ totals }: { totals: StatusTotals }) {
   const inProgress = totals.contacted.count + totals.quoted.count;
@@ -24,7 +25,10 @@ export function LeadStats({ totals }: { totals: StatusTotals }) {
   );
 }
 
-export function StatusFilter({ current, totals }: { current?: LeadStatus; totals: StatusTotals }) {
+type StatusFilterProps = { current?: LeadStatus; q?: string; totals: StatusTotals };
+
+// The counts are for all requests, not the search, so a search never hides how many are waiting.
+export function StatusFilter({ current, q, totals }: StatusFilterProps) {
   const all = LEAD_STATUSES.reduce((sum, status) => sum + totals[status].count, 0);
   const tabs = [
     { status: undefined, label: "All", count: all },
@@ -38,7 +42,7 @@ export function StatusFilter({ current, totals }: { current?: LeadStatus; totals
           return (
             <li key={label}>
               <Link
-                href={status ? { query: { status } } : "/dashboard"}
+                href={leadListHref({ status, q })}
                 aria-current={active ? "page" : undefined}
                 className={`flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
                   active ? "border-ink bg-ink text-paper" : "border-rule hover:border-muted"

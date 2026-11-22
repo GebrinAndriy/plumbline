@@ -16,8 +16,8 @@ and sends a request. The owner gets the request on the dashboard and in Telegram
   The page shows the business's phone (a tap-to-call link) and address (with a map link).
 - **Leads**: duplicate submits are ignored (idempotency key), and each lead keeps a snapshot of the quote
   the customer saw.
-- **Dashboard**: recent requests and status changes; every change is recorded, and two tabs cannot
-  overwrite each other's change.
+- **Dashboard**: requests 50 per page, a search by name or phone, and status changes; every change is
+  recorded, and two tabs cannot overwrite each other's change.
 - **Services**: owners add and edit services and hide or show them in the calculator. Editing a price
   changes only new requests; earlier leads keep the quote they were sent with.
 - **Options**: each service can have up to 10 paid options (a fixed amount or a percent of the price),
@@ -157,6 +157,25 @@ The same counts label the status filter (`?status=quoted`); an unknown value in 
 to all requests instead of an error. Each request shows the size and options the customer chose,
 so the owner can call back already knowing the job.
 
+### Search and pages live in the address
+The status filter, the search and the page are query parameters (`?status=quoted&q=087&page=2`), read
+through one Zod schema that falls back to the first page of all requests for anything odd. A link can
+be bookmarked or shared, Back works, and the search is a plain GET form that works without JavaScript
+(`next/form` adds client-side navigation on top). Changing the filter or the search starts again at
+page 1.
+
+- **Search** matches part of the customer's name (`ilike`) or, when the query looks like a phone, part
+  of the stored number. A national `087 123 4567` matches the stored `+353871234567`, because the
+  digits are compared without leading zeros. `%` and `_` are escaped, so they match literally.
+- **Pages** use `limit`/`offset`, ordered by creation time with the id as a tie-break, so a page
+  boundary never repeats or skips a request. One extra row is fetched to know whether an older page
+  exists, instead of counting every match. Trade-off: a request that arrives while the owner is on
+  page 2 shifts the list by one. Keyset pagination (`created_at < cursor`) avoids that and stays fast
+  on deep pages, but gives no page numbers and needs a second query shape for "newer"; for one
+  business's requests offset is simpler and fast enough. Search is a sequential scan within one
+  business; a `pg_trgm` index is the next step if a business gets tens of thousands of requests.
+- The status counts stay the totals of all requests, so a search never hides how many are waiting.
+
 ### The services form shows what a customer would pay
 While the owner types a price, the form quotes a typical order (200 × 150 cm, 3 hours or 2 items)
 and writes out the arithmetic, including when the minimum order kicks in. It reads the half-filled
@@ -241,7 +260,7 @@ and phone, the sizes or hours, the chosen options, the total and the comment, as
 input cannot inject Telegram markup. It ends with a link to `/dashboard#lead-<id>`, which scrolls to
 that request and highlights it. In production the link is built from `APP_URL`, never from the request's
 Host header. Trade-off: there is no page per request yet, so the link only finds requests on the
-dashboard's first page, which is where a new one always is.
+dashboard's first page (without a filter), which is where a new one always is.
 
 ### Tests against real Postgres without Docker
 Repository tests run the real migrations on PGlite (Postgres compiled to WASM), so SQL, constraints and

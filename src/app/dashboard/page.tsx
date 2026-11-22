@@ -1,40 +1,46 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { z } from "zod";
 import { getRepositories } from "@/db/get-repositories";
 import type { Business } from "@/domain/catalog/catalog";
-import { LEAD_STATUSES, type LeadStatus } from "@/domain/leads/lead-status";
+import { parseLeadSearch } from "@/domain/leads/lead-search";
 import { requireOwner } from "@/lib/auth/current-owner";
 import { ContactsForm } from "./contacts-form";
 import { CopyLink } from "./copy-link";
+import { LeadSearch, Pagination } from "./lead-list-controls";
+import { leadListHref, leadListQuerySchema, type LeadListQuery } from "./lead-list-query";
 import { LeadStats, StatusFilter } from "./lead-overview";
 import { LeadRow } from "./lead-row";
 import { TelegramSettings } from "./telegram-settings";
 
 const PAGE_SIZE = 50;
 
-// An unknown ?status= shows all requests instead of an error page.
-const filterSchema = z.enum(LEAD_STATUSES).optional().catch(undefined);
-
 export default function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   return (
     <Suspense fallback={<DashboardSkeleton />}>
-      {searchParams.then(({ status }) => (
-        <OwnerDashboard status={filterSchema.parse(status)} />
+      {searchParams.then((params) => (
+        <OwnerDashboard query={leadListQuerySchema.parse(params)} />
       ))}
     </Suspense>
   );
 }
 
-async function OwnerDashboard({ status }: { status?: LeadStatus }) {
+async function OwnerDashboard({ query }: { query: LeadListQuery }) {
+  const { status, q, page } = query;
   const { business } = await requireOwner();
   if (!business) return <p className="text-muted">This account has no business.</p>;
 
   const { leads } = getRepositories();
   const [totals, list] = await Promise.all([
     leads.summarizeByStatus(business.id),
-    leads.listByBusiness(business.id, { status, limit: PAGE_SIZE }),
+    // One extra row tells whether an older page exists, without counting every match.
+    leads.listByBusiness(business.id, {
+      status,
+      search: q ? parseLeadSearch(q) : undefined,
+      limit: PAGE_SIZE + 1,
+      offset: (page - 1) * PAGE_SIZE,
+    }),
   ]);
+  const shown = list.slice(0, PAGE_SIZE);
 
   return (
     <>
@@ -45,16 +51,18 @@ async function OwnerDashboard({ status }: { status?: LeadStatus }) {
           <h2 id="requests-title" className="font-serif text-2xl font-medium">
             Requests
           </h2>
-          <StatusFilter current={status} totals={totals} />
-          {list.length > 0 ? (
+          <StatusFilter current={status} q={q} totals={totals} />
+          <LeadSearch status={status} q={q} />
+          {shown.length > 0 ? (
             <ul className="divide-y divide-rule overflow-hidden rounded-card border border-rule bg-white">
-              {list.map((lead) => (
+              {shown.map((lead) => (
                 <LeadRow key={lead.id} lead={lead} />
               ))}
             </ul>
           ) : (
-            <EmptyState filtered={status !== undefined} slug={business.slug} />
+            <EmptyState query={query} slug={business.slug} />
           )}
+          <Pagination query={query} shown={shown.length} pageSize={PAGE_SIZE} hasNext={list.length > PAGE_SIZE} />
         </section>
         <aside className="flex flex-col gap-4">
           <ContactsForm contacts={{ phone: business.phone, address: business.address }} />
@@ -83,10 +91,20 @@ function PageHeader({ business }: { business: Business }) {
   );
 }
 
-function EmptyState({ filtered, slug }: { filtered: boolean; slug: string }) {
+function EmptyState({ query, slug }: { query: LeadListQuery; slug: string }) {
+  const { status, q, page } = query;
   return (
     <div className="flex flex-col gap-2 rounded-card border border-dashed border-rule bg-surface p-8 text-center">
-      {filtered ? (
+      {page > 1 ? (
+        <p className="text-muted">
+          No more requests here.{" "}
+          <Link href={leadListHref({ status, q })} className="font-medium text-ink underline-offset-4 hover:underline">
+            Back to the newest
+          </Link>
+        </p>
+      ) : q ? (
+        <p className="text-muted">No requests match “{q}”.</p>
+      ) : status ? (
         <p className="text-muted">No requests with this status.</p>
       ) : (
         <>
