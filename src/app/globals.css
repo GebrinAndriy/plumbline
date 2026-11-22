@@ -7,6 +7,8 @@
   --color-ink: #1a1a1a;
   --color-muted: #6b6760;
   --color-rule: #e3ded5;
+  /* Field borders: at least 3:1 against white, paper, surface and disabled (WCAG 1.4.11). */
+  --color-control: #857f76;
   --color-accent: #c2410c;
   --color-accent-hover: #9a3412;
   --color-accent-soft: #f8e6da;
@@ -90,16 +92,30 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Grows the tap area to at least 44 × 44 px without changing the layout (WCAG 2.5.5). */
+@utility tap-target {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    translate: -50% -50%;
+  }
+}
+
 /* Range input drawn as a tape measure: ticks every 10 cm, longer ones every 50 cm. */
 .tape-measure {
   appearance: none;
-  height: 28px;
+  height: 44px;
   background:
     linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / var(--fill, 0%) 3px no-repeat,
     repeating-linear-gradient(to right, var(--color-muted) 0 1px, transparent 1px 10%) 0 0 / 100% 12px no-repeat,
     repeating-linear-gradient(to right, var(--color-rule) 0 1px, transparent 1px 2%) 0 0 / 100% 7px no-repeat,
     #fff;
-  border: 1px solid var(--color-rule);
+  border: 1px solid var(--color-control);
   border-radius: 6px;
   cursor: pointer;
 }
@@ -110,13 +126,13 @@ body {
 .tape-measure::-webkit-slider-thumb {
   appearance: none;
   width: 4px;
-  height: 26px;
+  height: 42px;
   border-radius: 2px;
   background: var(--color-accent);
 }
 .tape-measure::-moz-range-thumb {
   width: 4px;
-  height: 26px;
+  height: 42px;
   border: 0;
   border-radius: 2px;
   background: var(--color-accent);

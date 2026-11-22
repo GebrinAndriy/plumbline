@@ -5,7 +5,7 @@ import { StatusBadge, statusLabel } from "@/components/status-badge";
 import { allowedTransitions, isClosed, type LeadStatus } from "@/domain/leads/lead-status";
 import { changeLeadStatusAction } from "./actions";
 
-const button = "rounded-field border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50";
+const button = "tap-target rounded-field border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50";
 
 export function LeadStatusControl({ leadId, status }: { leadId: string; status: LeadStatus }) {
   const [state, formAction, pending] = useActionState(changeLeadStatusAction, {});

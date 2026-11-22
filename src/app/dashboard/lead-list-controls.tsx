@@ -18,11 +18,11 @@ export function LeadSearch({ status, q }: Pick<LeadListQuery, "status" | "q">) {
           className={`${inputClass} w-full`}
         />
       </label>
-      <button type="submit" className="rounded-field border border-ink px-4 py-2.5 text-sm font-semibold hover:bg-surface">
+      <button type="submit" className="min-h-11 rounded-field border border-ink px-4 py-2.5 text-sm font-semibold hover:bg-surface">
         Search
       </button>
       {q && (
-        <Link href={leadListHref({ status })} className="text-sm font-medium text-muted hover:text-ink">
+        <Link href={leadListHref({ status })} className="tap-target text-sm font-medium text-muted hover:text-ink">
           Clear
         </Link>
       )}
@@ -36,7 +36,7 @@ export function Pagination({ query, shown, pageSize, hasNext }: PaginationProps)
   const { page } = query;
   if (page === 1 && !hasNext) return null;
   const from = (page - 1) * pageSize + 1;
-  const link = "rounded-field border border-rule px-3.5 py-2 text-sm font-medium hover:border-muted";
+  const link = "tap-target rounded-field border border-control px-3.5 py-2 text-sm font-medium hover:border-ink";
 
   return (
     <nav aria-label="Pages" className="flex items-center justify-between gap-3">

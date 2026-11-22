@@ -19,7 +19,7 @@ export function EditService({ service, action }: EditServiceProps) {
         type="button"
         aria-expanded={false}
         onClick={() => setOpen(true)}
-        className="self-start rounded-field border border-ink px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface"
+        className="tap-target self-start rounded-field border border-ink px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface"
       >
         Edit service
       </button>

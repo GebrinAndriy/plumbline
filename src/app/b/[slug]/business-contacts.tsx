@@ -8,7 +8,7 @@ export function BusinessContacts({ phone, address }: Contacts) {
   return (
     <address className="flex flex-col gap-3 text-[15px] not-italic sm:min-w-56">
       {phone && (
-        <a href={phoneHref(phone)} className="text-lg font-semibold tabular-nums underline-offset-4 hover:underline">
+        <a href={phoneHref(phone)} className="tap-target text-lg font-semibold tabular-nums underline-offset-4 hover:underline">
           {formatPhone(phone)}
         </a>
       )}
@@ -25,7 +25,7 @@ export function BusinessContacts({ phone, address }: Contacts) {
             href={mapsHref(address)}
             target="_blank"
             rel="noopener noreferrer"
-            className="self-start font-semibold text-accent underline-offset-4 hover:underline"
+            className="tap-target self-start font-semibold text-accent underline-offset-4 hover:underline"
           >
             Open in Maps →
           </a>

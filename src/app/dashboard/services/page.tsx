@@ -33,7 +33,7 @@ async function OwnerServices() {
             </p>
           )}
         </div>
-        <Link href={`/b/${business.slug}`} className="text-sm font-semibold text-accent underline-offset-4 hover:underline">
+        <Link href={`/b/${business.slug}`} className="tap-target text-sm font-semibold text-accent underline-offset-4 hover:underline">
           Preview your page →
         </Link>
       </div>

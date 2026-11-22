@@ -36,7 +36,7 @@ export function PasswordField({ autoComplete, label = "Password", hint, error }:
           aria-pressed={visible}
           aria-label="Show password"
           onClick={() => setVisible((v) => !v)}
-          className="absolute inset-y-1 right-1 rounded-[7px] px-3 text-xs font-semibold text-muted transition-colors hover:bg-surface hover:text-ink"
+          className="absolute inset-y-0 right-0 min-w-11 rounded-r-field px-3 text-xs font-semibold text-muted transition-colors hover:bg-surface hover:text-ink"
         >
           {visible ? "Hide" : "Show"}
         </button>

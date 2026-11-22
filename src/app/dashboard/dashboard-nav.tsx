@@ -19,7 +19,7 @@ export function DashboardNav() {
             key={href}
             href={href}
             aria-current={current ? "page" : undefined}
-            className={`rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+            className={`tap-target rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
               current ? "bg-ink text-paper" : "text-muted hover:bg-surface hover:text-ink"
             }`}
           >

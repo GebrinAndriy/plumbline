@@ -44,8 +44,8 @@ export function StatusFilter({ current, q, totals }: StatusFilterProps) {
               <Link
                 href={leadListHref({ status, q })}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
-                  active ? "border-ink bg-ink text-paper" : "border-rule hover:border-muted"
+                className={`flex min-h-11 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                  active ? "border-ink bg-ink text-paper" : "border-control hover:border-ink"
                 }`}
               >
                 {label}

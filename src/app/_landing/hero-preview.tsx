@@ -20,8 +20,8 @@ export function HeroPreview() {
             type="button"
             aria-pressed={i === index}
             onClick={() => setIndex(i)}
-            className={`rounded-full border px-3.5 py-2 text-[13px] font-medium transition-colors ${
-              i === index ? "border-ink bg-ink text-paper" : "border-rule bg-paper hover:border-muted"
+            className={`tap-target rounded-full border px-3.5 py-2 text-[13px] font-medium transition-colors ${
+              i === index ? "border-ink bg-ink text-paper" : "border-control bg-paper hover:border-ink"
             }`}
           >
             {e.tab}

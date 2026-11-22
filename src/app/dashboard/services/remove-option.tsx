@@ -22,7 +22,7 @@ export function RemoveOption({ label, action }: RemoveOptionProps) {
         type="button"
         onClick={() => setConfirming(true)}
         aria-label={`Remove ${label}`}
-        className="grid size-7 place-items-center rounded-full text-muted transition-colors hover:bg-error-soft hover:text-error"
+        className="tap-target grid size-7 place-items-center rounded-full text-muted transition-colors hover:bg-error-soft hover:text-error"
       >
         <span aria-hidden>×</span>
       </button>
@@ -41,7 +41,7 @@ export function RemoveOption({ label, action }: RemoveOptionProps) {
         type="button"
         autoFocus
         onClick={() => setConfirming(false)}
-        className="rounded-field px-2 py-1 text-xs font-medium text-muted hover:text-ink"
+        className="tap-target rounded-field px-2 py-1 text-xs font-medium text-muted hover:text-ink"
       >
         Keep
       </button>
@@ -56,7 +56,7 @@ function ConfirmButton({ label }: { label: string }) {
       type="submit"
       disabled={pending}
       aria-label={`Yes, remove ${label}`}
-      className="rounded-field bg-error px-2.5 py-1 text-xs font-semibold text-white transition-opacity disabled:opacity-50"
+      className="tap-target rounded-field bg-error px-2.5 py-1 text-xs font-semibold text-white transition-opacity disabled:opacity-50"
     >
       {pending ? "Removing…" : "Remove"}
     </button>

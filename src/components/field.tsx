@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes } from "react";
 
 export const inputClass =
-  "rounded-field border border-rule bg-white px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-disabled-text focus:border-ink focus-visible:ring-2 focus-visible:ring-ink/15 aria-invalid:border-error";
+  "rounded-field border border-control bg-white px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-disabled-text focus:border-ink focus-visible:ring-2 focus-visible:ring-ink/15 aria-invalid:border-error";
 
 type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
