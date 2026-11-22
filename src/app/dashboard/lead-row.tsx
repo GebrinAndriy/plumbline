@@ -18,7 +18,10 @@ export function LeadRow({ lead }: { lead: Lead }) {
   const details = [base.label, describeInput(lead.input), ...options.map((line) => line.label)].join(" · ");
 
   return (
-    <li className="flex flex-col gap-4 px-4 py-5 sm:flex-row sm:items-start sm:justify-between sm:px-5">
+    <li
+      id={`lead-${lead.id}`}
+      className="flex scroll-mt-6 flex-col gap-4 px-4 py-5 transition-colors target:bg-accent-soft sm:flex-row sm:items-start sm:justify-between sm:px-5"
+    >
       <div className="flex min-w-0 flex-col gap-1">
         <p className="flex flex-wrap items-baseline gap-x-3">
           <span className="text-base font-semibold">{lead.customerName}</span>

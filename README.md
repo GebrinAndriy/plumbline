@@ -23,7 +23,8 @@ and sends a request. The owner gets the request on the dashboard and in Telegram
 - **Options**: each service can have up to 10 paid options (a fixed amount or a percent of the price),
   added and removed from the dashboard; customers tick them in the calculator.
 - **Contacts**: owners set the phone and address shown on their page from the dashboard.
-- **Telegram notifications**: "Connect Telegram" with a one-time link or QR code, no chat ID to copy.
+- **Telegram notifications**: every request arrives with the sizes, options, total and a link to it on the
+  dashboard. "Connect Telegram" with a one-time link or QR code, no chat ID to copy.
 - **Accounts**: sign-up, sign-in and sign-out with database sessions, password reset by email; rate
   limiting on every public form.
 
@@ -225,6 +226,13 @@ reported after the owner submits a new password, which saves a query on every pa
 Creating a lead publishes a `lead.created` event; Telegram is one listener. It runs after the response
 is sent (`after()`), so a slow Telegram never delays the customer, and one failing listener does not
 stop the others.
+
+The message carries everything the owner needs to call back without opening the app: the customer's name
+and phone, the sizes or hours, the chosen options, the total and the comment, as plain text so customer
+input cannot inject Telegram markup. It ends with a link to `/dashboard#lead-<id>`, which scrolls to
+that request and highlights it. In production the link is built from `APP_URL`, never from the request's
+Host header. Trade-off: there is no page per request yet, so the link only finds requests on the
+dashboard's first page, which is where a new one always is.
 
 ### Tests against real Postgres without Docker
 Repository tests run the real migrations on PGlite (Postgres compiled to WASM), so SQL, constraints and
