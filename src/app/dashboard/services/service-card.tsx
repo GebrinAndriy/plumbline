@@ -21,7 +21,7 @@ export function ServiceCard({ service }: { service: ServiceListing }) {
           <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${service.isActive ? "bg-success-soft text-success" : "bg-disabled text-disabled-text"}`}>
             {service.isActive ? "On your page" : "Hidden"}
           </span>
-          <button type="submit" className="text-sm font-medium whitespace-nowrap text-muted underline-offset-4 hover:text-ink hover:underline">
+          <button type="submit" className="tap-target text-sm font-medium whitespace-nowrap text-muted underline-offset-4 hover:text-ink hover:underline">
             {service.isActive ? "Hide from calculator" : "Show in calculator"}
           </button>
         </form>

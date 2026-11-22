@@ -32,7 +32,7 @@ export function MobileTotalBar({ quote, receipt }: { quote: Quote | null; receip
           aria-expanded={open}
           aria-controls="mobile-receipt"
           onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 rounded-field border border-ink px-4 py-2.5 text-sm font-semibold"
+          className="tap-target flex items-center gap-2 rounded-field border border-ink px-4 py-2.5 text-sm font-semibold"
         >
           Receipt
           <svg viewBox="0 0 12 12" aria-hidden className={`size-3 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>

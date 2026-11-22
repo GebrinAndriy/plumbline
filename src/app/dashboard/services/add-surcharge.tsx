@@ -24,7 +24,7 @@ export function AddSurcharge({ action }: AddSurchargeProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="self-start text-sm font-semibold text-accent underline-offset-4 hover:underline"
+        className="tap-target self-start text-sm font-semibold text-accent underline-offset-4 hover:underline"
       >
         <span aria-hidden>+ </span>Add option
       </button>
@@ -62,7 +62,7 @@ export function AddSurcharge({ action }: AddSurchargeProps) {
         <PrimaryButton type="submit" disabled={pending}>
           {pending ? "Adding…" : "Add option"}
         </PrimaryButton>
-        <button type="button" onClick={() => setOpen(false)} className="text-sm font-medium text-muted hover:text-ink">
+        <button type="button" onClick={() => setOpen(false)} className="tap-target text-sm font-medium text-muted hover:text-ink">
           Cancel
         </button>
       </div>

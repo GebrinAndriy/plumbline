@@ -97,7 +97,7 @@ export function ConnectTelegram({ connected }: { connected: boolean }) {
         type="button"
         onClick={start}
         disabled={pending}
-        className={connected ? "self-start text-sm font-medium underline underline-offset-4 disabled:opacity-50" : `self-start ${primaryButtonClass} text-sm`}
+        className={connected ? "tap-target self-start text-sm font-medium underline underline-offset-4 disabled:opacity-50" : `self-start ${primaryButtonClass} text-sm`}
       >
         {pending ? "Preparing…" : connected ? "Connect another chat" : "Connect Telegram"}
       </button>

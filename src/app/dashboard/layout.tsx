@@ -7,13 +7,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <header className="border-b border-rule">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-8 gap-y-3 px-4 py-3.5 sm:px-8">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-8 gap-y-4 px-4 py-3.5 sm:px-8">
           <PlumblineLogo href="/dashboard" className="h-7 w-auto sm:h-8" />
           <div className="order-last w-full sm:order-none sm:w-auto sm:flex-1">
             <DashboardNav />
           </div>
           <form action={signOutAction}>
-            <button type="submit" className="text-sm font-medium whitespace-nowrap text-muted transition-colors hover:text-ink">
+            <button type="submit" className="tap-target text-sm font-medium whitespace-nowrap text-muted transition-colors hover:text-ink">
               Sign out
             </button>
           </form>

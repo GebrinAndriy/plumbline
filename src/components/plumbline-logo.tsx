@@ -6,7 +6,7 @@ type PlumblineLogoProps = { href?: string; className?: string };
 
 export function PlumblineLogo({ href = "/", className = "h-8 w-auto" }: PlumblineLogoProps) {
   return (
-    <Link href={href} className="inline-flex shrink-0 self-start">
+    <Link href={href} className="tap-target z-10 inline-flex shrink-0 self-start">
       <Image src={logo} alt="Plumbline" className={className} loading="eager" />
     </Link>
   );

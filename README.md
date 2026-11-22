@@ -348,6 +348,16 @@ in the calculator counts to the new price instead of jumping, so the customer se
 moved it; every frame is a whole number of cents, and screen readers hear only the final price.
 Under `prefers-reduced-motion` everything appears instantly.
 
+Accessibility is checked against the tokens, not page by page. Field borders use their own
+`--color-control` (at least 3:1 on every background, WCAG 1.4.11); the lighter `--color-rule` stays
+for cards and dividers, which are decoration. `design-tokens.test.ts` reads `globals.css` and fails if
+a token edit breaks either ratio or the 4.5:1 for text. Every tap target is at least 44 × 44 px on a
+phone: compact links and buttons get a `tap-target` utility that grows an invisible `::after` around
+them, so the hit area grows while the layout stays as designed. Where an ancestor clips overflow (the
+scrolling status tabs, the quantity stepper) or the grown area would cover a neighbour ("Forgot
+password?" under the password field), the element itself is 44 px instead. Links inside a
+sentence keep their text size; WCAG exempts them.
+
 Trade-off: the app is light-only for now. The old dark variant was a set of generic grays; a real dark
 theme needs its own designed palette, and the tokens make it a matter of adding values, not editing
 pages.

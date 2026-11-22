@@ -82,7 +82,7 @@ function PageHeader({ business }: { business: Business }) {
         <h1 className="font-serif text-4xl font-medium tracking-tight sm:text-5xl">{business.name}</h1>
       </div>
       <div className="flex items-center gap-3">
-        <Link href={path} className="text-sm font-medium underline-offset-4 hover:underline">
+        <Link href={path} className="tap-target text-sm font-medium underline-offset-4 hover:underline">
           {path}
         </Link>
         <CopyLink path={path} />

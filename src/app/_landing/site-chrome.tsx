@@ -22,7 +22,7 @@ export function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/sign-in" className="rounded-field border border-ink px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-surface">
+          <Link href="/sign-in" className="tap-target rounded-field border border-ink px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-surface">
             Sign in
           </Link>
           <Link href="/sign-up" className={`${primaryButtonClass} hidden text-sm sm:block`}>
@@ -40,7 +40,7 @@ export function CallToAction({ className = "" }: { className?: string }) {
       <Link href="/sign-up" className={`${primaryButtonClass} text-center`}>
         Create your business
       </Link>
-      <Link href={DEMO_PATH} className="text-center font-semibold text-accent underline-offset-4 hover:underline">
+      <Link href={DEMO_PATH} className="tap-target text-center font-semibold text-accent underline-offset-4 hover:underline">
         See a demo page →
       </Link>
     </div>
@@ -54,10 +54,10 @@ export function SiteFooter() {
         <PlumblineLogo className="h-7 w-auto" />
         <p className="text-sm text-muted">Instant quotes and requests for small service businesses.</p>
         <nav aria-label="Footer" className="flex gap-6 text-sm">
-          <Link href={DEMO_PATH} className="hover:underline">
+          <Link href={DEMO_PATH} className="tap-target hover:underline">
             Demo page
           </Link>
-          <Link href="/sign-in" className="hover:underline">
+          <Link href="/sign-in" className="tap-target hover:underline">
             Sign in
           </Link>
         </nav>

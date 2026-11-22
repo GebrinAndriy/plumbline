@@ -22,7 +22,7 @@ export function CopyLink({ path }: { path: string }) {
     <button
       type="button"
       onClick={copy}
-      className="rounded-field border border-ink px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface"
+      className="tap-target rounded-field border border-ink px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface"
     >
       <span aria-live="polite">{copied ? "Copied" : "Copy link"}</span>
     </button>

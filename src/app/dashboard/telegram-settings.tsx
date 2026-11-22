@@ -22,7 +22,7 @@ export function TelegramSettings({ chatId, chatName }: Props) {
             New requests arrive in {chatName ? <strong>{chatName}</strong> : "your chat"} the moment they are sent.
           </p>
           <form action={disconnectTelegramAction}>
-            <button type="submit" className="font-medium text-muted underline underline-offset-4 hover:text-error">
+            <button type="submit" className="tap-target font-medium text-muted underline underline-offset-4 hover:text-error">
               Turn off
             </button>
           </form>

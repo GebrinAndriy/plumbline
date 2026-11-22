@@ -25,7 +25,7 @@ export function SlugField({ value, error, onChange }: SlugFieldProps) {
       </label>
       <div
         className={`flex items-center rounded-field border bg-white transition-colors focus-within:border-ink focus-within:ring-2 focus-within:ring-ink/15 ${
-          error ? "border-error" : "border-rule"
+          error ? "border-error" : "border-control"
         }`}
       >
         <span aria-hidden className="pl-3 text-base text-muted">

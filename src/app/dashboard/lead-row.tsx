@@ -29,7 +29,7 @@ export function LeadRow({ lead }: { lead: Lead }) {
             {dateFormat.format(lead.createdAt)}
           </time>
         </p>
-        <a href={`tel:${lead.phone}`} className="self-start text-sm font-medium text-accent underline-offset-4 hover:underline">
+        <a href={`tel:${lead.phone}`} className="tap-target self-start text-sm font-medium text-accent underline-offset-4 hover:underline">
           {formatPhone(lead.phone)}
         </a>
         <p className="text-sm text-muted">{details}</p>
