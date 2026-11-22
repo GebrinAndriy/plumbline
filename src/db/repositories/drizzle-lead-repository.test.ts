@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { emptyStatusTotals, LeadConflictError, type LeadRepository, type NewLead } from "@/domain/leads/lead";
+import { parseLeadSearch } from "@/domain/leads/lead-search";
 import type { LeadStatus } from "@/domain/leads/lead-status";
 import { calculateQuote } from "@/domain/pricing/calculate-quote";
 import type { QuoteInput } from "@/domain/pricing/types";
@@ -119,6 +120,43 @@ describe("listByBusiness", () => {
   it("does not include other businesses' leads", async () => {
     await leads.create(makeLead());
     expect(await leads.listByBusiness(otherBusinessId)).toEqual([]);
+  });
+
+  it("pages through leads without repeating or skipping one", async () => {
+    const ids: string[] = [];
+    for (let i = 0; i < 5; i++) ids.unshift((await leads.create(makeLead())).lead.id);
+    const businessId = makeLead().businessId;
+
+    const first = await leads.listByBusiness(businessId, { limit: 2 });
+    const second = await leads.listByBusiness(businessId, { limit: 2, offset: 2 });
+    const last = await leads.listByBusiness(businessId, { limit: 2, offset: 4 });
+
+    expect([...first, ...second, ...last].map((l) => l.id).sort()).toEqual([...ids].sort());
+    expect(last).toHaveLength(1);
+  });
+
+  it("finds leads by part of the name, case-insensitively", async () => {
+    const { lead } = await leads.create(makeLead({ customerName: "Siobhán Murphy" }));
+    await leads.create(makeLead({ customerName: "Liam" }));
+
+    const found = await leads.listByBusiness(lead.businessId, { search: parseLeadSearch("murph") });
+    expect(found.map((l) => l.id)).toEqual([lead.id]);
+  });
+
+  it("finds leads by a phone typed in the national format", async () => {
+    const { lead } = await leads.create(makeLead({ phone: "+353851112233" }));
+    await leads.create(makeLead({ phone: "+353871234567" }));
+
+    const found = await leads.listByBusiness(lead.businessId, { search: parseLeadSearch("085 111 2233") });
+    expect(found.map((l) => l.id)).toEqual([lead.id]);
+  });
+
+  it("treats % and _ in the query as plain characters", async () => {
+    const { lead } = await leads.create(makeLead({ customerName: "100%_Clean" }));
+    await leads.create(makeLead({ customerName: "Aoife" }));
+
+    expect(await leads.listByBusiness(lead.businessId, { search: parseLeadSearch("%") })).toHaveLength(1);
+    expect(await leads.listByBusiness(lead.businessId, { search: parseLeadSearch("_") })).toHaveLength(1);
   });
 });
 

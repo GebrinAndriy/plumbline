@@ -1,4 +1,5 @@
 import type { Money, Quote, QuoteInput } from "../pricing/types";
+import type { LeadSearch } from "./lead-search";
 import { LEAD_STATUSES, type LeadStatus } from "./lead-status";
 
 export type Lead = {
@@ -44,7 +45,7 @@ export interface LeadRepository {
   create(lead: NewLead): Promise<{ lead: Lead; created: boolean }>;
   listByBusiness(
     businessId: string,
-    options?: { status?: LeadStatus; limit?: number },
+    options?: { status?: LeadStatus; search?: LeadSearch; limit?: number; offset?: number },
   ): Promise<Lead[]>;
   /** Counts and sums every lead of the business, not just one page of them. */
   summarizeByStatus(businessId: string): Promise<StatusTotals>;

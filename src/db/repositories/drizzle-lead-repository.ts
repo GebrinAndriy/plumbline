@@ -1,4 +1,5 @@
-import { and, count, desc, eq, sum } from "drizzle-orm";
+import { and, count, desc, eq, ilike, like, or, sum, type SQL } from "drizzle-orm";
+import type { LeadSearch } from "@/domain/leads/lead-search";
 import { emptyStatusTotals, LeadConflictError, type Lead, type LeadRepository } from "@/domain/leads/lead";
 import type { Database } from "../database";
 import { leadStatusChanges, leads } from "../schema";
@@ -48,13 +49,16 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
       const limit = Math.min(options.limit ?? DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
       const filters = [eq(leads.businessId, businessId)];
       if (options.status) filters.push(eq(leads.status, options.status));
+      if (options.search) filters.push(matchesSearch(options.search));
 
       const rows = await db
         .select()
         .from(leads)
         .where(and(...filters))
-        .orderBy(desc(leads.createdAt))
-        .limit(limit);
+        // The id breaks ties, so a page boundary never repeats or skips a lead.
+        .orderBy(desc(leads.createdAt), desc(leads.id))
+        .limit(limit)
+        .offset(Math.max(0, options.offset ?? 0));
 
       return rows.map(toLead);
     },
@@ -100,6 +104,13 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
     },
   };
 }
+
+function matchesSearch({ text, phoneDigits }: LeadSearch): SQL {
+  const byName = ilike(leads.customerName, `%${escapeLike(text)}%`);
+  return phoneDigits ? (or(byName, like(leads.phone, `%${phoneDigits}%`)) as SQL) : byName;
+}
+
+const escapeLike = (value: string) => value.replace(/[\\%_]/g, (char) => `\\${char}`);
 
 function toLead(row: LeadRow): Lead {
   return {
