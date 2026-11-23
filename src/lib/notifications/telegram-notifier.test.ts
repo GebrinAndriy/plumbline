@@ -32,6 +32,7 @@ function eventFor(telegramChatId: string | null): LeadEvent {
     telegramChatName: null,
     phone: null,
     address: null,
+    accentColor: null,
   };
   return { type: "lead.created", lead, business, serviceName: "Roller blinds" };
 }

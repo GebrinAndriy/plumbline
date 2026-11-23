@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { accentStyle } from "@/components/accent-style";
 import { PlumblineLogo } from "@/components/plumbline-logo";
 import { BusinessContacts } from "./business-contacts";
 import { previewDescription, previewTitle } from "./link-preview";
@@ -45,7 +46,7 @@ async function BusinessQuote({ slug }: { slug: string }) {
   const { business, services } = page;
 
   return (
-    <>
+    <div style={accentStyle(business.accentColor)}>
       <header className="border-b border-rule">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-7 sm:flex-row sm:items-end sm:justify-between sm:gap-10 sm:px-8 sm:py-12">
           <div>
@@ -64,7 +65,7 @@ async function BusinessQuote({ slug }: { slug: string }) {
           <p className="text-muted">This business has no services yet.</p>
         )}
       </main>
-    </>
+    </div>
   );
 }
 

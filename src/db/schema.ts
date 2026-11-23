@@ -59,6 +59,7 @@ export const businesses = pgTable(
     telegramChatName: text("telegram_chat_name"),
     phone: text("phone"),
     address: text("address"),
+    accentColor: text("accent_color"),
     createdAt: createdAt(),
   },
   (t) => [index("businesses_owner_idx").on(t.ownerId)],
