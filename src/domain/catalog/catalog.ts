@@ -9,6 +9,7 @@ export type Business = {
   phone: string | null;
   address: string | null;
   accentColor: string | null;
+  logoUrl: string | null;
 };
 
 export type BusinessContacts = Pick<Business, "phone" | "address">;
@@ -31,6 +32,7 @@ export interface CatalogRepository {
   setTelegramChat(businessId: string, chat: TelegramChat | null): Promise<void>;
   setContacts(businessId: string, contacts: BusinessContacts): Promise<void>;
   setAccentColor(businessId: string, color: string | null): Promise<void>;
+  setLogoUrl(businessId: string, url: string | null): Promise<void>;
   listActiveServices(businessId: string): Promise<Service[]>;
   findService(businessId: string, serviceId: string): Promise<Service | null>;
   createService(service: NewService): Promise<Service>;

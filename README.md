@@ -31,7 +31,7 @@ and sends a request. The owner gets the request on the dashboard and in Telegram
 ## Tech stack
 
 Next.js 16 (App Router, Server Actions, Cache Components) · TypeScript · PostgreSQL (Neon) with
-Drizzle ORM · Zod · Tailwind CSS · Phosphor Icons · Vitest with PGlite · GitHub Actions.
+Drizzle ORM · Zod · Tailwind CSS · Phosphor Icons · Vercel Blob · Vitest with PGlite · GitHub Actions.
 
 ## Getting started
 
@@ -211,8 +211,7 @@ row, because Irish addresses vary (Eircode, townland, county) and customers only
 the map; nothing in the app searches by it. The phone goes through the same Zod schema as customer
 phones, so both are stored without spaces and shown in one format.
 
-Trade-off: owners cannot upload their own logo yet. That needs file storage (for example Vercel Blob)
-and is a separate change; the page header has room for it next to the name.
+The logo is the third part of the page header; see "Logos in Vercel Blob".
 
 On phones the contacts shrink to one row of two buttons, Call and Map, and the address opens under
 Map. The full block took half of the first screen, so a customer had to scroll before seeing the
@@ -235,6 +234,28 @@ business that never picked a colour follows a future change of the Plumbline acc
 Trade-off: the colour is not checked against text in a colour other than white on the accent, because
 the design has none. A business that wants a light brand colour gets the darker shade, not its exact
 brand colour.
+
+### Logos in Vercel Blob
+Functions on Vercel have no lasting disk, so the logo file goes to a public Vercel Blob store and the
+database keeps only its URL (`businesses.logo_url`). The upload is a Server Action: the file passes
+through our server, which checks it before anything is stored. Uploading straight from the browser
+(client upload) would skip the 4.5 MB function limit, but needs a token route and is only worth it for
+large files; a logo is capped at 1 MB, so the Server Action body limit is raised to 2 MB in
+`next.config.ts` to leave room for the multipart overhead.
+
+The type is read from the first bytes of the file (PNG, JPEG or WebP), not from its name or the
+browser's `Content-Type`, which the sender controls. SVG is refused on purpose: it can carry scripts.
+`replaceLogo` in `src/domain/catalog/logo.ts` uploads the new file, saves its URL, then deletes the old
+file; if saving fails it deletes the new upload, so a failed save leaves neither an orphan file nor a
+broken link. Storage sits behind a `LogoStorage` interface, so the unit tests use an in-memory fake.
+
+Every upload gets a random suffix and a one-year cache, so a replaced logo can never be served from a
+stale CDN copy. The page shows it through `next/image`, which resizes it and serves WebP from this site,
+so the CSP needs no new image host; `remotePatterns` allows only `/logos/**` on Vercel Blob hosts. The
+logo has an empty `alt`, because the business name follows in the heading.
+
+Trade-off: the link-preview image does not show the logo yet, since Satori cannot draw WebP. Without
+`BLOB_READ_WRITE_TOKEN` the dashboard says uploads are not set up instead of failing.
 
 ### Own pages for missing addresses and errors
 A customer who follows an old or mistyped link lands on `app/not-found.tsx` instead of Next's default
