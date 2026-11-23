@@ -219,6 +219,23 @@ Map. The full block took half of the first screen, so a customer had to scroll b
 service picker. The icons come from Phosphor, imported one file per icon so the bundle carries only
 the four in use.
 
+### Each business picks its accent colour
+The owner picks a brand colour in the dashboard, from nine presets, the colour picker or a hex code.
+The public page sets `--color-accent`, `--color-accent-hover` and `--color-accent-soft` inline on its
+wrapper, so every `bg-accent` and `text-accent` inside follows without new classes; the hover and tint
+are mixed from the one colour in `src/domain/catalog/accent-color.ts`. The link-preview image uses it
+too. The dashboard and the "Made with Plumbline" footer keep the Plumbline orange.
+
+The accent is used as text on the page and behind white button text, so a colour below 4.5:1 against
+the page background is refused, in the form as you type and again by the Zod schema in the action.
+Many brand colours (yellow, lime, sky blue) fail that, so instead of a bare error the form offers the
+closest readable shade: the same hue darkened in 5% steps. Choosing the default stores `null`, so a
+business that never picked a colour follows a future change of the Plumbline accent.
+
+Trade-off: the colour is not checked against text in a colour other than white on the accent, because
+the design has none. A business that wants a light brand colour gets the darker shade, not its exact
+brand colour.
+
 ### Own pages for missing addresses and errors
 A customer who follows an old or mistyped link lands on `app/not-found.tsx` instead of Next's default
 page. It serves unknown URLs and every `notFound()` call, such as a business address that no longer

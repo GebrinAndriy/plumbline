@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { DEFAULT_ACCENT } from "@/domain/catalog/accent-color";
 import { previewPrices, PREVIEW_SERVICES } from "./link-preview";
 import { loadBusinessPage } from "./load-business-page";
 
@@ -12,19 +13,19 @@ const RECEIPT = "#fffdf9";
 const INK = "#1a1a1a";
 const MUTED = "#6b6760";
 const RULE = "#e3ded5";
-const ACCENT = "#c2410c";
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const page = await loadBusinessPage(slug);
   const name = page?.business.name ?? "Plumbline";
+  const accent = page?.business.accentColor ?? DEFAULT_ACCENT;
   const prices = page ? previewPrices(page.services) : [];
   const more = page ? page.services.length - PREVIEW_SERVICES : 0;
 
   return new ImageResponse(
     (
       <div style={{ display: "flex", flexDirection: "column", width: "100%", height: "100%", background: PAPER, padding: 72, color: INK }}>
-        <div style={{ display: "flex", fontSize: 24, fontWeight: 700, letterSpacing: 4, color: ACCENT }}>INSTANT PRICES</div>
+        <div style={{ display: "flex", fontSize: 24, fontWeight: 700, letterSpacing: 4, color: accent }}>INSTANT PRICES</div>
         <div style={{ display: "flex", marginTop: 20, fontSize: name.length > 28 ? 64 : 84, fontWeight: 700, lineHeight: 1.05 }}>
           {name}
         </div>

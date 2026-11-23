@@ -4,6 +4,7 @@ import { getRepositories } from "@/db/get-repositories";
 import type { Business } from "@/domain/catalog/catalog";
 import { parseLeadSearch } from "@/domain/leads/lead-search";
 import { requireOwner } from "@/lib/auth/current-owner";
+import { AccentColorForm } from "./accent-color-form";
 import { ContactsForm } from "./contacts-form";
 import { CopyLink } from "./copy-link";
 import { LeadSearch, Pagination } from "./lead-list-controls";
@@ -66,6 +67,7 @@ async function OwnerDashboard({ query }: { query: LeadListQuery }) {
         </section>
         <aside className="flex flex-col gap-4">
           <ContactsForm contacts={{ phone: business.phone, address: business.address }} />
+          <AccentColorForm accentColor={business.accentColor} />
           <TelegramSettings chatId={business.telegramChatId} chatName={business.telegramChatName} />
         </aside>
       </div>

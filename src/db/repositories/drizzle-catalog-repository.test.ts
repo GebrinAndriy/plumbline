@@ -68,6 +68,19 @@ describe("businesses", () => {
     await catalog.setContacts(own.id, { phone: null, address: null });
     expect(await catalog.findBusinessBySlug("blinds-dublin")).toMatchObject({ phone: null, address: null });
   });
+
+  it("sets and clears the accent colour of one business only", async () => {
+    const own = await createBusiness();
+    await createBusiness("other");
+    expect(own.accentColor).toBeNull();
+
+    await catalog.setAccentColor(own.id, "#1d4ed8");
+    expect(await catalog.findBusinessBySlug("blinds-dublin")).toMatchObject({ accentColor: "#1d4ed8" });
+    expect(await catalog.findBusinessBySlug("other")).toMatchObject({ accentColor: null });
+
+    await catalog.setAccentColor(own.id, null);
+    expect(await catalog.findBusinessBySlug("blinds-dublin")).toMatchObject({ accentColor: null });
+  });
 });
 
 describe("services", () => {

@@ -33,6 +33,11 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
       await db.update(businesses).set({ phone, address }).where(eq(businesses.id, businessId));
     },
 
+    async setAccentColor(businessId, color) {
+      if (!isUuid(businessId)) return;
+      await db.update(businesses).set({ accentColor: color }).where(eq(businesses.id, businessId));
+    },
+
     async listActiveServices(businessId) {
       if (!isUuid(businessId)) return [];
       const rows = await db
@@ -134,6 +139,7 @@ function toBusiness(row: BusinessRow): Business {
     telegramChatName: row.telegramChatName,
     phone: row.phone,
     address: row.address,
+    accentColor: row.accentColor,
   };
 }
 
