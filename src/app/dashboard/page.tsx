@@ -4,6 +4,7 @@ import { getRepositories } from "@/db/get-repositories";
 import type { Business } from "@/domain/catalog/catalog";
 import { parseLeadSearch } from "@/domain/leads/lead-search";
 import { requireOwner } from "@/lib/auth/current-owner";
+import { getLogoStorage } from "@/lib/storage/vercel-blob-logo-storage";
 import { AccentColorForm } from "./accent-color-form";
 import { ContactsForm } from "./contacts-form";
 import { CopyLink } from "./copy-link";
@@ -11,6 +12,7 @@ import { LeadSearch, Pagination } from "./lead-list-controls";
 import { leadListHref, leadListQuerySchema, type LeadListQuery } from "./lead-list-query";
 import { LeadStats, StatusFilter } from "./lead-overview";
 import { LeadRow } from "./lead-row";
+import { LogoForm } from "./logo-form";
 import { TelegramSettings } from "./telegram-settings";
 
 const PAGE_SIZE = 50;
@@ -67,6 +69,7 @@ async function OwnerDashboard({ query }: { query: LeadListQuery }) {
         </section>
         <aside className="flex flex-col gap-4">
           <ContactsForm contacts={{ phone: business.phone, address: business.address }} />
+          <LogoForm logoUrl={business.logoUrl} uploadsEnabled={getLogoStorage() !== null} />
           <AccentColorForm accentColor={business.accentColor} />
           <TelegramSettings chatId={business.telegramChatId} chatName={business.telegramChatName} />
         </aside>

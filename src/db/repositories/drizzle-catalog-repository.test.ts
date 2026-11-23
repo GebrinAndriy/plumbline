@@ -81,6 +81,21 @@ describe("businesses", () => {
     await catalog.setAccentColor(own.id, null);
     expect(await catalog.findBusinessBySlug("blinds-dublin")).toMatchObject({ accentColor: null });
   });
+
+  it("sets and clears the logo of one business only", async () => {
+    const own = await createBusiness();
+    await createBusiness("other");
+    expect(own.logoUrl).toBeNull();
+
+    await catalog.setLogoUrl(own.id, "https://store.public.blob.vercel-storage.com/logos/a.png");
+    expect(await catalog.findBusinessBySlug("blinds-dublin")).toMatchObject({
+      logoUrl: "https://store.public.blob.vercel-storage.com/logos/a.png",
+    });
+    expect(await catalog.findBusinessBySlug("other")).toMatchObject({ logoUrl: null });
+
+    await catalog.setLogoUrl(own.id, null);
+    expect(await catalog.findBusinessBySlug("blinds-dublin")).toMatchObject({ logoUrl: null });
+  });
 });
 
 describe("services", () => {

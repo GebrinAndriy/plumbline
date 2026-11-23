@@ -60,6 +60,7 @@ export const businesses = pgTable(
     phone: text("phone"),
     address: text("address"),
     accentColor: text("accent_color"),
+    logoUrl: text("logo_url"),
     createdAt: createdAt(),
   },
   (t) => [index("businesses_owner_idx").on(t.ownerId)],
