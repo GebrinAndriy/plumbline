@@ -11,7 +11,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { LEAD_STATUSES } from "../domain/leads/lead-status";
-import type { PricingRule, Quote, QuoteInput, Surcharge } from "../domain/pricing/types";
+import type { ChoiceGroup, PricingRule, Quote, QuoteInput, Surcharge } from "../domain/pricing/types";
 
 export const leadStatus = pgEnum("lead_status", LEAD_STATUSES);
 
@@ -77,6 +77,7 @@ export const services = pgTable(
     // jsonb keeps the rule as one discriminated union instead of a column per pricing kind.
     rule: jsonb("rule").$type<PricingRule>().notNull(),
     surcharges: jsonb("surcharges").$type<Surcharge[]>().notNull().default([]),
+    choices: jsonb("choices").$type<ChoiceGroup[]>().notNull().default([]),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: createdAt(),
   },

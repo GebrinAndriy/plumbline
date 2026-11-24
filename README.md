@@ -104,6 +104,23 @@ Options (surcharges) live in a `jsonb` array on the service. Adding or removing 
 not read, modify and write back, so two tabs editing options at once cannot overwrite each other. The
 10-option limit is part of the same `UPDATE`, so it cannot be bypassed by parallel requests either.
 
+### Choice groups: one pick per group
+Options are ticked independently, which cannot describe "Basic, Blackout or Linen fabric". A choice
+group (`services.choices`, `jsonb`) holds options the customer picks exactly one of, rendered as radio
+buttons named `choice.<group id>`, so a plain form post carries the picks. Each option either adds to
+the rate (€ per m², per hour or per item) or adds once; zero means "included". Strategies now expose
+`units()` (m², billable hours, items), so a per-rate choice is `units × amount` for every pricing kind
+without a branch per kind.
+
+The order is fixed and tested: base price, then one line per group (a free pick is still a line, so
+the receipt, Telegram and the lead record what was chosen), then percent options on that subtotal, so
+"Urgent +10%" costs more with a dearer fabric. A quote without a pick in every group is refused, and
+the first option is preselected so the price appears as soon as the size is in. Options carry an
+optional `imageUrl` for photos, which come in a separate change.
+
+Trade-off: a group cannot be edited yet, only removed and added again, and the minimum price applies
+to the base line only.
+
 ### The server recalculates every price
 The calculator shows a preview, but the lead is saved with a quote calculated on the server from the
 stored service, so a changed request body cannot set its own price. The quote is stored as a snapshot,

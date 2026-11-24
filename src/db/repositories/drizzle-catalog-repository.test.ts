@@ -1,3 +1,4 @@
+import type { ChoiceGroup } from "@/domain/pricing/types";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { CatalogRepository } from "@/domain/catalog/catalog";
@@ -181,7 +182,7 @@ describe("services", () => {
 
     expect(updated).toBe(true);
     expect(await catalog.listAllServices(business.id)).toEqual([
-      { id: service.id, name: "Day-night blinds", rule: { kind: "fixed", price: 90_000 }, surcharges, isActive: true },
+      { id: service.id, name: "Day-night blinds", rule: { kind: "fixed", price: 90_000 }, surcharges, choices: [], isActive: true },
     ]);
   });
 
@@ -267,5 +268,48 @@ describe("services", () => {
   it("treats a malformed id as not found", async () => {
     const business = await createBusiness();
     expect(await catalog.findService(business.id, "not-a-uuid")).toBeNull();
+  });
+});
+
+describe("choice groups", () => {
+  const fabric = {
+    id: "fabric",
+    label: "Fabric",
+    options: [
+      { id: "basic", label: "Basic", kind: "rate", amount: 0 },
+      { id: "blackout", label: "Blackout", kind: "rate", amount: 1_500 },
+    ],
+  } as const satisfies ChoiceGroup;
+
+  it("adds and removes groups of one business only, keeping their order", async () => {
+    const own = await createBusiness();
+    const other = await createBusiness("other");
+    const rule = { kind: "per_area", ratePerSqm: 4_000 } as const;
+    const service = await catalog.createService({ businessId: own.id, name: "Curtains", rule, surcharges: [] });
+    const control = { ...fabric, id: "control", label: "Control" };
+
+    expect(await catalog.addChoiceGroup(own.id, service.id, fabric)).toBe("added");
+    expect(await catalog.addChoiceGroup(own.id, service.id, control)).toBe("added");
+    expect(await catalog.addChoiceGroup(other.id, service.id, fabric)).toBe("not_found");
+    expect((await catalog.findService(own.id, service.id))?.choices).toEqual([fabric, control]);
+
+    await catalog.removeChoiceGroup(other.id, service.id, "fabric");
+    await catalog.removeChoiceGroup(own.id, service.id, "fabric");
+    expect((await catalog.findService(own.id, service.id))?.choices).toEqual([control]);
+  });
+
+  it("creates a service with its choice groups", async () => {
+    const business = await createBusiness();
+    const rule = { kind: "per_area", ratePerSqm: 4_000 } as const;
+    const service = await catalog.createService({ businessId: business.id, name: "Curtains", rule, surcharges: [], choices: [fabric] });
+    expect((await catalog.findService(business.id, service.id))?.choices).toEqual([fabric]);
+  });
+
+  it("refuses a group with a single option", async () => {
+    const business = await createBusiness();
+    const service = await catalog.createService({ businessId: business.id, name: "A", rule: { kind: "fixed", price: 1_000 }, surcharges: [] });
+    await expect(
+      catalog.addChoiceGroup(business.id, service.id, { ...fabric, options: [fabric.options[0]] }),
+    ).rejects.toThrow(PricingConfigError);
   });
 });

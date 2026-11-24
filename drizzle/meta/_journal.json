@@ -71,6 +71,13 @@
       "when": 1795435090446,
       "tag": "0009_business_logo",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795544951943,
+      "tag": "0010_service_choices",
+      "breakpoints": true
     }
   ]
 }

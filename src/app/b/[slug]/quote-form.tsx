@@ -4,10 +4,11 @@ import { useRef, useState, type FormEvent } from "react";
 import { Field, inputClass } from "@/components/field";
 import { primaryButtonClass } from "@/components/primary-button";
 import { useFormSubmit } from "@/components/use-form-submit";
-import type { Service } from "@/domain/pricing/types";
+import type { ChoiceSelection, Service } from "@/domain/pricing/types";
 import { describeRule } from "@/lib/describe-rule";
 import { formatMoney } from "@/lib/format-money";
 import { submitLeadAction, type LeadFormState } from "./actions";
+import { ChoiceOptions } from "./choice-options";
 import { explainQuote } from "@/lib/explain-quote";
 import { FormStep } from "./form-step";
 import { MobileTotalBar } from "./mobile-total-bar";
@@ -31,6 +32,7 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
   const [serviceId, setServiceId] = useState(services[0].id);
   const [fields, setFields] = useState<QuoteFields>(EMPTY_FIELDS);
   const [surchargeIds, setSurchargeIds] = useState<string[]>([]);
+  const [picked, setPicked] = useState<Record<string, string>>({});
   const [contact, setContact] = useState({ customerName: "", phone: "", comment: "" });
   const [editedFields, setEditedFields] = useState<string[]>([]);
   // Labels as first loaded, so an option the owner removes meanwhile can still be named.
@@ -52,7 +54,15 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
   const service = services.find((s) => s.id === serviceId) ?? services[0];
   const selected = surchargeIds.filter((id) => service.surcharges.some((s) => s.id === id));
   const removed = surchargeIds.filter((id) => !selected.includes(id)).map((id) => ({ id, label: labels.get(id) ?? "An option" }));
-  const quote = previewQuote(service, fields, selected);
+  const groups = service.choices ?? [];
+  // The first option is preselected, so the price shows as soon as the size is in.
+  const choices: ChoiceSelection = Object.fromEntries(
+    groups.map((g) => [g.id, g.options.some((o) => o.id === picked[g.id]) ? picked[g.id] : g.options[0].id]),
+  );
+  const pickedLabels = groups.map((g) => [g.label, g.options.find((o) => o.id === choices[g.id])?.label ?? ""] as [string, string]);
+  const hasOptions = service.surcharges.length > 0 || removed.length > 0;
+  const step = (n: number) => n + (groups.length > 0 ? 1 : 0);
+  const quote = previewQuote(service, fields, selected, choices);
   const explanation = quote ? explainQuote(service.rule, toQuoteInput(service.rule.kind, fields), quote.lines[0].amount) : null;
   const sent = state.status === "sent";
 
@@ -106,6 +116,7 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
           details={[
             ["Service", service.name],
             [STEP_TITLES[service.rule.kind], sizeSummary(service, fields, explanation?.detail)],
+            ...pickedLabels,
             ["Options", selected.map((id) => labels.get(id)).join(", ") || "None"],
             ["Name", contact.customerName],
           ]}
@@ -123,6 +134,7 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
                 onChange={(e) => {
                   setServiceId(e.target.value);
                   setSurchargeIds([]);
+                  setPicked({});
                 }}
                 className={inputClass}
               >
@@ -148,8 +160,19 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
             />
           </FormStep>
 
-          {(service.surcharges.length > 0 || removed.length > 0) && (
-            <FormStep number={3} title="Options">
+          {groups.length > 0 && (
+            <FormStep number={3} title="Your choice">
+              <ChoiceOptions
+                groups={groups}
+                kind={service.rule.kind}
+                selection={choices}
+                onPick={(groupId, optionId) => setPicked((p) => ({ ...p, [groupId]: optionId }))}
+              />
+            </FormStep>
+          )}
+
+          {hasOptions && (
+            <FormStep number={step(3)} title="Options">
               <SurchargeOptions
                 surcharges={service.surcharges}
                 selected={selected}
@@ -159,7 +182,7 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
             </FormStep>
           )}
 
-          <FormStep number={service.surcharges.length > 0 || removed.length > 0 ? 4 : 3} title="Your contacts">
+          <FormStep number={step(hasOptions ? 4 : 3)} title="Your contacts">
             <div className="grid gap-5 sm:grid-cols-2">
               <Field label="Your name" name="customerName" autoComplete="name" required value={contact.customerName} onChange={(e) => updateContact("customerName", e.target.value)} error={errors.customerName} />
               <Field label="Phone" name="phone" type="tel" autoComplete="tel" required value={contact.phone} onChange={(e) => updateContact("phone", e.target.value)} error={errors.phone} />

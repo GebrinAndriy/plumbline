@@ -1,4 +1,4 @@
-import type { Service, Surcharge } from "../pricing/types";
+import type { ChoiceGroup, Service, Surcharge } from "../pricing/types";
 
 export type Business = {
   id: string;
@@ -42,4 +42,6 @@ export interface CatalogRepository {
   updateService(businessId: string, serviceId: string, details: ServiceDetails): Promise<boolean>;
   addSurcharge(businessId: string, serviceId: string, surcharge: Surcharge): Promise<AddSurchargeResult>;
   removeSurcharge(businessId: string, serviceId: string, surchargeId: string): Promise<void>;
+  addChoiceGroup(businessId: string, serviceId: string, group: ChoiceGroup): Promise<AddSurchargeResult>;
+  removeChoiceGroup(businessId: string, serviceId: string, groupId: string): Promise<void>;
 }

@@ -3,6 +3,7 @@ import { describeRule } from "@/lib/describe-rule";
 import { setServiceActiveAction, updateServiceAction } from "./actions";
 import { EditService } from "./edit-service";
 import { priceExample } from "./price-example";
+import { ServiceChoices } from "./service-choices";
 import { ServiceOptions } from "./service-options";
 
 const KIND_LABELS = { per_area: "Per area", per_hour: "Per hour", fixed: "Fixed price" } as const;
@@ -26,6 +27,7 @@ export function ServiceCard({ service }: { service: ServiceListing }) {
           </button>
         </form>
       </div>
+      <ServiceChoices service={service} />
       <ServiceOptions service={service} />
       <EditService service={service} action={updateServiceAction.bind(null, service.id)} />
     </li>

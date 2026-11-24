@@ -59,6 +59,12 @@ function fakeCatalog(): CatalogRepository {
     removeSurcharge: async () => {
       throw new Error("not used");
     },
+    addChoiceGroup: async () => {
+      throw new Error("not used");
+    },
+    removeChoiceGroup: async () => {
+      throw new Error("not used");
+    },
   };
 }
 
@@ -107,6 +113,7 @@ function request(overrides: Partial<LeadRequest> = {}): LeadRequest {
     phone: "+353871234567",
     input: { kind: "per_area", widthCm: 150, heightCm: 200, quantity: 1 },
     surchargeIds: ["install"],
+    choices: {},
     idempotencyKey: "key-1",
     ...overrides,
   };

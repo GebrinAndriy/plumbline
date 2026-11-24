@@ -1,4 +1,4 @@
-import type { PricingRule, Surcharge } from "@/domain/pricing/types";
+import type { ChoiceOption, PricingKind, PricingRule, Surcharge } from "@/domain/pricing/types";
 import { assertNever } from "@/lib/assert-never";
 import { formatMoney } from "@/lib/format-money";
 
@@ -42,4 +42,13 @@ export function describeSurcharge(surcharge: Surcharge): string {
     default:
       return assertNever(surcharge);
   }
+}
+
+export const UNIT_LABELS: Record<PricingKind, string> = { per_area: "per m²", per_hour: "per hour", fixed: "per item" };
+
+// "Included", "+€15 per m²" or "+€120": a choice adds to the rate or once to the order.
+export function describeChoice(option: ChoiceOption, kind: PricingKind): string {
+  if (option.amount === 0) return "Included";
+  const amount = `+${formatMoney(option.amount)}`;
+  return option.kind === "rate" ? `${amount} ${UNIT_LABELS[kind]}` : amount;
 }
