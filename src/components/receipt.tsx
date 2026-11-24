@@ -28,7 +28,7 @@ export function Receipt({ businessName, quote, baseDetail, title = "Your price",
               <li key={index === 0 ? "base" : line.label} className="flex animate-rise items-baseline gap-2">
                 <span>{index === 0 && baseDetail ? `${line.label}, ${baseDetail}` : line.label}</span>
                 <span aria-hidden className="min-w-4 flex-1 border-b-2 border-dotted border-rule" />
-                <span className="font-medium tabular-nums">{formatMoney(line.amount)}</span>
+                <span className="font-medium tabular-nums">{line.amount === 0 ? "Included" : formatMoney(line.amount)}</span>
               </li>
             ))}
           </ul>

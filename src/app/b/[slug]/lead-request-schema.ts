@@ -5,6 +5,8 @@ import { toFieldErrors, type FieldErrors } from "@/lib/field-errors";
 import { decimalInput } from "@/lib/parse-number";
 import { phoneSchema } from "@/lib/phone-schema";
 
+export const CHOICE_PREFIX = "choice.";
+
 const dimension = decimalInput().pipe(
   z
     .number()
@@ -39,6 +41,8 @@ const leadRequestSchema = z.object({
     .optional(),
   input: quoteInputSchema,
   surchargeIds: z.array(z.string().max(64)).max(20),
+  // Which option was picked in each group; the price is checked against the service on the server.
+  choices: z.record(z.string().max(64), z.string().max(64)).refine((c) => Object.keys(c).length <= 10, "Too many choices"),
   idempotencyKey: z.uuid(),
 }) satisfies z.ZodType<LeadRequest>;
 
@@ -62,10 +66,18 @@ export function parseLeadForm(formData: FormData): ParsedLeadForm {
       hours: text("hours"),
     },
     surchargeIds: formData.getAll("surchargeIds"),
+    choices: choicesFrom(formData),
     idempotencyKey: text("idempotencyKey"),
   });
 
   return result.success
     ? { ok: true, request: result.data }
     : { ok: false, fieldErrors: toFieldErrors(result.error) };
+}
+
+// Radio groups are named "choice.<group id>", so a plain form post carries one pick per group.
+function choicesFrom(formData: FormData): Record<string, FormDataEntryValue> {
+  return Object.fromEntries(
+    [...formData.entries()].filter(([name]) => name.startsWith(CHOICE_PREFIX)).map(([name, value]) => [name.slice(CHOICE_PREFIX.length), value]),
+  );
 }

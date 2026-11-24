@@ -13,6 +13,20 @@ export type Surcharge = {
   label: string;
 } & ({ kind: "flat"; amount: Money } | { kind: "percent"; percent: number });
 
+// One pick from a group such as "Fabric": it adds to the rate (per m², hour or item) or once to the order.
+export type ChoiceOption = {
+  id: string;
+  label: string;
+  kind: "rate" | "flat";
+  amount: Money;
+  imageUrl?: string;
+};
+
+export type ChoiceGroup = { id: string; label: string; options: ChoiceOption[] };
+
+// Group id → the option the customer picked in it.
+export type ChoiceSelection = Readonly<Record<string, string>>;
+
 export type QuoteInput =
   | { kind: "per_area"; widthCm: number; heightCm: number; quantity: number }
   | { kind: "per_hour"; hours: number }
@@ -23,6 +37,7 @@ export type Service = {
   name: string;
   rule: PricingRule;
   surcharges: Surcharge[];
+  choices?: ChoiceGroup[];
 };
 
 export type QuoteLine = {

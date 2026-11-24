@@ -2,6 +2,8 @@ import { QuoteInputError } from "./errors";
 import type { Money, PricingKind, PricingRule, QuoteInput } from "./types";
 
 export interface PricingStrategy {
+  // m², billable hours or items: what a per-rate choice is multiplied by.
+  units(input: QuoteInput): number;
   basePrice(input: QuoteInput): Money;
 }
 
@@ -14,41 +16,35 @@ export const MAX_QUANTITY = 1_000;
 export const MAX_HOURS = 1_000;
 
 export function perAreaStrategy(rule: RuleOf<"per_area">): PricingStrategy {
+  const units = (input: QuoteInput) => {
+    const { widthCm, heightCm, quantity } = expectInput(input, "per_area");
+    assertPositive(widthCm, MAX_DIMENSION_CM, "widthCm");
+    assertPositive(heightCm, MAX_DIMENSION_CM, "heightCm");
+    assertPositiveInteger(quantity, MAX_QUANTITY, "quantity");
+    return ((widthCm * heightCm) / CM2_PER_SQM) * quantity;
+  };
   return {
-    basePrice(input) {
-      const { widthCm, heightCm, quantity } = expectInput(input, "per_area");
-      assertPositive(widthCm, MAX_DIMENSION_CM, "widthCm");
-      assertPositive(heightCm, MAX_DIMENSION_CM, "heightCm");
-      assertPositiveInteger(quantity, MAX_QUANTITY, "quantity");
-
-      const areaSqm = ((widthCm * heightCm) / CM2_PER_SQM) * quantity;
-      const price = Math.round(areaSqm * rule.ratePerSqm);
-      return Math.max(price, rule.minimumTotal ?? 0);
-    },
+    units,
+    basePrice: (input) => Math.max(Math.round(units(input) * rule.ratePerSqm), rule.minimumTotal ?? 0),
   };
 }
 
 export function perHourStrategy(rule: RuleOf<"per_hour">): PricingStrategy {
-  return {
-    basePrice(input) {
-      const { hours } = expectInput(input, "per_hour");
-      assertPositive(hours, MAX_HOURS, "hours");
-
-      const billableHours = Math.max(hours, rule.minimumHours ?? 0);
-      return Math.round(billableHours * rule.ratePerHour);
-    },
+  const units = (input: QuoteInput) => {
+    const { hours } = expectInput(input, "per_hour");
+    assertPositive(hours, MAX_HOURS, "hours");
+    return Math.max(hours, rule.minimumHours ?? 0);
   };
+  return { units, basePrice: (input) => Math.round(units(input) * rule.ratePerHour) };
 }
 
 export function fixedStrategy(rule: RuleOf<"fixed">): PricingStrategy {
-  return {
-    basePrice(input) {
-      const { quantity } = expectInput(input, "fixed");
-      assertPositiveInteger(quantity, MAX_QUANTITY, "quantity");
-
-      return rule.price * quantity;
-    },
+  const units = (input: QuoteInput) => {
+    const { quantity } = expectInput(input, "fixed");
+    assertPositiveInteger(quantity, MAX_QUANTITY, "quantity");
+    return quantity;
   };
+  return { units, basePrice: (input) => rule.price * units(input) };
 }
 
 function expectInput<K extends PricingKind>(

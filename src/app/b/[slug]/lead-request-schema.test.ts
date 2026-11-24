@@ -35,8 +35,14 @@ describe("parseLeadForm", () => {
         phone: "+353871234567",
         input: { kind: "per_area", widthCm: 150, heightCm: 200.5, quantity: 2 },
         surchargeIds: ["install", "motor"],
+        choices: {},
       },
     });
+  });
+
+  it("collects one pick per choice group from the radio names", () => {
+    const parsed = parseLeadForm(form({ ...valid, "choice.fabric": "blackout", "choice.control": "motor" }));
+    expect(parsed.ok && parsed.request.choices).toEqual({ fabric: "blackout", control: "motor" });
   });
 
   it("keeps only the fields of the chosen pricing kind", () => {

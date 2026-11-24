@@ -2,7 +2,7 @@ import { assertNever } from "@/lib/assert-never";
 import { parseDecimal } from "@/lib/parse-number";
 import { calculateQuote } from "@/domain/pricing/calculate-quote";
 import { QuoteInputError } from "@/domain/pricing/errors";
-import type { PricingKind, Quote, QuoteInput, Service } from "@/domain/pricing/types";
+import type { ChoiceSelection, PricingKind, Quote, QuoteInput, Service } from "@/domain/pricing/types";
 
 export type QuoteFields = {
   widthCm: string;
@@ -39,9 +39,10 @@ export function previewQuote(
   service: Service,
   fields: QuoteFields,
   surchargeIds: readonly string[],
+  choices: ChoiceSelection = {},
 ): Quote | null {
   try {
-    return calculateQuote(service, toQuoteInput(service.rule.kind, fields), surchargeIds);
+    return calculateQuote(service, toQuoteInput(service.rule.kind, fields), surchargeIds, choices);
   } catch (error) {
     if (error instanceof QuoteInputError) return null;
     throw error;

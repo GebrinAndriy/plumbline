@@ -12,6 +12,7 @@ export type LeadRequest = {
   comment?: string;
   input: QuoteInput;
   surchargeIds: string[];
+  choices: Record<string, string>;
   idempotencyKey: string;
 };
 
@@ -39,7 +40,7 @@ export async function submitLead(
   let quote: Quote;
   try {
     // The price shown in the browser is only a preview; the saved one is always recalculated here.
-    quote = calculateQuote(service, request.input, request.surchargeIds);
+    quote = calculateQuote(service, request.input, request.surchargeIds, request.choices);
   } catch (error) {
     if (error instanceof QuoteInputError) {
       return { ok: false, reason: "invalid_input", message: error.message };

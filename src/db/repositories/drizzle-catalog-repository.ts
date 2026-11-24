@@ -1,7 +1,13 @@
 import { and, asc, eq, lt, sql } from "drizzle-orm";
 import type { Business, CatalogRepository } from "@/domain/catalog/catalog";
 import type { Service } from "@/domain/pricing/types";
-import { MAX_SURCHARGES, validateService, validateSurcharge } from "@/domain/pricing/validate-service";
+import {
+  MAX_CHOICE_GROUPS,
+  MAX_SURCHARGES,
+  validateChoiceGroup,
+  validateService,
+  validateSurcharge,
+} from "@/domain/pricing/validate-service";
 import type { Database } from "../database";
 import { businesses, services } from "../schema";
 import { isUuid } from "./is-uuid";
@@ -111,6 +117,34 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
         .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)));
     },
 
+    async addChoiceGroup(businessId, serviceId, group) {
+      if (!isUuid(businessId) || !isUuid(serviceId)) return "not_found";
+      validateChoiceGroup(group);
+      const ownService = and(eq(services.id, serviceId), eq(services.businessId, businessId));
+      const rows = await db
+        .update(services)
+        .set({ choices: sql`${services.choices} || ${JSON.stringify([group])}::jsonb` })
+        .where(and(ownService, lt(sql`jsonb_array_length(${services.choices})`, MAX_CHOICE_GROUPS)))
+        .returning({ id: services.id });
+      if (rows.length > 0) return "added";
+      const [existing] = await db.select({ id: services.id }).from(services).where(ownService).limit(1);
+      return existing ? "limit_reached" : "not_found";
+    },
+
+    async removeChoiceGroup(businessId, serviceId, groupId) {
+      if (!isUuid(businessId) || !isUuid(serviceId)) return;
+      await db
+        .update(services)
+        .set({
+          choices: sql`coalesce(
+            (select jsonb_agg(choice order by position)
+             from jsonb_array_elements(${services.choices}) with ordinality as t(choice, position)
+             where choice->>'id' <> ${groupId}),
+            '[]'::jsonb)`,
+        })
+        .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)));
+    },
+
     async findService(businessId, serviceId) {
       if (!isUuid(businessId) || !isUuid(serviceId)) return null;
       const [row] = await db
@@ -127,9 +161,9 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
       return row ? toService(row) : null;
     },
 
-    async createService({ businessId, name, rule, surcharges }) {
-      validateService({ id: "new", name, rule, surcharges });
-      const [row] = await db.insert(services).values({ businessId, name, rule, surcharges }).returning();
+    async createService({ businessId, name, rule, surcharges, choices = [] }) {
+      validateService({ id: "new", name, rule, surcharges, choices });
+      const [row] = await db.insert(services).values({ businessId, name, rule, surcharges, choices }).returning();
       return toService(row);
     },
   };
@@ -150,5 +184,5 @@ function toBusiness(row: BusinessRow): Business {
 }
 
 function toService(row: ServiceRow): Service {
-  return { id: row.id, name: row.name, rule: row.rule, surcharges: row.surcharges };
+  return { id: row.id, name: row.name, rule: row.rule, surcharges: row.surcharges, choices: row.choices };
 }
