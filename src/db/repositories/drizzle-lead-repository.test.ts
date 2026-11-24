@@ -160,6 +160,28 @@ describe("listByBusiness", () => {
   });
 });
 
+describe("findWithHistory", () => {
+  it("returns the lead with its status changes, oldest first", async () => {
+    const { lead } = await leads.create(makeLead());
+    const later = new Date("2026-11-14T09:00:00Z");
+    await leads.saveTransition(lead.businessId, lead.id, change("new", "contacted"));
+    await leads.saveTransition(lead.businessId, lead.id, { from: "contacted", to: "quoted", at: later });
+
+    const found = await leads.findWithHistory(lead.businessId, lead.id);
+    expect(found?.lead).toMatchObject({ id: lead.id, status: "quoted" });
+    expect(found?.history).toEqual([
+      { from: "new", to: "contacted", at },
+      { from: "contacted", to: "quoted", at: later },
+    ]);
+  });
+
+  it("hides a lead from another business and ignores ids that are not uuids", async () => {
+    const { lead } = await leads.create(makeLead());
+    expect(await leads.findWithHistory(otherBusinessId, lead.id)).toBeNull();
+    expect(await leads.findWithHistory(lead.businessId, "not-a-uuid")).toBeNull();
+  });
+});
+
 describe("summarizeByStatus", () => {
   it("counts leads and sums their totals per status", async () => {
     const { lead: first } = await leads.create(makeLead());

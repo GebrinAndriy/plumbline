@@ -17,6 +17,8 @@ export type Lead = {
 
 export type StatusChange = { from: LeadStatus; to: LeadStatus; at: Date };
 
+export type LeadWithHistory = { lead: Lead; history: StatusChange[] };
+
 export type StatusTotals = Record<LeadStatus, { count: number; total: Money }>;
 
 export const emptyStatusTotals = (): StatusTotals =>
@@ -47,6 +49,8 @@ export interface LeadRepository {
     businessId: string,
     options?: { status?: LeadStatus; search?: LeadSearch; limit?: number; offset?: number },
   ): Promise<Lead[]>;
+  /** Null for an unknown id or a lead of another business, so a link cannot reveal it exists. */
+  findWithHistory(businessId: string, leadId: string): Promise<LeadWithHistory | null>;
   /** Counts and sums every lead of the business, not just one page of them. */
   summarizeByStatus(businessId: string): Promise<StatusTotals>;
   /** Throws LeadConflictError if the lead's status changed since it was read. */

@@ -143,6 +143,18 @@ Each change is also written to `lead_status_changes` as an audit log. Nothing in
 the app reads it yet, so leads are loaded without their history, and there is no note field until a
 screen asks for one.
 
+### Each request has its own page
+`/dashboard/leads/[id]` shows one request: contacts with Call and WhatsApp buttons, the customer's
+comment, the quoted receipt, the status control and the status history from `lead_status_changes`.
+Telegram messages link here, so a request opens wherever it sits in the list. The lead is looked up by
+id and business together, so another owner's id gives the same 404 as a missing one and a link cannot
+reveal that a request exists. WhatsApp needs the international number, so national numbers are
+rewritten with the calling code from `MARKET`, and the chat opens with a greeting that names the
+service and the quoted price.
+
+Trade-off: messages sent before this change still link to `/dashboard#lead-<id>`, which finds the
+request only on the first page of the list.
+
 ### Removing an option asks first
 Removing a paid option changes the price customers see, and there is no undo. The × button turns into
 an inline "Remove? / Keep" pair instead of a browser `confirm()` dialog: it matches the design, does

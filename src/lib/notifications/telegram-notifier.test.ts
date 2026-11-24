@@ -59,7 +59,7 @@ describe("leadMessage", () => {
       `Total: ${formatMoney(22_320)}`,
       "Comment: After 6 pm, please",
       "",
-      "Open the request: https://plumbline.test/dashboard#lead-7f0c",
+      "Open the request: https://plumbline.test/dashboard/leads/7f0c",
     ]);
   });
 

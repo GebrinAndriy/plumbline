@@ -2,18 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 
 const LINKS = [
-  { href: "/dashboard", label: "Requests" },
-  { href: "/dashboard/services", label: "Services" },
+  { href: "/dashboard", label: "Requests", section: "/dashboard/leads/" },
+  { href: "/dashboard/services", label: "Services", section: "/dashboard/services/" },
 ] as const;
 
+// The path of a lead page is known only at request time, so the links render first and the highlight streams in.
 export function DashboardNav() {
-  const pathname = usePathname();
+  return (
+    <Suspense fallback={<NavLinks pathname={null} />}>
+      <CurrentNavLinks />
+    </Suspense>
+  );
+}
+
+function CurrentNavLinks() {
+  return <NavLinks pathname={usePathname()} />;
+}
+
+function NavLinks({ pathname }: { pathname: string | null }) {
   return (
     <nav aria-label="Dashboard" className="flex gap-1">
-      {LINKS.map(({ href, label }) => {
-        const current = pathname === href;
+      {LINKS.map(({ href, label, section }) => {
+        const current = pathname !== null && (pathname === href || pathname.startsWith(section));
         return (
           <Link
             key={href}
