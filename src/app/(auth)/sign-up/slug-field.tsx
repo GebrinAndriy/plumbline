@@ -24,7 +24,7 @@ export function SlugField({ value, error, onChange }: SlugFieldProps) {
         Page address
       </label>
       <div
-        className={`flex items-center rounded-field border bg-white transition-colors focus-within:border-ink focus-within:ring-2 focus-within:ring-ink/15 ${
+        className={`flex items-center rounded-field border bg-field transition-colors focus-within:border-ink focus-within:ring-2 focus-within:ring-ink/15 ${
           error ? "border-error" : "border-control"
         }`}
       >

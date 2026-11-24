@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   ACCENT_PRESETS,
   DEFAULT_ACCENT,
+  DARK_PAGE_BACKGROUND,
   accentPalette,
   contrastRatio,
+  darkAccentPalette,
   isReadableAccent,
   normalizeHex,
   readableShade,
@@ -69,5 +71,22 @@ describe("accentPalette", () => {
     expect(palette.accent).toBe("#1d4ed8");
     expect(contrastRatio(palette.hover, "#ffffff")).toBeGreaterThan(contrastRatio(palette.accent, "#ffffff"));
     expect(contrastRatio(palette.soft, "#ffffff")).toBeLessThan(1.3);
+  });
+});
+
+describe("darkAccentPalette", () => {
+  it("lightens dark brand colours until they read on the dark page", () => {
+    for (const hex of ["#1d4ed8", "#000000", "#334155", ...ACCENT_PRESETS.map((preset) => preset.hex)]) {
+      const { accent, hover } = darkAccentPalette(hex);
+      expect(contrastRatio(accent, DARK_PAGE_BACKGROUND), hex).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(hover, DARK_PAGE_BACKGROUND), hex).toBeGreaterThan(contrastRatio(accent, DARK_PAGE_BACKGROUND));
+    }
+  });
+
+  it("keeps a colour that already reads on the dark page and its hue", () => {
+    expect(darkAccentPalette("#f08a4b").accent).toBe("#f08a4b");
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(darkAccentPalette("#1d4ed8").accent.slice(i, i + 2), 16));
+    expect(b).toBeGreaterThan(r);
+    expect(b).toBeGreaterThan(g);
   });
 });

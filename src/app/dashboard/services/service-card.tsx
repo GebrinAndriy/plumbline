@@ -9,7 +9,7 @@ const KIND_LABELS = { per_area: "Per area", per_hour: "Per hour", fixed: "Fixed 
 
 export function ServiceCard({ service }: { service: ServiceListing }) {
   return (
-    <li className={`flex flex-col gap-5 rounded-card border border-rule p-5 sm:p-6 ${service.isActive ? "bg-white" : "border-dashed bg-surface"}`}>
+    <li className={`flex flex-col gap-5 rounded-card border border-rule p-5 sm:p-6 ${service.isActive ? "bg-field" : "border-dashed bg-surface"}`}>
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div className={`flex flex-col gap-1 ${service.isActive ? "" : "opacity-60"}`}>
           <p className="text-xs font-semibold tracking-[0.13em] text-accent uppercase">{KIND_LABELS[service.rule.kind]}</p>

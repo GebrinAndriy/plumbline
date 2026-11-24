@@ -17,7 +17,7 @@ export function PricingKindPicker({ value, onChange }: PricingKindPickerProps) {
           <label
             key={kind}
             className={`flex cursor-pointer flex-wrap items-center justify-between gap-x-3 gap-y-0.5 rounded-field border px-3.5 py-3 transition-colors has-focus-visible:ring-2 has-focus-visible:ring-ink/15 ${
-              value === kind ? "border-accent bg-receipt" : "border-rule bg-white hover:border-muted"
+              value === kind ? "border-accent bg-receipt" : "border-rule bg-field hover:border-muted"
             }`}
           >
             <span className="flex items-center gap-2 font-semibold">

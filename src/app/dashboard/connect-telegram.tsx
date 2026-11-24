@@ -59,6 +59,7 @@ export function ConnectTelegram({ connected }: { connected: boolean }) {
           width={160}
           height={160}
           unoptimized
+          // White in both themes: phone cameras read dark modules on a light quiet zone.
           className="rounded-field border border-rule bg-white p-2"
         />
         <div className="flex max-w-xs flex-col gap-3 text-sm">

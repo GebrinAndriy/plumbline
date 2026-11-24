@@ -1,6 +1,7 @@
 export const DEFAULT_ACCENT = "#c2410c";
 // The darkest page background the accent sits on as text; white is lighter, so it passes too.
 export const PAGE_BACKGROUND = "#f6f3ee";
+export const DARK_PAGE_BACKGROUND = "#161412";
 export const MIN_TEXT_CONTRAST = 4.5;
 
 export const ACCENT_PRESETS = [
@@ -70,4 +71,17 @@ export function readableShade(hex: string): string {
 
 export function accentPalette(hex: string): AccentPalette {
   return { accent: hex, hover: mix(hex, "#000000", 0.2), soft: mix(hex, "#ffffff", 0.86) };
+}
+
+// In dark mode the same hue is lightened until it reads on the dark page; button text turns dark to match.
+export function darkAccentPalette(hex: string): AccentPalette {
+  let accent = "#ffffff";
+  for (let step = 0; step <= 20; step++) {
+    const shade = mix(hex, "#ffffff", step * 0.05);
+    if (contrastRatio(shade, DARK_PAGE_BACKGROUND) >= MIN_TEXT_CONTRAST) {
+      accent = shade;
+      break;
+    }
+  }
+  return { accent, hover: mix(accent, "#ffffff", 0.25), soft: mix(accent, DARK_PAGE_BACKGROUND, 0.8) };
 }

@@ -56,7 +56,7 @@ function ConfirmButton({ label }: { label: string }) {
       type="submit"
       disabled={pending}
       aria-label={`Yes, remove ${label}`}
-      className="tap-target rounded-field bg-error px-2.5 py-1 text-xs font-semibold text-white transition-opacity disabled:opacity-50"
+      className="tap-target rounded-field bg-error px-2.5 py-1 text-xs font-semibold text-on-accent transition-opacity disabled:opacity-50"
     >
       {pending ? "Removing…" : "Remove"}
     </button>

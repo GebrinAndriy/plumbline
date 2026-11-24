@@ -10,7 +10,7 @@ import { addressLines, mapsHref, phoneHref } from "@/lib/contact-links";
 import { formatPhone } from "@/lib/format-phone";
 
 const buttonClass =
-  "flex h-11 flex-1 items-center justify-center gap-2 rounded-field border border-control bg-white px-4 text-[15px] font-semibold transition-colors hover:border-ink";
+  "flex h-11 flex-1 items-center justify-center gap-2 rounded-field border border-control bg-field px-4 text-[15px] font-semibold transition-colors hover:border-ink";
 
 // On phones the contacts fit one row, so the service picker starts on the first screen.
 export function CompactContacts({ phone, address }: BusinessContacts) {

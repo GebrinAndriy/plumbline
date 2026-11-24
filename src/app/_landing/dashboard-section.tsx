@@ -28,7 +28,7 @@ function nextStep(status: LeadStatus): LeadStatus | undefined {
 
 export function DashboardSection() {
   return (
-    <section aria-labelledby="dashboard-title" className="bg-ink text-paper">
+    <section aria-labelledby="dashboard-title" className="bg-band text-on-band">
       <div className="mx-auto grid max-w-[1440px] grid-cols-1 items-center gap-12 px-4 py-16 sm:px-8 lg:grid-cols-[400px_minmax(0,1fr)] lg:gap-[72px] lg:px-20 lg:py-26">
         <div className="flex flex-col gap-5">
           <Overline tone="on-dark">Your dashboard</Overline>
@@ -63,7 +63,7 @@ export function DashboardSection() {
               </div>
             ))}
           </dl>
-          <ul className="divide-y divide-rule overflow-hidden rounded-card border border-rule bg-white">
+          <ul className="divide-y divide-rule overflow-hidden rounded-card border border-rule bg-field">
             {LEADS.map((lead) => (
               <LeadRow key={lead.name} {...lead} />
             ))}

@@ -57,7 +57,7 @@ async function OwnerDashboard({ query }: { query: LeadListQuery }) {
           <StatusFilter current={status} q={q} totals={totals} />
           <LeadSearch status={status} q={q} />
           {shown.length > 0 ? (
-            <ul className="divide-y divide-rule overflow-hidden rounded-card border border-rule bg-white">
+            <ul className="divide-y divide-rule overflow-hidden rounded-card border border-rule bg-field">
               {shown.map((lead) => (
                 <LeadRow key={lead.id} lead={lead} />
               ))}

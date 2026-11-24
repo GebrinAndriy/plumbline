@@ -29,7 +29,7 @@ export function HowItWorks() {
           </Step>
           <Step number={2} title="Share your page link" body="Put it in your Instagram bio, WhatsApp status or on a business card. Customers open it on their phone.">
             <div className="flex gap-2">
-              <span className="flex-1 rounded-field border border-rule bg-white px-3.5 py-3 text-[15px]">/b/your-business</span>
+              <span className="flex-1 rounded-field border border-rule bg-field px-3.5 py-3 text-[15px]">/b/your-business</span>
               <span className="rounded-field border border-ink px-4 py-3 text-[15px] font-semibold">Copy link</span>
             </div>
           </Step>

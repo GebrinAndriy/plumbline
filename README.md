@@ -401,9 +401,21 @@ scrolling status tabs, the quantity stepper) or the grown area would cover a nei
 password?" under the password field), the element itself is 44 px instead. Links inside a
 sentence keep their text size; WCAG exempts them.
 
-Trade-off: the app is light-only for now. The old dark variant was a set of generic grays; a real dark
-theme needs its own designed palette, and the tokens make it a matter of adding values, not editing
-pages.
+The dark theme follows the system setting (`prefers-color-scheme`). It redefines every color token in
+one block of `globals.css`: a warm near-black paper with paper-white ink instead of generic grays, so
+it reads as the same brand. Two tokens made it possible without touching layouts: `field` replaced the
+hardcoded white of inputs and cards, and `on-accent` the white text on filled buttons, which turns dark
+on the lighter dark-mode accent. Dark bands and the phone mockup use `band`, which stays dark in both
+themes. The token test runs every contrast pair for both themes and fails if a dark value is missing.
+
+A business's own colour gets a dark-mode shade too: `darkAccentPalette` lightens the same hue until it
+reads on the dark page, and the `.brand-accent` rule switches between the two sets that `accentProps`
+puts inline. Logos are drawn for light paper, so a business logo sits on a white card in dark mode; the
+Plumbline logo is inverted and hue-rotated back, which turns its lettering white and keeps the plumb
+bob orange. The Telegram QR code keeps its white background so cameras can read it.
+
+Trade-off: there is no manual light/dark switch. It needs a stored preference and a script before the
+first paint to avoid a flash, so it is a separate change.
 
 ## Known limitations
 
