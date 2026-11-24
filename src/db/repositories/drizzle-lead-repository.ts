@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, like, or, sum, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, like, or, sum, type SQL } from "drizzle-orm";
 import type { LeadSearch } from "@/domain/leads/lead-search";
 import { emptyStatusTotals, LeadConflictError, type Lead, type LeadRepository } from "@/domain/leads/lead";
 import type { Database } from "../database";
@@ -61,6 +61,26 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
         .offset(Math.max(0, options.offset ?? 0));
 
       return rows.map(toLead);
+    },
+
+    async findWithHistory(businessId, leadId) {
+      if (!isUuid(businessId) || !isUuid(leadId)) return null;
+      const [row] = await db
+        .select()
+        .from(leads)
+        .where(and(eq(leads.id, leadId), eq(leads.businessId, businessId)))
+        .limit(1);
+      if (!row) return null;
+
+      const changes = await db
+        .select()
+        .from(leadStatusChanges)
+        .where(eq(leadStatusChanges.leadId, leadId))
+        .orderBy(asc(leadStatusChanges.at), asc(leadStatusChanges.id));
+      return {
+        lead: toLead(row),
+        history: changes.map((change) => ({ from: change.fromStatus, to: change.toStatus, at: change.at })),
+      };
     },
 
     async summarizeByStatus(businessId) {

@@ -1,17 +1,10 @@
+import Link from "next/link";
 import type { Lead } from "@/domain/leads/lead";
 import { describeInput } from "@/lib/describe-input";
 import { formatMoney } from "@/lib/format-money";
 import { formatPhone } from "@/lib/format-phone";
-import { MARKET } from "@/lib/market";
+import { formatDateTime } from "@/lib/format-date";
 import { LeadStatusControl } from "./lead-status-control";
-
-const dateFormat = new Intl.DateTimeFormat(MARKET.locale, {
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: MARKET.timeZone,
-});
 
 export function LeadRow({ lead }: { lead: Lead }) {
   const [base, ...options] = lead.quote.lines;
@@ -24,9 +17,11 @@ export function LeadRow({ lead }: { lead: Lead }) {
     >
       <div className="flex min-w-0 flex-col gap-1">
         <p className="flex flex-wrap items-baseline gap-x-3">
-          <span className="text-base font-semibold">{lead.customerName}</span>
+          <Link href={`/dashboard/leads/${lead.id}`} className="tap-target text-base font-semibold underline-offset-4 hover:underline">
+            {lead.customerName}
+          </Link>
           <time dateTime={lead.createdAt.toISOString()} className="text-xs text-muted">
-            {dateFormat.format(lead.createdAt)}
+            {formatDateTime(lead.createdAt)}
           </time>
         </p>
         <a href={`tel:${lead.phone}`} className="tap-target self-start text-sm font-medium text-accent underline-offset-4 hover:underline">

@@ -84,6 +84,7 @@ function fakeLeads(): LeadRepository & { saved: Lead[] } {
     listByBusiness: async () => [],
     summarizeByStatus: async () => emptyStatusTotals(),
     saveTransition: async () => {},
+    findWithHistory: async () => null,
   };
 }
 

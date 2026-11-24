@@ -3,4 +3,5 @@ export const MARKET = {
   locale: "en-IE",
   currency: "EUR",
   timeZone: "Europe/Dublin",
+  callingCode: "353",
 } as const;

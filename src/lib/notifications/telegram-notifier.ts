@@ -6,7 +6,7 @@ import { formatPhone } from "@/lib/format-phone";
 import { sendTelegramMessage } from "./telegram-api";
 
 export function leadUrl(appOrigin: string, leadId: string): string {
-  return `${appOrigin}/dashboard#lead-${leadId}`;
+  return `${appOrigin}/dashboard/leads/${leadId}`;
 }
 
 export function leadMessage(lead: Lead, serviceName: string, url: string): string {
