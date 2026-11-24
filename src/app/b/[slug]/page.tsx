@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { accentStyle } from "@/components/accent-style";
+import { accentProps } from "@/components/accent-props";
 import { PlumblineLogo } from "@/components/plumbline-logo";
 import { BusinessContacts } from "./business-contacts";
 import { previewDescription, previewTitle } from "./link-preview";
@@ -47,15 +47,20 @@ async function BusinessQuote({ slug }: { slug: string }) {
   const { business, services } = page;
 
   return (
-    <div style={accentStyle(business.accentColor)}>
+    <div {...accentProps(business.accentColor)}>
       <header className="border-b border-rule">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-7 sm:flex-row sm:items-end sm:justify-between sm:gap-10 sm:px-8 sm:py-12">
           <div>
             {business.logoUrl && (
-              // Decorative: the business name follows in the heading, so a reader would hear it twice.
-              <div className="relative mb-4 h-12 w-48 sm:mb-5 sm:h-14 sm:w-56">
-                <Image src={business.logoUrl} alt="" fill preload sizes="224px" className="object-contain object-left" />
-              </div>
+              // Empty alt: the name follows in the heading. Logos are drawn for light paper, so dark mode gives them a white card.
+              <Image
+                src={business.logoUrl}
+                alt=""
+                width={224}
+                height={56}
+                preload
+                className="mb-4 h-12 w-auto max-w-48 object-contain object-left sm:mb-5 sm:h-14 sm:max-w-56 dark:rounded-field dark:bg-white dark:p-2"
+              />
             )}
             <h1 className="font-serif text-4xl font-medium tracking-tight sm:text-5xl">{business.name}</h1>
             <p className="mt-3 max-w-2xl text-muted sm:text-lg">

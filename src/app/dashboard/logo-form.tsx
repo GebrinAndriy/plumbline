@@ -57,7 +57,7 @@ export function LogoForm({ logoUrl, uploadsEnabled }: Props) {
           <form method="post" onSubmit={onSubmit} className="flex flex-col gap-3" noValidate>
             <p className="text-sm text-muted">PNG, JPEG or WebP, up to 1 MB. A wide logo on a transparent background looks best.</p>
             <div className="flex flex-wrap items-center gap-3">
-              <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-field border border-control bg-white px-4 text-sm font-semibold transition-colors hover:border-ink has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ink">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-field border border-control bg-field px-4 text-sm font-semibold transition-colors hover:border-ink has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ink">
                 <UploadSimpleIcon weight="bold" aria-hidden className="size-4" />
                 {logoUrl ? "Choose a new image" : "Choose image"}
                 <input

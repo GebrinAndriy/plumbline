@@ -20,7 +20,7 @@ export function QuantityStepper({ label, value, error, onChange }: QuantityStepp
       <label htmlFor="quantity" className="font-medium text-ink">
         {label}
       </label>
-      <div className="flex h-[46px] w-40 overflow-hidden rounded-field border border-control bg-white focus-within:border-ink">
+      <div className="flex h-[46px] w-40 overflow-hidden rounded-field border border-control bg-field focus-within:border-ink">
         <button type="button" aria-label="Fewer" disabled={!valid || current <= 1} onClick={() => set(current - 1)} className={stepClass}>
           −
         </button>

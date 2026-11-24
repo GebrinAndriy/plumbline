@@ -19,7 +19,7 @@ export function SurchargeOptions({ surcharges, selected, removed, onToggle }: Su
         return (
           <label
             key={s.id}
-            className={`${rowClass} cursor-pointer ${checked ? "border-accent bg-receipt" : "border-rule bg-white hover:border-muted"}`}
+            className={`${rowClass} cursor-pointer ${checked ? "border-accent bg-receipt" : "border-rule bg-field hover:border-muted"}`}
           >
             <input
               type="checkbox"

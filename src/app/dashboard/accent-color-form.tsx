@@ -3,7 +3,7 @@
 import { CheckIcon } from "@phosphor-icons/react/dist/csr/Check";
 import { EyedropperIcon } from "@phosphor-icons/react/dist/csr/Eyedropper";
 import { useState } from "react";
-import { accentStyle } from "@/components/accent-style";
+import { accentProps } from "@/components/accent-props";
 import { Field } from "@/components/field";
 import { PrimaryButton, primaryButtonClass } from "@/components/primary-button";
 import { useFormSubmit } from "@/components/use-form-submit";
@@ -60,7 +60,7 @@ export function AccentColorForm({ accentColor }: { accentColor: string | null })
               {color === preset.hex && <CheckIcon weight="bold" aria-hidden className="size-5" />}
             </label>
           ))}
-          <label title="Your own colour" className={`${swatchClass} border border-control bg-white text-ink`}>
+          <label title="Your own colour" className={`${swatchClass} border border-control bg-field text-ink`}>
             <input
               type="color"
               aria-label="Your own colour"
@@ -115,8 +115,9 @@ export function AccentColorForm({ accentColor }: { accentColor: string | null })
 }
 
 function AccentPreview({ color }: { color: string }) {
+  const accent = accentProps(color);
   return (
-    <div style={accentStyle(color)} className="flex items-center justify-between gap-3 rounded-field border border-rule bg-receipt p-3">
+    <div style={accent.style} className={`${accent.className ?? ""} flex items-center justify-between gap-3 rounded-field border border-rule bg-receipt p-3`}>
       <div>
         <p className="text-[11px] font-semibold tracking-[0.14em] text-muted uppercase">Preview</p>
         <p className="font-serif text-2xl font-semibold text-accent tabular-nums">€240</p>

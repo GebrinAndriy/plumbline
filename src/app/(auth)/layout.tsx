@@ -14,7 +14,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
-      <aside aria-hidden className="hidden flex-col justify-center gap-10 bg-ink px-16 py-20 text-paper lg:flex">
+      <aside aria-hidden className="hidden flex-col justify-center gap-10 bg-band px-16 py-20 text-on-band lg:flex">
         <div className="w-full max-w-sm -rotate-[1.5deg] self-center text-ink">
           <Receipt businessName="Home Studio" quote={example.quote} baseDetail={example.detail} />
         </div>

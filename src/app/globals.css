@@ -4,7 +4,12 @@
   --color-paper: #f6f3ee;
   --color-surface: #fbf9f5;
   --color-receipt: #fffdf9;
+  /* Inputs, cards and list rows. */
+  --color-field: #ffffff;
   --color-ink: #1a1a1a;
+  /* Dark bands and device mockups: dark in both themes, so their light text stays readable. */
+  --color-band: #1a1a1a;
+  --color-on-band: #f6f3ee;
   --color-muted: #6b6760;
   --color-rule: #e3ded5;
   /* Field borders: at least 3:1 against white, paper, surface and disabled (WCAG 1.4.11). */
@@ -12,6 +17,8 @@
   --color-accent: #c2410c;
   --color-accent-hover: #9a3412;
   --color-accent-soft: #f8e6da;
+  /* Text on a filled accent or error button. */
+  --color-on-accent: #ffffff;
   --color-success: #166534;
   --color-success-soft: #e3efe3;
   --color-error: #b91c1c;
@@ -72,7 +79,37 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
+}
+
+/* Warm near-black with paper-white ink; every pair is checked in design-tokens.test.ts. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #161412;
+    --color-surface: #1c1a17;
+    --color-receipt: #211e1b;
+    --color-field: #1f1c19;
+    --color-ink: #f2ede5;
+    --color-band: #262320;
+    --color-on-band: #f6f3ee;
+    --color-muted: #aaa398;
+    --color-rule: #33302b;
+    --color-control: #7f786e;
+    --color-accent: #f08a4b;
+    --color-accent-hover: #f5a675;
+    --color-accent-soft: #3b2417;
+    --color-on-accent: #161412;
+    --color-success: #6fcf8e;
+    --color-success-soft: #16291c;
+    --color-error: #f28b82;
+    --color-error-soft: #3a1c1a;
+    --color-info: #8db8f2;
+    --color-info-soft: #18253a;
+    --color-quoted: #e5b862;
+    --color-quoted-soft: #33280f;
+    --color-disabled: #2a2723;
+    --color-disabled-text: #8c857a;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -90,6 +127,20 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
+}
+
+/* A business's own colour, set inline by accentProps(), with a lighter shade for dark mode. */
+.brand-accent {
+  --color-accent: var(--brand-accent);
+  --color-accent-hover: var(--brand-accent-hover);
+  --color-accent-soft: var(--brand-accent-soft);
+}
+@media (prefers-color-scheme: dark) {
+  .brand-accent {
+    --color-accent: var(--brand-accent-dark);
+    --color-accent-hover: var(--brand-accent-dark-hover);
+    --color-accent-soft: var(--brand-accent-dark-soft);
+  }
 }
 
 /* Grows the tap area to at least 44 × 44 px without changing the layout (WCAG 2.5.5). */
@@ -114,7 +165,7 @@ body {
     linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / var(--fill, 0%) 3px no-repeat,
     repeating-linear-gradient(to right, var(--color-muted) 0 1px, transparent 1px 10%) 0 0 / 100% 12px no-repeat,
     repeating-linear-gradient(to right, var(--color-rule) 0 1px, transparent 1px 2%) 0 0 / 100% 7px no-repeat,
-    #fff;
+    var(--color-field);
   border: 1px solid var(--color-control);
   border-radius: 6px;
   cursor: pointer;
