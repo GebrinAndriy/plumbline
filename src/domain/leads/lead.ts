@@ -2,18 +2,30 @@ import type { Money, Quote, QuoteInput } from "../pricing/types";
 import type { LeadSearch } from "./lead-search";
 import { LEAD_STATUSES, type LeadStatus } from "./lead-status";
 
+export const MAX_LEAD_ITEMS = 10;
+
+// One line of a request: a service, what the customer entered for it and the price quoted for it.
+export type LeadItem = {
+  // Null once the service is deleted; the name and quote stay as the customer saw them.
+  serviceId: string | null;
+  serviceName: string;
+  input: QuoteInput;
+  quote: Quote;
+};
+
 export type Lead = {
   id: string;
   businessId: string;
-  serviceId: string | null;
   customerName: string;
   phone: string;
   comment: string | null;
-  input: QuoteInput;
-  quote: Quote;
+  items: LeadItem[];
+  total: Money;
   status: LeadStatus;
   createdAt: Date;
 };
+
+export const itemsTotal = (items: readonly LeadItem[]): Money => items.reduce((sum, item) => sum + item.quote.total, 0);
 
 export type StatusChange = { from: LeadStatus; to: LeadStatus; at: Date };
 
@@ -26,12 +38,10 @@ export const emptyStatusTotals = (): StatusTotals =>
 
 export type NewLead = {
   businessId: string;
-  serviceId: string;
   customerName: string;
   phone: string;
   comment?: string;
-  input: QuoteInput;
-  quote: Quote;
+  items: LeadItem[];
   idempotencyKey: string;
 };
 

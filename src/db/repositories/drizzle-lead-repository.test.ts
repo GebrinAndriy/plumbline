@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { emptyStatusTotals, LeadConflictError, type LeadRepository, type NewLead } from "@/domain/leads/lead";
+import { emptyStatusTotals, LeadConflictError, type LeadItem, type LeadRepository, type NewLead } from "@/domain/leads/lead";
 import { parseLeadSearch } from "@/domain/leads/lead-search";
 import type { LeadStatus } from "@/domain/leads/lead-status";
 import { calculateQuote } from "@/domain/pricing/calculate-quote";
 import type { QuoteInput } from "@/domain/pricing/types";
 import type { Database } from "../database";
-import { leadStatusChanges } from "../schema";
+import { leadStatusChanges, leads as leadsTable } from "../schema";
 import { createTestDb } from "../testing/create-test-db";
 import { createDrizzleCatalogRepository } from "./drizzle-catalog-repository";
 import { createDrizzleLeadRepository } from "./drizzle-lead-repository";
@@ -15,6 +15,7 @@ let close: () => Promise<void>;
 let db: Database;
 let leads: LeadRepository;
 let makeLead: (overrides?: Partial<NewLead>) => NewLead;
+let item: LeadItem;
 let otherBusinessId: string;
 
 beforeEach(async () => {
@@ -36,13 +37,12 @@ beforeEach(async () => {
 
   const input: QuoteInput = { kind: "per_area", widthCm: 150, heightCm: 200, quantity: 1 };
   let counter = 0;
+  item = { serviceId: service.id, serviceName: service.name, input, quote: calculateQuote(service, input) };
   makeLead = (overrides = {}) => ({
     businessId: business.id,
-    serviceId: service.id,
     customerName: "Aoife",
     phone: "+353871234567",
-    input,
-    quote: calculateQuote(service, input),
+    items: [item],
     idempotencyKey: `key-${++counter}`,
     ...overrides,
   });
@@ -61,8 +61,27 @@ describe("create", () => {
 
     expect(created).toBe(true);
     expect(lead.status).toBe("new");
-    expect(lead.quote.total).toBe(150_000);
+    expect(lead.total).toBe(150_000);
+    expect(lead.items).toEqual([item]);
     expect(await leads.listByBusiness(lead.businessId)).toEqual([lead]);
+  });
+
+  it("keeps several items and their sum, and fills the old columns for older deployments", async () => {
+    const second = { ...item, quote: { ...item.quote, total: 20_000 } };
+    const { lead } = await leads.create(makeLead({ items: [item, second] }));
+    expect(lead.total).toBe(170_000);
+    expect(lead.items).toEqual([item, second]);
+
+    const [row] = await db.select().from(leadsTable).where(eq(leadsTable.id, lead.id));
+    expect(row).toMatchObject({ serviceId: item.serviceId, input: item.input, total: 170_000 });
+    expect(row.quote.lines).toEqual([...item.quote.lines, ...second.quote.lines]);
+  });
+
+  it("reads a lead saved before items existed as one item", async () => {
+    const { lead } = await leads.create(makeLead());
+    await db.update(leadsTable).set({ items: [] }).where(eq(leadsTable.id, lead.id));
+    const [read] = await leads.listByBusiness(lead.businessId);
+    expect(read.items).toEqual([{ ...item, serviceName: item.quote.lines[0].label }]);
   });
 
   it("returns the existing lead when the same form is submitted twice", async () => {
@@ -192,8 +211,8 @@ describe("summarizeByStatus", () => {
     await leads.saveTransition(won.businessId, won.id, change("quoted", "won"));
 
     const totals = await leads.summarizeByStatus(first.businessId);
-    expect(totals.new).toEqual({ count: 2, total: 2 * first.quote.total });
-    expect(totals.won).toEqual({ count: 1, total: first.quote.total });
+    expect(totals.new).toEqual({ count: 2, total: 2 * first.total });
+    expect(totals.won).toEqual({ count: 1, total: first.total });
     expect(totals.lost).toEqual({ count: 0, total: 0 });
   });
 

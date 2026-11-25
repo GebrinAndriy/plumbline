@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, ilike, like, or, sum, type SQL } from "drizzle-orm";
 import type { LeadSearch } from "@/domain/leads/lead-search";
-import { emptyStatusTotals, LeadConflictError, type Lead, type LeadRepository } from "@/domain/leads/lead";
+import { emptyStatusTotals, itemsTotal, LeadConflictError, type Lead, type LeadItem, type LeadRepository } from "@/domain/leads/lead";
 import type { Database } from "../database";
 import { leadStatusChanges, leads } from "../schema";
 import { isUuid } from "./is-uuid";
@@ -17,13 +17,12 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
         .insert(leads)
         .values({
           businessId: lead.businessId,
-          serviceId: lead.serviceId,
           customerName: lead.customerName,
           phone: lead.phone,
           comment: lead.comment ?? null,
-          input: lead.input,
-          quote: lead.quote,
-          total: lead.quote.total,
+          items: lead.items,
+          ...legacyColumns(lead.items),
+          total: itemsTotal(lead.items),
           idempotencyKey: lead.idempotencyKey,
         })
         .onConflictDoNothing({ target: leads.idempotencyKey })
@@ -132,16 +131,31 @@ function matchesSearch({ text, phoneDigits }: LeadSearch): SQL {
 
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, (char) => `\\${char}`);
 
+// The first item, with every line of the request in its quote: what code written for one service reads.
+function legacyColumns(items: LeadItem[]) {
+  const [first] = items;
+  return {
+    serviceId: first.serviceId,
+    input: first.input,
+    quote: { lines: items.flatMap((item) => item.quote.lines), total: itemsTotal(items) },
+  };
+}
+
+// Leads saved before the items column have one service, kept in the legacy columns.
+function itemsOf(row: LeadRow): LeadItem[] {
+  if (row.items.length > 0) return row.items;
+  return [{ serviceId: row.serviceId, serviceName: row.quote.lines[0]?.label ?? "", input: row.input, quote: row.quote }];
+}
+
 function toLead(row: LeadRow): Lead {
   return {
     id: row.id,
     businessId: row.businessId,
-    serviceId: row.serviceId,
     customerName: row.customerName,
     phone: row.phone,
     comment: row.comment,
-    input: row.input,
-    quote: row.quote,
+    items: itemsOf(row),
+    total: row.total,
     status: row.status,
     createdAt: row.createdAt,
   };

@@ -8,7 +8,7 @@ import { Receipt } from "@/components/receipt";
 import { getRepositories } from "@/db/get-repositories";
 import { requireOwner } from "@/lib/auth/current-owner";
 import { phoneHref, whatsappHref } from "@/lib/contact-links";
-import { describeInput } from "@/lib/describe-input";
+import { receiptQuote, serviceNames } from "@/lib/describe-lead-item";
 import { formatDateTime } from "@/lib/format-date";
 import { formatMoney } from "@/lib/format-money";
 import { formatPhone } from "@/lib/format-phone";
@@ -34,8 +34,8 @@ async function LeadDetails({ id }: { id: string }) {
   const found = await getRepositories().leads.findWithHistory(business.id, id);
   if (!found) notFound();
   const { lead } = found;
-  const service = lead.quote.lines[0].label;
-  const greeting = `Hi ${lead.customerName}, this is ${business.name} about your request for ${service} (${formatMoney(lead.quote.total)}).`;
+  const service = serviceNames(lead.items);
+  const greeting = `Hi ${lead.customerName}, this is ${business.name} about your request for ${service} (${formatMoney(lead.total)}).`;
 
   return (
     <>
@@ -69,8 +69,7 @@ async function LeadDetails({ id }: { id: string }) {
           </div>
           <Receipt
             businessName={business.name}
-            quote={lead.quote}
-            baseDetail={describeInput(lead.input)}
+            quote={receiptQuote(lead.items)}
             title="Quoted price"
             note="The price the customer saw when sending the request."
           />

@@ -1,19 +1,23 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
-import { Field, inputClass } from "@/components/field";
+import { inputClass } from "@/components/field";
 import { primaryButtonClass } from "@/components/primary-button";
 import { useFormSubmit } from "@/components/use-form-submit";
 import type { ChoiceSelection, Service } from "@/domain/pricing/types";
 import { describeRule } from "@/lib/describe-rule";
 import { formatMoney } from "@/lib/format-money";
+import { MAX_LEAD_ITEMS } from "@/domain/leads/lead";
 import { submitLeadAction, type LeadFormState } from "./actions";
+import { AddedItems, AddItemButton } from "./added-items";
+import { ContactStep } from "./contact-step";
 import { ChoiceOptions } from "./choice-options";
 import { explainQuote } from "@/lib/explain-quote";
 import { FormStep } from "./form-step";
 import { MobileTotalBar } from "./mobile-total-bar";
 import { EMPTY_FIELDS, previewQuote, toQuoteInput, type QuoteFields } from "./preview-quote";
 import { Receipt } from "@/components/receipt";
+import { combinedQuote, describeDraft, isBlank, priceItem, sizeSummary, toPayload, type ItemDraft } from "./request-items";
 import { RequestSent } from "./request-sent";
 import { STEP_TITLES, ServiceFields } from "./service-fields";
 import { SurchargeOptions } from "./surcharge-options";
@@ -33,6 +37,9 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
   const [fields, setFields] = useState<QuoteFields>(EMPTY_FIELDS);
   const [surchargeIds, setSurchargeIds] = useState<string[]>([]);
   const [picked, setPicked] = useState<Record<string, string>>({});
+  // Items already added; the editor below always holds one more, which is sent unless left untouched.
+  const [added, setAdded] = useState<(ItemDraft & { key: number })[]>([]);
+  const nextKey = useRef(1);
   const [contact, setContact] = useState({ customerName: "", phone: "", comment: "" });
   const [editedFields, setEditedFields] = useState<string[]>([]);
   // Labels as first loaded, so an option the owner removes meanwhile can still be named.
@@ -66,6 +73,34 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
   const explanation = quote ? explainQuote(service.rule, toQuoteInput(service.rule.kind, fields), quote.lines[0].amount) : null;
   const sent = state.status === "sent";
 
+  const current: ItemDraft = { serviceId: service.id, fields, surchargeIds: selected, choices };
+  const addedItems = added.map((draft) => ({ ...priceItem(services, draft), key: draft.key }));
+  const sending = [...addedItems, ...(added.length > 0 && isBlank(current) ? [] : [{ draft: current, service, quote }])];
+  const several = sending.length > 1 || added.length > 0;
+  const total = several ? combinedQuote(sending) : quote;
+  const payload = JSON.stringify(sending.flatMap(({ draft, service: s }) => (s ? [toPayload(draft, s)] : [])));
+
+  function resetEditor(next?: ItemDraft) {
+    setServiceId(next?.serviceId ?? service.id);
+    setFields(next?.fields ?? EMPTY_FIELDS);
+    setSurchargeIds(next?.surchargeIds ?? []);
+    setPicked(next?.choices ?? {});
+  }
+
+  function addItem() {
+    if (!quote || sending.length >= MAX_LEAD_ITEMS) return;
+    setAdded((items) => [...items, { ...current, key: nextKey.current++ }]);
+    resetEditor();
+  }
+
+  // Swaps the item into the editor; a finished item that was open goes to the list instead of being lost.
+  function editItem(key: number) {
+    const item = added.find((a) => a.key === key);
+    if (!item) return;
+    setAdded((items) => [...items.filter((a) => a.key !== key), ...(quote ? [{ ...current, key: nextKey.current++ }] : [])]);
+    resetEditor(item);
+  }
+
   // Hide an error as soon as the customer edits that field, not only after the next submit.
   const errors = Object.fromEntries(
     Object.entries(state.status === "error" ? state.fieldErrors : {}).filter(([field]) => !editedFields.includes(field)),
@@ -91,22 +126,23 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
     onSubmit(event);
   }
 
+  const baseDetail = several ? undefined : explanation?.detail;
   const receipt = sent ? (
     <Receipt
       businessName={businessName}
-      quote={quote && { ...quote, total: state.total }}
-      baseDetail={explanation?.detail}
+      quote={total && { ...total, total: state.total }}
+      baseDetail={baseDetail}
       title="Final price"
       note={`Sent to ${businessName} · request saved`}
     />
   ) : (
-    <Receipt businessName={businessName} quote={quote} baseDetail={explanation?.detail} />
+    <Receipt businessName={businessName} quote={total} baseDetail={baseDetail} />
   );
 
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-20">
       <p className="sr-only" aria-live="polite">
-        {quote ? `Total ${formatMoney(quote.total)}` : ""}
+        {total ? `Total ${formatMoney(total.total)}` : ""}
       </p>
       {sent ? (
         <RequestSent
@@ -114,16 +150,21 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
           phone={contact.phone}
           onReset={onReset}
           details={[
-            ["Service", service.name],
-            [STEP_TITLES[service.rule.kind], sizeSummary(service, fields, explanation?.detail)],
-            ...pickedLabels,
-            ["Options", selected.map((id) => labels.get(id)).join(", ") || "None"],
+            ...(several
+              ? sending.map((item, index): [string, string] => [`Item ${index + 1}`, describeDraft(item)])
+              : [
+                  ["Service", service.name] as [string, string],
+                  [STEP_TITLES[service.rule.kind], sizeSummary(service, fields, explanation?.detail)] as [string, string],
+                  ...pickedLabels,
+                  ["Options", selected.map((id) => labels.get(id)).join(", ") || "None"] as [string, string],
+                ]),
             ["Name", contact.customerName],
           ]}
         />
       ) : (
         <form method="post" onSubmit={submit} className="flex flex-col gap-12" noValidate>
-          <input type="hidden" name="kind" value={service.rule.kind} />
+          <input type="hidden" name="items" value={payload} />
+          {added.length > 0 && <AddedItems items={addedItems} onEdit={editItem} onRemove={(key) => setAdded((items) => items.filter((a) => a.key !== key))} />}
 
           <FormStep number={1} title="Service">
             <label className="flex flex-col gap-1.5 text-sm">
@@ -182,16 +223,9 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
             </FormStep>
           )}
 
-          <FormStep number={step(hasOptions ? 4 : 3)} title="Your contacts">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Your name" name="customerName" autoComplete="name" required value={contact.customerName} onChange={(e) => updateContact("customerName", e.target.value)} error={errors.customerName} />
-              <Field label="Phone" name="phone" type="tel" autoComplete="tel" required value={contact.phone} onChange={(e) => updateContact("phone", e.target.value)} error={errors.phone} />
-            </div>
-            <label className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium">Comment (optional)</span>
-              <textarea name="comment" rows={3} maxLength={1000} value={contact.comment} onChange={(e) => updateContact("comment", e.target.value)} className={inputClass} />
-            </label>
-          </FormStep>
+          {sending.length < MAX_LEAD_ITEMS && <AddItemButton disabled={!quote} onClick={addItem} />}
+
+          <ContactStep number={step(hasOptions ? 4 : 3)} contact={contact} errors={errors} onChange={updateContact} />
 
           <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
 
@@ -202,8 +236,8 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
               </p>
             )}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
-              <button type="submit" disabled={pending || !quote} className={`shrink-0 whitespace-nowrap ${primaryButtonClass}`}>
-                {pending ? "Sending…" : quote ? `Send request · ${formatMoney(quote.total)}` : "Send request"}
+              <button type="submit" disabled={pending || !total} className={`shrink-0 whitespace-nowrap ${primaryButtonClass}`}>
+                {pending ? "Sending…" : total ? `Send request · ${formatMoney(total.total)}` : "Send request"}
               </button>
               <p className="text-sm text-muted">No registration. Your contacts go only to {businessName}.</p>
             </div>
@@ -214,16 +248,10 @@ function QuoteRequest({ businessName, businessSlug, services, onReset }: QuoteFo
       <aside className="hidden lg:block">
         <div className="sticky top-8 flex flex-col gap-3">
           {receipt}
-          {explanation && <p className="px-1 text-xs text-muted">{explanation.formula}</p>}
+          {explanation && !several && <p className="px-1 text-xs text-muted">{explanation.formula}</p>}
         </div>
       </aside>
-      {!sent && <MobileTotalBar quote={quote} receipt={receipt} />}
+      {!sent && <MobileTotalBar quote={total} items={sending.length} receipt={receipt} />}
     </div>
   );
-}
-
-function sizeSummary(service: Service, fields: QuoteFields, detail = ""): string {
-  if (service.rule.kind !== "per_area") return detail;
-  const pieces = Number(fields.quantity) > 1 ? ` · ${fields.quantity} pcs` : "";
-  return `${fields.widthCm} × ${fields.heightCm} cm · ${detail}${pieces}`;
 }
