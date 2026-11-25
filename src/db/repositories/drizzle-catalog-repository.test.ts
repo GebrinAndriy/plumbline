@@ -313,3 +313,47 @@ describe("choice groups", () => {
     ).rejects.toThrow(PricingConfigError);
   });
 });
+
+describe("choice photos", () => {
+  const fabric = {
+    id: "fabric",
+    label: "Fabric",
+    options: [
+      { id: "basic", label: "Basic", kind: "rate", amount: 0 },
+      { id: "linen", label: "Linen", kind: "rate", amount: 3_000 },
+    ],
+  } as const satisfies ChoiceGroup;
+  const photo = "https://store.public.blob.vercel-storage.com/choices/a.png";
+
+  async function curtains() {
+    const business = await createBusiness();
+    const rule = { kind: "per_area", ratePerSqm: 4_000 } as const;
+    const service = await catalog.createService({ businessId: business.id, name: "Curtains", rule, surcharges: [], choices: [fabric] });
+    return { businessId: business.id, serviceId: service.id, groupId: "fabric", optionId: "linen" };
+  }
+
+  it("sets, replaces and clears the photo of one option and returns the one it replaced", async () => {
+    const target = await curtains();
+    expect(await catalog.setChoiceImage(target, photo)).toEqual({ previous: null });
+    expect(await catalog.setChoiceImage(target, `${photo}?v=2`)).toEqual({ previous: photo });
+
+    const options = (await catalog.findService(target.businessId, target.serviceId))?.choices?.[0].options;
+    expect(options).toEqual([fabric.options[0], { ...fabric.options[1], imageUrl: `${photo}?v=2` }]);
+
+    expect(await catalog.setChoiceImage(target, null)).toEqual({ previous: `${photo}?v=2` });
+    expect((await catalog.findService(target.businessId, target.serviceId))?.choices).toEqual([fabric]);
+  });
+
+  it("returns null for another business or a missing option", async () => {
+    const target = await curtains();
+    const other = await createBusiness("other");
+    expect(await catalog.setChoiceImage({ ...target, businessId: other.id }, photo)).toBeNull();
+    expect(await catalog.setChoiceImage({ ...target, optionId: "silk" }, photo)).toBeNull();
+  });
+
+  it("hands back the photos of a removed group", async () => {
+    const target = await curtains();
+    await catalog.setChoiceImage(target, photo);
+    expect(await catalog.removeChoiceGroup(target.businessId, target.serviceId, "fabric")).toEqual([photo]);
+  });
+});

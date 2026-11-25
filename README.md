@@ -116,7 +116,16 @@ The order is fixed and tested: base price, then one line per group (a free pick 
 the receipt, Telegram and the lead record what was chosen), then percent options on that subtotal, so
 "Urgent +10%" costs more with a dearer fabric. A quote without a pick in every group is refused, and
 the first option is preselected so the price appears as soon as the size is in. Options carry an
-optional `imageUrl` for photos, which come in a separate change.
+optional `imageUrl` for a photo.
+
+An option's photo is uploaded from the dashboard and shown on the customer's card: once one option in
+a group has a photo, the whole group becomes a grid of photo cards, so options line up whether or not
+each has one. Logos and option photos share `src/domain/catalog/image-file.ts` (type read from the
+first bytes, 1 MB limit) and one `ImageStorage` behind Vercel Blob, under `logos/` and
+`choices/<business>/<option>`. The photo sits deep inside the `choices` jsonb, so `setChoiceImage`
+locks the service row (`SELECT … FOR UPDATE`), changes it in code and writes it back in one
+transaction, and returns the photo it replaced so the old file is deleted. Removing a group returns its
+photos too, so no file is left behind in the store.
 
 Trade-off: a group cannot be edited yet, only removed and added again, and the minimum price applies
 to the base line only.

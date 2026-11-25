@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, type ChangeEvent } from "react";
 import { PrimaryButton } from "@/components/primary-button";
 import { useFormSubmit } from "@/components/use-form-submit";
-import { LOGO_TYPES, MAX_LOGO_BYTES } from "@/domain/catalog/logo";
+import { IMAGE_TYPES, MAX_IMAGE_BYTES } from "@/domain/catalog/image-file";
 import { saveLogoAction, type LogoFormState } from "./logo-actions";
 
 const INITIAL: LogoFormState = {};
@@ -25,9 +25,9 @@ export function LogoForm({ logoUrl, uploadsEnabled }: Props) {
     const file = event.target.files?.[0];
     if (selection) URL.revokeObjectURL(selection.previewUrl);
     if (!file) return setSelection(null);
-    const error = !(LOGO_TYPES as readonly string[]).includes(file.type)
+    const error = !(IMAGE_TYPES as readonly string[]).includes(file.type)
       ? "Use a PNG, JPEG or WebP image"
-      : file.size > MAX_LOGO_BYTES
+      : file.size > MAX_IMAGE_BYTES
         ? "The image must be 1 MB or smaller"
         : undefined;
     setSelection({ previewUrl: URL.createObjectURL(file), error, forState: state });
@@ -64,7 +64,7 @@ export function LogoForm({ logoUrl, uploadsEnabled }: Props) {
                   key={JSON.stringify(state)}
                   type="file"
                   name="logo"
-                  accept={LOGO_TYPES.join(",")}
+                  accept={IMAGE_TYPES.join(",")}
                   onChange={onChoose}
                   aria-invalid={message ? true : undefined}
                   aria-describedby={message ? "logo-message" : undefined}

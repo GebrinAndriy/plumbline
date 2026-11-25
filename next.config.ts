@@ -10,7 +10,11 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: "2mb" },
   },
   images: {
-    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com", pathname: "/logos/**" }],
+    remotePatterns: ["/logos/**", "/choices/**"].map((pathname) => ({
+      protocol: "https" as const,
+      hostname: "*.public.blob.vercel-storage.com",
+      pathname,
+    })),
   },
   // Next's default list plus Telegram and Viber: their link previews read only the first <head>, not streamed tags.
   htmlLimitedBots:
