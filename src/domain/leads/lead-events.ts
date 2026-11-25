@@ -1,7 +1,7 @@
 import type { Business } from "../catalog/catalog";
 import type { Lead } from "./lead";
 
-export type LeadEvent = { type: "lead.created"; lead: Lead; business: Business; serviceName: string };
+export type LeadEvent = { type: "lead.created"; lead: Lead; business: Business };
 
 export interface LeadEventListener {
   handle(event: LeadEvent): Promise<void>;

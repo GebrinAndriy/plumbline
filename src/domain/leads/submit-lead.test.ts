@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Business, CatalogRepository } from "../catalog/catalog";
 import type { Service } from "../pricing/types";
-import { emptyStatusTotals, type Lead, type LeadRepository } from "./lead";
+import { emptyStatusTotals, itemsTotal, MAX_LEAD_ITEMS, type Lead, type LeadRepository } from "./lead";
 import type { LeadEvent } from "./lead-events";
-import { submitLead, type LeadRequest } from "./submit-lead";
+import { submitLead, type LeadItemRequest, type LeadRequest } from "./submit-lead";
 
 const blinds: Business = { id: "b1", slug: "blinds", name: "Blinds", telegramChatId: null, telegramChatName: null, phone: null, address: null, accentColor: null, logoUrl: null };
 const other: Business = { id: "b2", slug: "other", name: "Other", telegramChatId: null, telegramChatName: null, phone: null, address: null, accentColor: null, logoUrl: null };
@@ -83,6 +83,7 @@ function fakeLeads(): LeadRepository & { saved: Lead[] } {
         ...draft,
         id: `lead-${saved.length + 1}`,
         comment: draft.comment ?? null,
+        total: itemsTotal(draft.items),
         status: "new",
         createdAt: new Date(),
       };
@@ -109,17 +110,18 @@ beforeEach(() => {
   deps = { catalog: fakeCatalog(), leads: fakeLeads(), publish: (event) => published.push(event) };
 });
 
-function request(overrides: Partial<LeadRequest> = {}): LeadRequest {
+function item(overrides: Partial<LeadItemRequest> = {}): LeadItemRequest {
   return {
     serviceId: rollerBlinds.id,
-    customerName: "Aoife",
-    phone: "+353871234567",
     input: { kind: "per_area", widthCm: 150, heightCm: 200, quantity: 1 },
     surchargeIds: ["install"],
     choices: {},
-    idempotencyKey: "key-1",
     ...overrides,
   };
+}
+
+function request(itemOverrides: Partial<LeadItemRequest> = {}, items = [item(itemOverrides)]): LeadRequest {
+  return { customerName: "Aoife", phone: "+353871234567", items, idempotencyKey: "key-1" };
 }
 
 describe("submitLead", () => {
@@ -127,10 +129,40 @@ describe("submitLead", () => {
     const result = await submitLead(deps, "blinds", request());
 
     expect(result).toEqual({ ok: true, leadId: "lead-1", total: 180_000 });
-    expect(deps.leads.saved[0].quote.lines).toEqual([
-      { label: "Roller blinds", amount: 150_000 },
-      { label: "Installation", amount: 30_000 },
+    expect(deps.leads.saved[0].items).toEqual([
+      {
+        serviceId: "s1",
+        serviceName: "Roller blinds",
+        input: { kind: "per_area", widthCm: 150, heightCm: 200, quantity: 1 },
+        quote: {
+          lines: [
+            { label: "Roller blinds", amount: 150_000 },
+            { label: "Installation", amount: 30_000 },
+          ],
+          total: 180_000,
+        },
+      },
     ]);
+  });
+
+  it("prices every item and saves them in one lead with their sum", async () => {
+    const small = item({ input: { kind: "per_area", widthCm: 100, heightCm: 100, quantity: 1 }, surchargeIds: [] });
+    const result = await submitLead(deps, "blinds", request({}, [item(), small]));
+
+    expect(result).toEqual({ ok: true, leadId: "lead-1", total: 230_000 });
+    expect(deps.leads.saved[0].items.map((i) => i.quote.total)).toEqual([180_000, 50_000]);
+  });
+
+  it("names the item that fails, and saves nothing", async () => {
+    const result = await submitLead(deps, "blinds", request({}, [item(), item({ surchargeIds: ["gold-plating"] })]));
+    expect(result).toEqual({ ok: false, reason: "invalid_input", message: "Item 2: Selected option is not available for this service" });
+    expect(deps.leads.saved).toHaveLength(0);
+  });
+
+  it("refuses an empty request and one with too many items", async () => {
+    expect(await submitLead(deps, "blinds", request({}, []))).toMatchObject({ ok: false, reason: "invalid_input" });
+    const many = Array.from({ length: MAX_LEAD_ITEMS + 1 }, () => item());
+    expect(await submitLead(deps, "blinds", request({}, many))).toMatchObject({ ok: false, reason: "invalid_input" });
   });
 
   it("does not create a second lead when the form is sent twice", async () => {
@@ -149,8 +181,7 @@ describe("submitLead", () => {
     expect(published[0]).toMatchObject({
       type: "lead.created",
       business: blinds,
-      serviceName: "Roller blinds",
-      lead: { customerName: "Aoife", quote: { total: 180_000 } },
+      lead: { customerName: "Aoife", total: 180_000 },
     });
   });
 

@@ -27,7 +27,7 @@ export async function submitLeadAction(
 
   const parsed = parseLeadForm(formData);
   if (!parsed.ok) {
-    return { status: "error", fieldErrors: parsed.fieldErrors };
+    return { status: "error", message: parsed.message, fieldErrors: parsed.fieldErrors };
   }
 
   try {

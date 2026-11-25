@@ -1,17 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { Business } from "@/domain/catalog/catalog";
-import type { Lead } from "@/domain/leads/lead";
+import type { Lead, LeadItem } from "@/domain/leads/lead";
 import type { LeadEvent } from "@/domain/leads/lead-events";
 import { formatMoney } from "@/lib/format-money";
 import { leadMessage, leadUrl, telegramNotifier } from "./telegram-notifier";
 
 const ORIGIN = "https://plumbline.test";
 
-const lead = {
-  id: "7f0c",
-  customerName: "Aoife",
-  phone: "+353871234567",
-  comment: "After 6 pm, please",
+const blinds: LeadItem = {
+  serviceId: "s1",
+  serviceName: "Roller blinds",
   input: { kind: "per_area", widthCm: 210, heightCm: 160, quantity: 1 },
   quote: {
     lines: [
@@ -21,6 +19,21 @@ const lead = {
     ],
     total: 22_320,
   },
+};
+const cleaning: LeadItem = {
+  serviceId: "s2",
+  serviceName: "Cleaning",
+  input: { kind: "per_hour", hours: 3 },
+  quote: { lines: [{ label: "Cleaning", amount: 9_000 }], total: 9_000 },
+};
+
+const lead = {
+  id: "7f0c",
+  customerName: "Aoife",
+  phone: "+353871234567",
+  comment: "After 6 pm, please",
+  items: [blinds],
+  total: 22_320,
 } as unknown as Lead;
 
 function eventFor(telegramChatId: string | null): LeadEvent {
@@ -35,7 +48,7 @@ function eventFor(telegramChatId: string | null): LeadEvent {
     accentColor: null,
     logoUrl: null,
   };
-  return { type: "lead.created", lead, business, serviceName: "Roller blinds" };
+  return { type: "lead.created", lead, business };
 }
 
 function recordingFetch(status = 200) {
@@ -49,13 +62,12 @@ function recordingFetch(status = 200) {
 
 describe("leadMessage", () => {
   it("lists what the customer chose, the total and a link to the request", () => {
-    expect(leadMessage(lead, "Roller blinds", leadUrl(ORIGIN, lead.id)).split("\n")).toEqual([
+    expect(leadMessage(lead, leadUrl(ORIGIN, lead.id)).split("\n")).toEqual([
       "New request · Roller blinds",
       "",
       "Aoife",
       "+353 87 123 4567",
-      "210 × 160 cm",
-      "Options: Installation, Blackout fabric",
+      "Roller blinds · 210 × 160 cm · Installation · Blackout fabric",
       `Total: ${formatMoney(22_320)}`,
       "Comment: After 6 pm, please",
       "",
@@ -63,19 +75,21 @@ describe("leadMessage", () => {
     ]);
   });
 
-  it("leaves out the options and comment lines when there are none", () => {
-    const plain = {
-      ...lead,
-      comment: null,
-      input: { kind: "per_hour", hours: 3 },
-      quote: { lines: [{ label: "Cleaning", amount: 9_000 }], total: 9_000 },
-    } as Lead;
+  it("lists each item with its price when the request has several", () => {
+    const several = { ...lead, comment: null, items: [blinds, cleaning], total: 31_320 } as Lead;
+    expect(leadMessage(several, leadUrl(ORIGIN, lead.id)).split("\n").slice(0, 7)).toEqual([
+      "New request · Roller blinds and 1 more",
+      "",
+      "Aoife",
+      "+353 87 123 4567",
+      `• Roller blinds · 210 × 160 cm · Installation · Blackout fabric — ${formatMoney(22_320)}`,
+      `• Cleaning · 3 h — ${formatMoney(9_000)}`,
+      `Total: ${formatMoney(31_320)}`,
+    ]);
+  });
 
-    const text = leadMessage(plain, "Cleaning", leadUrl(ORIGIN, plain.id));
-
-    expect(text).toContain("\n3 h\n");
-    expect(text).not.toContain("Options:");
-    expect(text).not.toContain("Comment:");
+  it("leaves out the comment line when there is none", () => {
+    expect(leadMessage({ ...lead, comment: null } as Lead, leadUrl(ORIGIN, lead.id))).not.toContain("Comment:");
   });
 });
 
@@ -89,7 +103,7 @@ describe("telegramNotifier", () => {
     expect(calls[0].url).toBe("https://api.telegram.org/botbot-token/sendMessage");
     expect(calls[0].body).toEqual({
       chat_id: "123456789",
-      text: leadMessage(lead, "Roller blinds", leadUrl(ORIGIN, lead.id)),
+      text: leadMessage(lead, leadUrl(ORIGIN, lead.id)),
     });
   });
 

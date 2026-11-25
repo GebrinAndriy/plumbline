@@ -1,87 +1,84 @@
 import { describe, expect, it } from "vitest";
-import { parseLeadForm } from "./lead-request-schema";
+import { MAX_LEAD_ITEMS } from "@/domain/leads/lead";
+import { parseLeadForm, type ItemPayload } from "./lead-request-schema";
 
 const serviceId = "6f1c2b9e-3d4a-4f5b-9c8d-1e2f3a4b5c6d";
 const idempotencyKey = "0b8e4c1a-7f2d-4e3b-a9c6-5d4e3f2a1b0c";
 
-function form(fields: Record<string, string | string[]>): FormData {
+const blinds: ItemPayload = {
+  serviceId,
+  input: { kind: "per_area", widthCm: "150", heightCm: "200.5", quantity: "2", hours: "" },
+  surchargeIds: ["install", "motor"],
+  choices: { fabric: "blackout" },
+};
+
+function form(fields: Record<string, string>, items: unknown[] = [blinds]): FormData {
   const data = new FormData();
-  for (const [name, value] of Object.entries(fields)) {
-    for (const v of [value].flat()) data.append(name, v);
-  }
+  const all = { idempotencyKey, customerName: "  Aoife  ", phone: "+353 (87) 123-4567", items: JSON.stringify(items), ...fields };
+  for (const [name, value] of Object.entries(all)) data.append(name, value);
   return data;
 }
 
-const valid = {
-  serviceId,
-  idempotencyKey,
-  customerName: "  Aoife  ",
-  phone: "+353 (87) 123-4567",
-  kind: "per_area",
-  widthCm: "150",
-  heightCm: "200.5",
-  quantity: "2",
-  surchargeIds: ["install", "motor"],
-};
+const withInput = (input: Record<string, string>): ItemPayload => ({ ...blinds, input: { ...blinds.input, ...input } });
 
 describe("parseLeadForm", () => {
-  it("turns form fields into a typed lead request", () => {
-    expect(parseLeadForm(form(valid))).toEqual({
+  it("turns the form into a typed request with its items", () => {
+    expect(parseLeadForm(form({}))).toEqual({
       ok: true,
       request: {
-        serviceId,
         idempotencyKey,
         customerName: "Aoife",
         phone: "+353871234567",
-        input: { kind: "per_area", widthCm: 150, heightCm: 200.5, quantity: 2 },
-        surchargeIds: ["install", "motor"],
-        choices: {},
+        items: [
+          {
+            serviceId,
+            input: { kind: "per_area", widthCm: 150, heightCm: 200.5, quantity: 2 },
+            surchargeIds: ["install", "motor"],
+            choices: { fabric: "blackout" },
+          },
+        ],
       },
     });
   });
 
-  it("collects one pick per choice group from the radio names", () => {
-    const parsed = parseLeadForm(form({ ...valid, "choice.fabric": "blackout", "choice.control": "motor" }));
-    expect(parsed.ok && parsed.request.choices).toEqual({ fabric: "blackout", control: "motor" });
-  });
-
-  it("keeps only the fields of the chosen pricing kind", () => {
-    const result = parseLeadForm(form({ ...valid, kind: "per_hour", hours: "3" }));
-    expect(result.ok && result.request.input).toEqual({ kind: "per_hour", hours: 3 });
-  });
-
-  it("drops an empty comment", () => {
-    const result = parseLeadForm(form({ ...valid, comment: "   " }));
-    expect(result.ok && result.request.comment).toBeUndefined();
-  });
-
-  it("reports errors next to the fields that caused them", () => {
-    const result = parseLeadForm(
-      form({ ...valid, customerName: "", phone: "call me", widthCm: "-5", quantity: "1.5" }),
-    );
-
-    expect(result.ok).toBe(false);
-    expect(!result.ok && Object.keys(result.fieldErrors).sort()).toEqual([
-      "customerName",
-      "phone",
-      "quantity",
-      "widthCm",
+  it("keeps only the fields of each item's pricing kind", () => {
+    const result = parseLeadForm(form({}, [blinds, withInput({ kind: "per_hour", hours: "3" })]));
+    expect(result.ok && result.request.items.map((item) => item.input)).toEqual([
+      { kind: "per_area", widthCm: 150, heightCm: 200.5, quantity: 2 },
+      { kind: "per_hour", hours: 3 },
     ]);
   });
 
-  it("rejects an unknown pricing kind", () => {
-    const result = parseLeadForm(form({ ...valid, kind: "per_banana" }));
-    expect(result.ok).toBe(false);
+  it("drops an empty comment", () => {
+    const result = parseLeadForm(form({ comment: "   " }));
+    expect(result.ok && result.request.comment).toBeUndefined();
   });
 
-  it("rejects a missing idempotency key", () => {
-    const data = form(valid);
+  it("reports errors of the open item next to its fields", () => {
+    const result = parseLeadForm(form({ customerName: "", phone: "call me" }, [withInput({ widthCm: "-5", quantity: "1.5" })]));
+    expect(!result.ok && Object.keys(result.fieldErrors).sort()).toEqual(["customerName", "phone", "quantity", "widthCm"]);
+  });
+
+  it("names an item added earlier instead of marking fields it no longer shows", () => {
+    const result = parseLeadForm(form({}, [withInput({ widthCm: "abc" }), blinds]));
+    expect(result).toEqual({ ok: false, fieldErrors: {}, message: "Item 1 needs a fix: edit it and send again" });
+  });
+
+  it("needs between one and the maximum number of items", () => {
+    expect(parseLeadForm(form({}, [])).ok).toBe(false);
+    expect(parseLeadForm(form({}, Array.from({ length: MAX_LEAD_ITEMS + 1 }, () => blinds))).ok).toBe(false);
+    expect(parseLeadForm(form({ items: "not json" })).ok).toBe(false);
+  });
+
+  it("rejects an unknown pricing kind and a missing idempotency key", () => {
+    expect(parseLeadForm(form({}, [withInput({ kind: "per_banana" })])).ok).toBe(false);
+    const data = form({});
     data.delete("idempotencyKey");
     expect(parseLeadForm(data).ok).toBe(false);
   });
 
   it.each(["0x10", "1e3", "Infinity", ""])("rejects size %j instead of guessing a number", (widthCm) => {
-    const result = parseLeadForm(form({ ...valid, widthCm }));
+    const result = parseLeadForm(form({}, [withInput({ widthCm })]));
     expect(!result.ok && result.fieldErrors).toEqual({ widthCm: "Enter a number" });
   });
 });

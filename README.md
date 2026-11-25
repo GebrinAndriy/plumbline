@@ -130,6 +130,19 @@ photos too, so no file is left behind in the store.
 Trade-off: a group cannot be edited yet, only removed and added again, and the minimum price applies
 to the base line only.
 
+### Several items in one request
+A customer measuring four windows sends one request, not four. The form edits one item at a time;
+"Add another item" moves it to a list above, where it can be edited or removed, and the receipt adds
+up every item. The open item is sent too unless it was left untouched. The items travel as one JSON
+field, each checked by the same Zod schema as before, and the server prices each against its own
+service; an error in an item already in the list is reported by its number, because its fields are no
+longer on screen.
+
+A lead stores its items in `leads.items` (`jsonb`). This is an expand step: the old `service_id`,
+`input` and `quote` columns are still written (the first item, and every line in the quote), so a
+deployment that predates the column keeps rendering leads while the new one rolls out, and leads
+saved before the column are read as one item from those columns. Dropping them is a later change.
+
 ### The server recalculates every price
 The calculator shows a preview, but the lead is saved with a quote calculated on the server from the
 stored service, so a changed request body cannot set its own price. The quote is stored as a snapshot,

@@ -1,18 +1,22 @@
 import type { CatalogRepository } from "../catalog/catalog";
 import { calculateQuote } from "../pricing/calculate-quote";
 import { QuoteInputError } from "../pricing/errors";
-import type { Money, Quote, QuoteInput } from "../pricing/types";
-import type { LeadRepository } from "./lead";
+import type { Money, QuoteInput } from "../pricing/types";
+import { MAX_LEAD_ITEMS, type LeadItem, type LeadRepository } from "./lead";
 import type { LeadEvent } from "./lead-events";
 
-export type LeadRequest = {
+export type LeadItemRequest = {
   serviceId: string;
-  customerName: string;
-  phone: string;
-  comment?: string;
   input: QuoteInput;
   surchargeIds: string[];
   choices: Record<string, string>;
+};
+
+export type LeadRequest = {
+  customerName: string;
+  phone: string;
+  comment?: string;
+  items: LeadItemRequest[];
   idempotencyKey: string;
 };
 
@@ -31,34 +35,37 @@ export async function submitLead(
   businessSlug: string,
   request: LeadRequest,
 ): Promise<SubmitLeadResult> {
-  const business = await catalog.findBusinessBySlug(businessSlug);
-  const service = business && (await catalog.findService(business.id, request.serviceId));
-  if (!business || !service) {
-    return { ok: false, reason: "not_found", message: "This service is no longer available" };
+  if (request.items.length === 0 || request.items.length > MAX_LEAD_ITEMS) {
+    return { ok: false, reason: "invalid_input", message: `Add 1 to ${MAX_LEAD_ITEMS} items` };
   }
+  const business = await catalog.findBusinessBySlug(businessSlug);
+  if (!business) return { ok: false, reason: "not_found", message: "This service is no longer available" };
 
-  let quote: Quote;
-  try {
-    // The price shown in the browser is only a preview; the saved one is always recalculated here.
-    quote = calculateQuote(service, request.input, request.surchargeIds, request.choices);
-  } catch (error) {
-    if (error instanceof QuoteInputError) {
-      return { ok: false, reason: "invalid_input", message: error.message };
+  const items: LeadItem[] = [];
+  for (const [index, item] of request.items.entries()) {
+    const service = await catalog.findService(business.id, item.serviceId);
+    // Numbered so the customer knows which of several items to fix.
+    const which = request.items.length > 1 ? `Item ${index + 1}: ` : "";
+    if (!service) return { ok: false, reason: "not_found", message: `${which}this service is no longer available` };
+    try {
+      // The price shown in the browser is only a preview; the saved one is always recalculated here.
+      const quote = calculateQuote(service, item.input, item.surchargeIds, item.choices);
+      items.push({ serviceId: service.id, serviceName: service.name, input: item.input, quote });
+    } catch (error) {
+      if (error instanceof QuoteInputError) return { ok: false, reason: "invalid_input", message: `${which}${error.message}` };
+      throw error;
     }
-    throw error;
   }
 
   const { lead, created } = await leads.create({
     businessId: business.id,
-    serviceId: service.id,
     customerName: request.customerName,
     phone: request.phone,
     comment: request.comment,
-    input: request.input,
-    quote,
+    items,
     idempotencyKey: request.idempotencyKey,
   });
 
-  if (created) publish({ type: "lead.created", lead, business, serviceName: service.name });
-  return { ok: true, leadId: lead.id, total: lead.quote.total };
+  if (created) publish({ type: "lead.created", lead, business });
+  return { ok: true, leadId: lead.id, total: lead.total };
 }

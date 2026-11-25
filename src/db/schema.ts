@@ -11,6 +11,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { LEAD_STATUSES } from "../domain/leads/lead-status";
+import type { LeadItem } from "../domain/leads/lead";
 import type { ChoiceGroup, PricingRule, Quote, QuoteInput, Surcharge } from "../domain/pricing/types";
 
 export const leadStatus = pgEnum("lead_status", LEAD_STATUSES);
@@ -99,6 +100,9 @@ export const leads = pgTable(
     // Snapshot of the price the customer saw, so later price changes do not rewrite old leads.
     quote: jsonb("quote").$type<Quote>().notNull(),
     total: bigint("total", { mode: "number" }).notNull(),
+    // Every service in the request. service_id, input and quote above still hold the first one, so a
+    // deployment that predates this column keeps working until they are dropped.
+    items: jsonb("items").$type<LeadItem[]>().notNull().default([]),
     status: leadStatus("status").notNull().default("new"),
     idempotencyKey: text("idempotency_key").notNull().unique(),
     createdAt: createdAt(),
