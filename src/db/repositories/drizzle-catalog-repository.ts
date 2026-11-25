@@ -132,7 +132,12 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
     },
 
     async removeChoiceGroup(businessId, serviceId, groupId) {
-      if (!isUuid(businessId) || !isUuid(serviceId)) return;
+      if (!isUuid(businessId) || !isUuid(serviceId)) return [];
+      const [before] = await db
+        .select({ choices: services.choices })
+        .from(services)
+        .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)));
+      const removed = before?.choices.find((group) => group.id === groupId);
       await db
         .update(services)
         .set({
@@ -143,6 +148,33 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
             '[]'::jsonb)`,
         })
         .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)));
+      return removed?.options.flatMap((option) => (option.imageUrl ? [option.imageUrl] : [])) ?? [];
+    },
+
+    // The photo sits deep in the jsonb, so the row is locked, changed in code and written back in one transaction.
+    async setChoiceImage({ businessId, serviceId, groupId, optionId }, url) {
+      if (!isUuid(businessId) || !isUuid(serviceId)) return null;
+      return db.transaction(async (tx) => {
+        const [row] = await tx
+          .select({ choices: services.choices })
+          .from(services)
+          .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)))
+          .for("update");
+        const option = row?.choices.find((g) => g.id === groupId)?.options.find((o) => o.id === optionId);
+        if (!row || !option) return null;
+
+        const choices = row.choices.map((group) => ({
+          ...group,
+          options: group.options.map((o) =>
+            group.id === groupId && o.id === optionId
+              ? { id: o.id, label: o.label, kind: o.kind, amount: o.amount, ...(url ? { imageUrl: url } : {}) }
+              : o,
+          ),
+        }));
+        choices.forEach(validateChoiceGroup);
+        await tx.update(services).set({ choices }).where(eq(services.id, serviceId));
+        return { previous: option.imageUrl ?? null };
+      });
     },
 
     async findService(businessId, serviceId) {

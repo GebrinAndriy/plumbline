@@ -5,7 +5,9 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import { getRepositories } from "@/db/get-repositories";
 import { MAX_CHOICE_GROUPS } from "@/domain/pricing/validate-service";
+import { removeChoiceGroup } from "@/domain/catalog/choice-image";
 import { requireOwner } from "@/lib/auth/current-owner";
+import { getImageStorage } from "@/lib/storage/vercel-blob-image-storage";
 import type { FieldErrors } from "@/lib/field-errors";
 import { parseChoiceGroupForm } from "./choice-group-form-schema";
 
@@ -47,6 +49,11 @@ export async function removeChoiceGroupAction(serviceId: string, groupId: string
   const parsed = removeSchema.safeParse({ serviceId, groupId });
   if (!business || !parsed.success) return;
 
-  await getRepositories().catalog.removeChoiceGroup(business.id, parsed.data.serviceId, parsed.data.groupId);
+  const { catalog } = getRepositories();
+  const storage = getImageStorage();
+  const { serviceId: id, groupId: group } = parsed.data;
+  // Without storage no photo could have been uploaded, so there is nothing to delete.
+  if (storage) await removeChoiceGroup({ catalog, storage }, business.id, id, group);
+  else await catalog.removeChoiceGroup(business.id, id, group);
   refresh();
 }

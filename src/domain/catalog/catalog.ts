@@ -24,6 +24,8 @@ export type ServiceListing = Service & { isActive: boolean };
 
 export type ServiceDetails = Pick<Service, "name" | "rule">;
 
+export type ChoiceImageTarget = { businessId: string; serviceId: string; groupId: string; optionId: string };
+
 export type AddSurchargeResult = "added" | "not_found" | "limit_reached";
 
 export interface CatalogRepository {
@@ -43,5 +45,8 @@ export interface CatalogRepository {
   addSurcharge(businessId: string, serviceId: string, surcharge: Surcharge): Promise<AddSurchargeResult>;
   removeSurcharge(businessId: string, serviceId: string, surchargeId: string): Promise<void>;
   addChoiceGroup(businessId: string, serviceId: string, group: ChoiceGroup): Promise<AddSurchargeResult>;
-  removeChoiceGroup(businessId: string, serviceId: string, groupId: string): Promise<void>;
+  /** Returns the photo URLs of the removed group's options, so their files can be deleted. */
+  removeChoiceGroup(businessId: string, serviceId: string, groupId: string): Promise<string[]>;
+  /** Null when the service, group or option is gone; otherwise the photo it replaced. */
+  setChoiceImage(target: ChoiceImageTarget, url: string | null): Promise<{ previous: string | null } | null>;
 }

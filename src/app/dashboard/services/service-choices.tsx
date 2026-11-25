@@ -1,12 +1,16 @@
 import type { Service } from "@/domain/pricing/types";
 import { MAX_CHOICE_GROUPS } from "@/domain/pricing/validate-service";
 import { describeChoice } from "@/lib/describe-rule";
+import { getImageStorage } from "@/lib/storage/vercel-blob-image-storage";
 import { AddChoiceGroup } from "./add-choice-group";
 import { addChoiceGroupAction, removeChoiceGroupAction } from "./choice-group-actions";
+import { removeChoiceImageAction, uploadChoiceImageAction } from "./choice-image-actions";
+import { ChoicePhoto } from "./choice-photo";
 import { RemoveOption } from "./remove-option";
 
 export function ServiceChoices({ service }: { service: Service }) {
   const groups = service.choices ?? [];
+  const photosEnabled = getImageStorage() !== null;
 
   return (
     <div className="flex flex-col gap-3 text-sm">
@@ -21,9 +25,17 @@ export function ServiceChoices({ service }: { service: Service }) {
               </div>
               <ul className="flex flex-col divide-y divide-rule">
                 {group.options.map((option) => (
-                  <li key={option.id} className="flex items-center gap-3 px-3.5 py-2">
+                  <li key={option.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3.5 py-2">
                     <span className="flex-1">{option.label}</span>
                     <span className="tabular-nums text-muted">{describeChoice(option, service.rule.kind)}</span>
+                    {photosEnabled && (
+                      <ChoicePhoto
+                        label={option.label}
+                        imageUrl={option.imageUrl}
+                        upload={uploadChoiceImageAction.bind(null, { serviceId: service.id, groupId: group.id, optionId: option.id })}
+                        remove={removeChoiceImageAction.bind(null, { serviceId: service.id, groupId: group.id, optionId: option.id })}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
