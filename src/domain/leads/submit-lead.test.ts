@@ -95,6 +95,8 @@ function fakeLeads(): LeadRepository & { saved: Lead[] } {
     summarizeByStatus: async () => emptyStatusTotals(),
     saveTransition: async () => {},
     findWithHistory: async () => null,
+    addNote: async () => null,
+    removeNote: async () => {},
   };
 }
 

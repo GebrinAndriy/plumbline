@@ -191,6 +191,12 @@ reveal that a request exists. WhatsApp needs the international number, so nation
 rewritten with the calling code from `MARKET`, and the chat opens with a greeting that names the
 service and the quoted price.
 
+The page also holds the owner's notes ("call back on Thursday", "measure on Saturday"), in their own
+`lead_notes` table rather than a text column on the lead: each note keeps its time, one can be
+deleted without rewriting the others, and the list grows without a size limit on one row. Adding
+checks the lead belongs to the owner's business first, and deleting is scoped by business in the same
+`DELETE`, so a guessed note id of another owner removes nothing.
+
 Trade-off: messages sent before this change still link to `/dashboard#lead-<id>`, which finds the
 request only on the first page of the list.
 

@@ -1,8 +1,8 @@
-import { and, asc, count, desc, eq, ilike, like, or, sum, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, like, or, sum, type SQL } from "drizzle-orm";
 import type { LeadSearch } from "@/domain/leads/lead-search";
 import { emptyStatusTotals, itemsTotal, LeadConflictError, type Lead, type LeadItem, type LeadRepository } from "@/domain/leads/lead";
 import type { Database } from "../database";
-import { leadStatusChanges, leads } from "../schema";
+import { leadNotes, leadStatusChanges, leads } from "../schema";
 import { isUuid } from "./is-uuid";
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -71,15 +71,45 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
         .limit(1);
       if (!row) return null;
 
-      const changes = await db
-        .select()
-        .from(leadStatusChanges)
-        .where(eq(leadStatusChanges.leadId, leadId))
-        .orderBy(asc(leadStatusChanges.at), asc(leadStatusChanges.id));
+      const [changes, notes] = await Promise.all([
+        db
+          .select()
+          .from(leadStatusChanges)
+          .where(eq(leadStatusChanges.leadId, leadId))
+          .orderBy(asc(leadStatusChanges.at), asc(leadStatusChanges.id)),
+        db
+          .select({ id: leadNotes.id, body: leadNotes.body, createdAt: leadNotes.createdAt })
+          .from(leadNotes)
+          .where(eq(leadNotes.leadId, leadId))
+          .orderBy(desc(leadNotes.createdAt), desc(leadNotes.id)),
+      ]);
       return {
         lead: toLead(row),
         history: changes.map((change) => ({ from: change.fromStatus, to: change.toStatus, at: change.at })),
+        notes,
       };
+    },
+
+    async addNote(businessId, leadId, body, at) {
+      if (!isUuid(businessId) || !isUuid(leadId)) return null;
+      const [own] = await db
+        .select({ id: leads.id })
+        .from(leads)
+        .where(and(eq(leads.id, leadId), eq(leads.businessId, businessId)))
+        .limit(1);
+      if (!own) return null;
+      const [note] = await db
+        .insert(leadNotes)
+        .values({ leadId, body, createdAt: at })
+        .returning({ id: leadNotes.id, body: leadNotes.body, createdAt: leadNotes.createdAt });
+      return note;
+    },
+
+    // Scoped by business in the same statement, so a guessed note id of another owner deletes nothing.
+    async removeNote(businessId, noteId) {
+      if (!isUuid(businessId) || !isUuid(noteId)) return;
+      const ownLeads = db.select({ id: leads.id }).from(leads).where(eq(leads.businessId, businessId));
+      await db.delete(leadNotes).where(and(eq(leadNotes.id, noteId), inArray(leadNotes.leadId, ownLeads)));
     },
 
     async summarizeByStatus(businessId) {

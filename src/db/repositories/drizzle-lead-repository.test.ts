@@ -188,6 +188,7 @@ describe("findWithHistory", () => {
 
     const found = await leads.findWithHistory(lead.businessId, lead.id);
     expect(found?.lead).toMatchObject({ id: lead.id, status: "quoted" });
+    expect(found?.notes).toEqual([]);
     expect(found?.history).toEqual([
       { from: "new", to: "contacted", at },
       { from: "contacted", to: "quoted", at: later },
@@ -198,6 +199,30 @@ describe("findWithHistory", () => {
     const { lead } = await leads.create(makeLead());
     expect(await leads.findWithHistory(otherBusinessId, lead.id)).toBeNull();
     expect(await leads.findWithHistory(lead.businessId, "not-a-uuid")).toBeNull();
+  });
+});
+
+describe("notes", () => {
+  it("adds notes to a lead and lists them newest first with the lead", async () => {
+    const { lead } = await leads.create(makeLead());
+    const later = new Date("2026-11-14T09:00:00Z");
+    const first = await leads.addNote(lead.businessId, lead.id, "Call back on Thursday", at);
+    const second = await leads.addNote(lead.businessId, lead.id, "Measure on Saturday", later);
+
+    expect(first).toMatchObject({ body: "Call back on Thursday", createdAt: at });
+    expect((await leads.findWithHistory(lead.businessId, lead.id))?.notes).toEqual([second, first]);
+  });
+
+  it("refuses a note on another business's lead, and does not let it delete one", async () => {
+    const { lead } = await leads.create(makeLead());
+    expect(await leads.addNote(otherBusinessId, lead.id, "Not mine", at)).toBeNull();
+
+    const note = await leads.addNote(lead.businessId, lead.id, "Mine", at);
+    await leads.removeNote(otherBusinessId, note!.id);
+    expect((await leads.findWithHistory(lead.businessId, lead.id))?.notes).toHaveLength(1);
+
+    await leads.removeNote(lead.businessId, note!.id);
+    expect((await leads.findWithHistory(lead.businessId, lead.id))?.notes).toEqual([]);
   });
 });
 
