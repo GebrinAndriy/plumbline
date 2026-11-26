@@ -1,4 +1,5 @@
 import type { CatalogRepository, ChoiceImageTarget } from "./catalog";
+import type { ChoiceGroup } from "../pricing/types";
 import { checkImage, type ImageCheck, type ImageStorage } from "./image-file";
 
 type Deps = { catalog: CatalogRepository; storage: ImageStorage };
@@ -39,4 +40,17 @@ export async function removeChoiceGroup(
 ): Promise<void> {
   const photos = await catalog.removeChoiceGroup(businessId, serviceId, groupId);
   await Promise.all(photos.map((url) => storage.remove(url)));
+}
+
+// False when the service or group is gone; photos of options that were dropped are deleted from storage.
+export async function updateChoiceGroup(
+  { catalog, storage }: Deps,
+  businessId: string,
+  serviceId: string,
+  group: ChoiceGroup,
+): Promise<boolean> {
+  const result = await catalog.updateChoiceGroup(businessId, serviceId, group);
+  if (!result) return false;
+  await Promise.all(result.removedPhotos.map((url) => storage.remove(url)));
+  return true;
 }

@@ -19,7 +19,15 @@ const amountOrZero = z.string().transform((text, ctx) => {
 const choiceGroupFormSchema = z.object({
   groupLabel: name,
   options: z
-    .array(z.object({ label: name, kind: z.enum(["rate", "flat"]), amount: amountOrZero }))
+    .array(
+      z.object({
+        // Set for an option being edited, so it keeps its photo; empty for a new one.
+        id: z.string().max(64).transform((id) => id || undefined),
+        label: name,
+        kind: z.enum(["rate", "flat"]),
+        amount: amountOrZero,
+      }),
+    )
     .min(MIN_CHOICE_OPTIONS, `Add at least ${MIN_CHOICE_OPTIONS} options`)
     .max(MAX_CHOICE_OPTIONS, `Keep it to ${MAX_CHOICE_OPTIONS} options`),
 });
@@ -33,9 +41,10 @@ export function parseChoiceGroupForm(formData: FormData): ParsedChoiceGroup {
   const text = (value: FormDataEntryValue | undefined) => (typeof value === "string" ? value : "");
   const kinds = formData.getAll("optionKind");
   const amounts = formData.getAll("optionAmount");
+  const ids = formData.getAll("optionId");
   const options = formData
     .getAll("optionLabel")
-    .map((label, i) => ({ label: text(label), kind: text(kinds[i]), amount: text(amounts[i]) }))
+    .map((label, i) => ({ id: text(ids[i]), label: text(label), kind: text(kinds[i]), amount: text(amounts[i]) }))
     .filter((row) => row.label.trim() !== "" || row.amount.trim() !== "");
 
   const result = choiceGroupFormSchema.safeParse({ groupLabel: text(formData.get("groupLabel") ?? undefined), options });
