@@ -47,6 +47,11 @@ export interface CatalogRepository {
   addChoiceGroup(businessId: string, serviceId: string, group: ChoiceGroup): Promise<AddSurchargeResult>;
   /** Returns the photo URLs of the removed group's options, so their files can be deleted. */
   removeChoiceGroup(businessId: string, serviceId: string, groupId: string): Promise<string[]>;
+  /**
+   * Replaces a group's name and options in place. Options keep their photo by id; null when the
+   * service or group is gone, otherwise the photos of the options that were dropped.
+   */
+  updateChoiceGroup(businessId: string, serviceId: string, group: ChoiceGroup): Promise<{ removedPhotos: string[] } | null>;
   /** Null when the service, group or option is gone; otherwise the photo it replaced. */
   setChoiceImage(target: ChoiceImageTarget, url: string | null): Promise<{ previous: string | null } | null>;
 }

@@ -127,8 +127,13 @@ locks the service row (`SELECT … FOR UPDATE`), changes it in code and writes i
 transaction, and returns the photo it replaced so the old file is deleted. Removing a group returns its
 photos too, so no file is left behind in the store.
 
-Trade-off: a group cannot be edited yet, only removed and added again, and the minimum price applies
-to the base line only.
+A group is edited in place with the same form used to add it. Each option posts its id, so an edited
+option keeps its photo; `updateChoiceGroup` locks the service row, carries photos over only from the
+same option of the same group (never from the form), and returns the photos of options that were
+dropped, which are then deleted from storage. Old leads are untouched: they keep the labels and prices
+the customer saw.
+
+Trade-off: the minimum price applies to the base line only.
 
 ### Several items in one request
 A customer measuring four windows sends one request, not four. The form edits one item at a time;

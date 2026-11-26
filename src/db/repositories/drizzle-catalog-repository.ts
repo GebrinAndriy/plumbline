@@ -151,6 +151,33 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
       return removed?.options.flatMap((option) => (option.imageUrl ? [option.imageUrl] : [])) ?? [];
     },
 
+    async updateChoiceGroup(businessId, serviceId, group) {
+      if (!isUuid(businessId) || !isUuid(serviceId)) return null;
+      return db.transaction(async (tx) => {
+        const [row] = await tx
+          .select({ choices: services.choices })
+          .from(services)
+          .where(and(eq(services.id, serviceId), eq(services.businessId, businessId)))
+          .for("update");
+        const old = row?.choices.find((g) => g.id === group.id);
+        if (!row || !old) return null;
+
+        // Photos are never taken from the form, only carried over from the same option of this group.
+        const photoOf = new Map(old.options.flatMap((o) => (o.imageUrl ? [[o.id, o.imageUrl] as const] : [])));
+        const options = group.options.map(({ id, label, kind, amount }) => {
+          const imageUrl = photoOf.get(id);
+          return imageUrl ? { id, label, kind, amount, imageUrl } : { id, label, kind, amount };
+        });
+        const kept = new Set(options.map((o) => o.id));
+        const updated = { id: group.id, label: group.label, options };
+        validateChoiceGroup(updated);
+
+        const choices = row.choices.map((g) => (g.id === group.id ? updated : g));
+        await tx.update(services).set({ choices }).where(eq(services.id, serviceId));
+        return { removedPhotos: [...photoOf].filter(([id]) => !kept.has(id)).map(([, url]) => url) };
+      });
+    },
+
     // The photo sits deep in the jsonb, so the row is locked, changed in code and written back in one transaction.
     async setChoiceImage({ businessId, serviceId, groupId, optionId }, url) {
       if (!isUuid(businessId) || !isUuid(serviceId)) return null;

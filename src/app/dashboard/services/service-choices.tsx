@@ -3,10 +3,10 @@ import { MAX_CHOICE_GROUPS } from "@/domain/pricing/validate-service";
 import { describeChoice } from "@/lib/describe-rule";
 import { getImageStorage } from "@/lib/storage/vercel-blob-image-storage";
 import { AddChoiceGroup } from "./add-choice-group";
-import { addChoiceGroupAction, removeChoiceGroupAction } from "./choice-group-actions";
+import { addChoiceGroupAction, removeChoiceGroupAction, updateChoiceGroupAction } from "./choice-group-actions";
+import { ChoiceGroupCard } from "./choice-group-card";
 import { removeChoiceImageAction, uploadChoiceImageAction } from "./choice-image-actions";
 import { ChoicePhoto } from "./choice-photo";
-import { RemoveOption } from "./remove-option";
 
 export function ServiceChoices({ service }: { service: Service }) {
   const groups = service.choices ?? [];
@@ -18,28 +18,31 @@ export function ServiceChoices({ service }: { service: Service }) {
       {groups.length > 0 ? (
         <ul className="flex flex-col gap-3" aria-label={`Choices of ${service.name}`}>
           {groups.map((group) => (
-            <li key={group.id} className="animate-rise rounded-field border border-rule">
-              <div className="flex items-center gap-3 border-b border-rule px-3.5 py-2.5">
-                <span className="flex-1 font-semibold">{group.label}</span>
-                <RemoveOption label={group.label} action={removeChoiceGroupAction.bind(null, service.id, group.id)} />
-              </div>
-              <ul className="flex flex-col divide-y divide-rule">
-                {group.options.map((option) => (
-                  <li key={option.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3.5 py-2">
-                    <span className="flex-1">{option.label}</span>
-                    <span className="tabular-nums text-muted">{describeChoice(option, service.rule.kind)}</span>
-                    {photosEnabled && (
-                      <ChoicePhoto
-                        label={option.label}
-                        imageUrl={option.imageUrl}
-                        upload={uploadChoiceImageAction.bind(null, { serviceId: service.id, groupId: group.id, optionId: option.id })}
-                        remove={removeChoiceImageAction.bind(null, { serviceId: service.id, groupId: group.id, optionId: option.id })}
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </li>
+            <ChoiceGroupCard
+              key={group.id}
+              group={group}
+              kind={service.rule.kind}
+              update={updateChoiceGroupAction.bind(null, service.id, group.id)}
+              remove={removeChoiceGroupAction.bind(null, service.id, group.id)}
+              options={
+                <ul className="flex flex-col divide-y divide-rule">
+                  {group.options.map((option) => (
+                    <li key={option.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3.5 py-2">
+                      <span className="flex-1">{option.label}</span>
+                      <span className="tabular-nums text-muted">{describeChoice(option, service.rule.kind)}</span>
+                      {photosEnabled && (
+                        <ChoicePhoto
+                          label={option.label}
+                          imageUrl={option.imageUrl}
+                          upload={uploadChoiceImageAction.bind(null, { serviceId: service.id, groupId: group.id, optionId: option.id })}
+                          remove={removeChoiceImageAction.bind(null, { serviceId: service.id, groupId: group.id, optionId: option.id })}
+                        />
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                }
+            />
           ))}
         </ul>
       ) : (

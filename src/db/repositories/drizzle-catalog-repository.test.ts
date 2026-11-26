@@ -351,6 +351,40 @@ describe("choice photos", () => {
     expect(await catalog.setChoiceImage({ ...target, optionId: "silk" }, photo)).toBeNull();
   });
 
+  it("updates a group in place, keeping photos by option id and handing back dropped ones", async () => {
+    const target = await curtains();
+    await catalog.setChoiceImage(target, photo);
+    await catalog.setChoiceImage({ ...target, optionId: "basic" }, `${photo}?basic`);
+
+    const renamed = {
+      id: "fabric",
+      label: "Fabric type",
+      options: [
+        { id: "linen", label: "Linen", kind: "rate", amount: 3_500 },
+        { id: "velvet", label: "Velvet", kind: "rate", amount: 5_000, imageUrl: "https://evil.test/x.png" },
+      ],
+    } as const satisfies ChoiceGroup;
+    expect(await catalog.updateChoiceGroup(target.businessId, target.serviceId, renamed)).toEqual({ removedPhotos: [`${photo}?basic`] });
+
+    expect((await catalog.findService(target.businessId, target.serviceId))?.choices).toEqual([
+      {
+        id: "fabric",
+        label: "Fabric type",
+        options: [
+          { id: "linen", label: "Linen", kind: "rate", amount: 3_500, imageUrl: photo },
+          { id: "velvet", label: "Velvet", kind: "rate", amount: 5_000 },
+        ],
+      },
+    ]);
+  });
+
+  it("does not update a group of another business or one that is gone", async () => {
+    const target = await curtains();
+    const other = await createBusiness("other");
+    expect(await catalog.updateChoiceGroup(other.id, target.serviceId, fabric)).toBeNull();
+    expect(await catalog.updateChoiceGroup(target.businessId, target.serviceId, { ...fabric, id: "gone" })).toBeNull();
+  });
+
   it("hands back the photos of a removed group", async () => {
     const target = await curtains();
     await catalog.setChoiceImage(target, photo);

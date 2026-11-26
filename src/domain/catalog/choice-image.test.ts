@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CatalogRepository, ChoiceImageTarget } from "./catalog";
-import { removeChoiceGroup, removeChoiceImage, replaceChoiceImage } from "./choice-image";
+import { removeChoiceGroup, removeChoiceImage, replaceChoiceImage, updateChoiceGroup } from "./choice-image";
 import type { ImageStorage } from "./image-file";
 
 const PNG = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13]);
@@ -28,6 +28,7 @@ function fakes({ previous = null as string | null, missing = false, failSave = f
       return { previous };
     },
     removeChoiceGroup: async () => ["https://blob.test/a.png", "https://blob.test/b.png"],
+    updateChoiceGroup: async () => (missing ? null : { removedPhotos: ["https://blob.test/dropped.png"] }),
   } as unknown as CatalogRepository;
   return { deps: { catalog, storage }, stored, removed, pointed };
 }
@@ -69,5 +70,21 @@ describe("removing photos", () => {
     const { deps, removed } = fakes();
     await removeChoiceGroup(deps, "b1", "s1", "fabric");
     expect(removed).toEqual(["https://blob.test/a.png", "https://blob.test/b.png"]);
+  });
+});
+
+describe("updateChoiceGroup", () => {
+  const group = { id: "fabric", label: "Fabric", options: [] };
+
+  it("deletes the photos of options the owner dropped", async () => {
+    const { deps, removed } = fakes();
+    expect(await updateChoiceGroup(deps, "b1", "s1", group)).toBe(true);
+    expect(removed).toEqual(["https://blob.test/dropped.png"]);
+  });
+
+  it("reports a group that is gone and deletes nothing", async () => {
+    const { deps, removed } = fakes({ missing: true });
+    expect(await updateChoiceGroup(deps, "b1", "s1", group)).toBe(false);
+    expect(removed).toEqual([]);
   });
 });

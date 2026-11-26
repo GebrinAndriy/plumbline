@@ -68,6 +68,9 @@ function fakeCatalog(): CatalogRepository {
     setChoiceImage: async () => {
       throw new Error("not used");
     },
+    updateChoiceGroup: async () => {
+      throw new Error("not used");
+    },
   };
 }
 
