@@ -125,6 +125,20 @@ export const leadStatusChanges = pgTable(
   (t) => [index("lead_status_changes_lead_idx").on(t.leadId, t.at)],
 );
 
+// The owner's own notes on a lead ("call back on Thursday"); the customer never sees them.
+export const leadNotes = pgTable(
+  "lead_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => leads.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [index("lead_notes_lead_idx").on(t.leadId, t.createdAt)],
+);
+
 // One row per key: a new window overwrites the old count, so the table grows only with distinct keys.
 export const rateLimits = pgTable("rate_limits", {
   key: text("key").primaryKey(),

@@ -29,7 +29,11 @@ export const itemsTotal = (items: readonly LeadItem[]): Money => items.reduce((s
 
 export type StatusChange = { from: LeadStatus; to: LeadStatus; at: Date };
 
-export type LeadWithHistory = { lead: Lead; history: StatusChange[] };
+export const MAX_NOTE_LENGTH = 1000;
+
+export type LeadNote = { id: string; body: string; createdAt: Date };
+
+export type LeadWithHistory = { lead: Lead; history: StatusChange[]; notes: LeadNote[] };
 
 export type StatusTotals = Record<LeadStatus, { count: number; total: Money }>;
 
@@ -61,6 +65,9 @@ export interface LeadRepository {
   ): Promise<Lead[]>;
   /** Null for an unknown id or a lead of another business, so a link cannot reveal it exists. */
   findWithHistory(businessId: string, leadId: string): Promise<LeadWithHistory | null>;
+  /** Null when the lead does not exist or belongs to another business. */
+  addNote(businessId: string, leadId: string, body: string, at: Date): Promise<LeadNote | null>;
+  removeNote(businessId: string, noteId: string): Promise<void>;
   /** Counts and sums every lead of the business, not just one page of them. */
   summarizeByStatus(businessId: string): Promise<StatusTotals>;
   /** Throws LeadConflictError if the lead's status changed since it was read. */

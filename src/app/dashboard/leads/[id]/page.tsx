@@ -13,6 +13,8 @@ import { formatDateTime } from "@/lib/format-date";
 import { formatMoney } from "@/lib/format-money";
 import { formatPhone } from "@/lib/format-phone";
 import { LeadStatusControl } from "../../lead-status-control";
+import { LeadNotes } from "./lead-notes";
+import { addNoteAction, removeNoteAction } from "./note-actions";
 import { StatusHistory } from "./status-history";
 
 const contactButton =
@@ -83,6 +85,7 @@ async function LeadDetails({ id }: { id: string }) {
               <p className="border-l-2 border-rule pl-3 italic">{lead.comment}</p>
             </section>
           )}
+          <LeadNotes notes={found.notes} add={addNoteAction.bind(null, lead.id)} remove={removeNoteAction} />
           <StatusHistory {...found} />
         </div>
       </div>
