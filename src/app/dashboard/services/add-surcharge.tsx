@@ -43,8 +43,8 @@ export function AddSurcharge({ action }: AddSurchargeProps) {
             onChange={(e) => setKind(e.target.value as Surcharge["kind"])}
             className={inputClass}
           >
-            <option value="flat">A fixed amount</option>
-            <option value="percent">A percent of the price</option>
+            <option value="flat">€ amount</option>
+            <option value="percent">% of price</option>
           </select>
         </label>
         {kind === "flat" ? (
