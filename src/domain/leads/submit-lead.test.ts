@@ -88,6 +88,7 @@ function fakeLeads(): LeadRepository & { saved: Lead[] } {
         comment: draft.comment ?? null,
         total: itemsTotal(draft.items),
         status: "new",
+        followUpOn: null,
         createdAt: new Date(),
       };
       saved.push(lead);
@@ -100,6 +101,7 @@ function fakeLeads(): LeadRepository & { saved: Lead[] } {
     findWithHistory: async () => null,
     addNote: async () => null,
     removeNote: async () => {},
+    setFollowUp: async () => false,
   };
 }
 

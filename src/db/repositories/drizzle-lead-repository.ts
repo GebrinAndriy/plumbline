@@ -105,6 +105,16 @@ export function createDrizzleLeadRepository(db: Database): LeadRepository {
       return note;
     },
 
+    async setFollowUp(businessId, leadId, on) {
+      if (!isUuid(businessId) || !isUuid(leadId)) return false;
+      const rows = await db
+        .update(leads)
+        .set({ followUpOn: on })
+        .where(and(eq(leads.id, leadId), eq(leads.businessId, businessId)))
+        .returning({ id: leads.id });
+      return rows.length > 0;
+    },
+
     // Scoped by business in the same statement, so a guessed note id of another owner deletes nothing.
     async removeNote(businessId, noteId) {
       if (!isUuid(businessId) || !isUuid(noteId)) return;
@@ -187,6 +197,7 @@ function toLead(row: LeadRow): Lead {
     items: itemsOf(row),
     total: row.total,
     status: row.status,
+    followUpOn: row.followUpOn,
     createdAt: row.createdAt,
   };
 }

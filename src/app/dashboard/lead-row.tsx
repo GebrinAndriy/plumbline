@@ -4,9 +4,11 @@ import { describeLeadItem } from "@/lib/describe-lead-item";
 import { formatMoney } from "@/lib/format-money";
 import { formatPhone } from "@/lib/format-phone";
 import { formatDateTime } from "@/lib/format-date";
+import { isClosed } from "@/domain/leads/lead-status";
+import { FollowUpBadge } from "./follow-up-badge";
 import { LeadStatusControl } from "./lead-status-control";
 
-export function LeadRow({ lead }: { lead: Lead }) {
+export function LeadRow({ lead, today }: { lead: Lead; today: string }) {
   return (
     <li
       id={`lead-${lead.id}`}
@@ -20,6 +22,8 @@ export function LeadRow({ lead }: { lead: Lead }) {
           <time dateTime={lead.createdAt.toISOString()} className="text-xs text-muted">
             {formatDateTime(lead.createdAt)}
           </time>
+          {/* A won or lost request needs no call back, whatever day was set before. */}
+          {lead.followUpOn && !isClosed(lead.status) && <FollowUpBadge on={lead.followUpOn} today={today} />}
         </p>
         <a href={`tel:${lead.phone}`} className="tap-target self-start text-sm font-medium text-accent underline-offset-4 hover:underline">
           {formatPhone(lead.phone)}

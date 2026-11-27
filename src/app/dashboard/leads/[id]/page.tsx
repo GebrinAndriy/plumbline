@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { Receipt } from "@/components/receipt";
 import { getRepositories } from "@/db/get-repositories";
 import { requireOwner } from "@/lib/auth/current-owner";
+import { todayInMarket } from "@/lib/calendar-day";
 import { phoneHref, whatsappHref } from "@/lib/contact-links";
 import { receiptQuote, serviceNames } from "@/lib/describe-lead-item";
 import { formatDateTime } from "@/lib/format-date";
@@ -14,7 +15,8 @@ import { formatMoney } from "@/lib/format-money";
 import { formatPhone } from "@/lib/format-phone";
 import { LeadStatusControl } from "../../lead-status-control";
 import { LeadNotes } from "./lead-notes";
-import { addNoteAction, removeNoteAction } from "./note-actions";
+import { FollowUpCard } from "./follow-up-card";
+import { addNoteAction, removeNoteAction, setFollowUpAction } from "./note-actions";
 import { StatusHistory } from "./status-history";
 
 const contactButton =
@@ -69,6 +71,7 @@ async function LeadDetails({ id }: { id: string }) {
             <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">Status</p>
             <LeadStatusControl leadId={lead.id} status={lead.status} />
           </div>
+          <FollowUpCard on={lead.followUpOn} today={todayInMarket()} save={setFollowUpAction.bind(null, lead.id)} />
           <Receipt
             businessName={business.name}
             quote={receiptQuote(lead.items)}
