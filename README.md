@@ -470,6 +470,14 @@ scrolling status tabs, the quantity stepper) or the grown area would cover a nei
 password?" under the password field), the element itself is 44 px instead. Links inside a
 sentence keep their text size; WCAG exempts them.
 
+Dropdowns stay native `<select>` elements, styled with customizable select (`appearance:
+base-select`): the open list uses the tokens, rows are 44 px with a tick on the chosen one, and the
+arrow turns when it opens. A custom listbox in JavaScript was the alternative, but the native element
+already handles arrow keys, type-ahead, Escape, screen readers, form posts and the phone's own
+picker, all of which a hand-written one has to rebuild. Browsers without support (Safari and Firefox
+for now) keep their own list, still inside our styled field. A long label cannot be cut with an
+ellipsis there without `<selectedcontent>` markup, so labels are kept short instead.
+
 The dark theme follows the system setting (`prefers-color-scheme`). It redefines every color token in
 one block of `globals.css`: a warm near-black paper with paper-white ink instead of generic grays, so
 it reads as the same brand. Two tokens made it possible without touching layouts: `field` replaced the

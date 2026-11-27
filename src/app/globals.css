@@ -143,6 +143,94 @@ body {
   }
 }
 
+/* Every <select> keeps its native behaviour (keyboard, screen readers, form posts, phone pickers) and
+   gets a styled list where the browser supports customizable select; others show their own list. */
+@supports (appearance: base-select) {
+  select,
+  ::picker(select) {
+    appearance: base-select;
+  }
+  select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+    cursor: pointer;
+  }
+  /* One line like a native select: a long choice is clipped, and the arrow keeps its own space. */
+  select {
+    position: relative;
+    padding-right: 2.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  select::picker-icon {
+    position: absolute;
+    right: 0.875rem;
+    content: "";
+    width: 0.75rem;
+    height: 0.75rem;
+    background: currentColor;
+    color: var(--color-muted);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 4.5 6 8l4-3.5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    transition: rotate 150ms var(--ease-out);
+  }
+  select:open::picker-icon {
+    rotate: 180deg;
+  }
+  ::picker(select) {
+    margin-block: 0.375rem;
+    padding: 0.25rem;
+    border: 1px solid var(--color-control);
+    border-radius: var(--radius-field);
+    background: var(--color-field);
+    color: var(--color-ink);
+    box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.25);
+    opacity: 0;
+    translate: 0 -0.25rem;
+    transition:
+      opacity 150ms var(--ease-out),
+      translate 150ms var(--ease-out),
+      display 150ms allow-discrete,
+      overlay 150ms allow-discrete;
+  }
+  select:open::picker(select) {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @starting-style {
+    select:open::picker(select) {
+      opacity: 0;
+      translate: 0 -0.25rem;
+    }
+  }
+  select option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  select option:hover,
+  select option:focus-visible {
+    outline: none;
+    background: var(--color-disabled);
+  }
+  select option:checked {
+    font-weight: 600;
+  }
+  /* The tick sits at the end of the row, where the eye lands after reading the name. */
+  select option::checkmark {
+    order: 1;
+    margin-left: auto;
+    content: "✓";
+    color: var(--color-accent);
+  }
+}
+
 /* Grows the tap area to at least 44 × 44 px without changing the layout (WCAG 2.5.5). */
 @utility tap-target {
   position: relative;
