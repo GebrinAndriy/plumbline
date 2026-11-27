@@ -1,4 +1,5 @@
 import type { Money, Quote, QuoteInput } from "../pricing/types";
+import type { CalendarDay } from "./follow-up";
 import type { LeadSearch } from "./lead-search";
 import { LEAD_STATUSES, type LeadStatus } from "./lead-status";
 
@@ -22,6 +23,8 @@ export type Lead = {
   items: LeadItem[];
   total: Money;
   status: LeadStatus;
+  // The day the owner means to get back to the customer; null when none is set.
+  followUpOn: CalendarDay | null;
   createdAt: Date;
 };
 
@@ -68,6 +71,8 @@ export interface LeadRepository {
   /** Null when the lead does not exist or belongs to another business. */
   addNote(businessId: string, leadId: string, body: string, at: Date): Promise<LeadNote | null>;
   removeNote(businessId: string, noteId: string): Promise<void>;
+  /** False when the lead does not exist or belongs to another business. */
+  setFollowUp(businessId: string, leadId: string, on: CalendarDay | null): Promise<boolean>;
   /** Counts and sums every lead of the business, not just one page of them. */
   summarizeByStatus(businessId: string): Promise<StatusTotals>;
   /** Throws LeadConflictError if the lead's status changed since it was read. */

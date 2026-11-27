@@ -202,6 +202,20 @@ describe("findWithHistory", () => {
   });
 });
 
+describe("setFollowUp", () => {
+  it("sets and clears the follow-up day of one business's lead only", async () => {
+    const { lead } = await leads.create(makeLead());
+    expect(lead.followUpOn).toBeNull();
+
+    expect(await leads.setFollowUp(lead.businessId, lead.id, "2026-11-28")).toBe(true);
+    expect((await leads.findWithHistory(lead.businessId, lead.id))?.lead.followUpOn).toBe("2026-11-28");
+
+    expect(await leads.setFollowUp(otherBusinessId, lead.id, "2026-12-01")).toBe(false);
+    expect(await leads.setFollowUp(lead.businessId, lead.id, null)).toBe(true);
+    expect((await leads.listByBusiness(lead.businessId))[0].followUpOn).toBeNull();
+  });
+});
+
 describe("notes", () => {
   it("adds notes to a lead and lists them newest first with the lead", async () => {
     const { lead } = await leads.create(makeLead());

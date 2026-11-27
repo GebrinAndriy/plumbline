@@ -1,6 +1,7 @@
 import {
   bigint,
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -103,6 +104,7 @@ export const leads = pgTable(
     // Every service in the request. service_id, input and quote above still hold the first one, so a
     // deployment that predates this column keeps working until they are dropped.
     items: jsonb("items").$type<LeadItem[]>().notNull().default([]),
+    followUpOn: date("follow_up_on", { mode: "string" }),
     status: leadStatus("status").notNull().default("new"),
     idempotencyKey: text("idempotency_key").notNull().unique(),
     createdAt: createdAt(),

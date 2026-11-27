@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getRepositories } from "@/db/get-repositories";
 import { requireOwner } from "@/lib/auth/current-owner";
 import { toFieldErrors, type FieldErrors } from "@/lib/field-errors";
+import { followUpFormSchema } from "./follow-up-schema";
 import { noteFormSchema } from "./note-schema";
 
 export type NoteFormState = { fieldErrors: FieldErrors; message?: string; saved?: number };
@@ -29,4 +30,19 @@ export async function removeNoteAction(noteId: string): Promise<void> {
   if (!business || !id.success) return;
   await getRepositories().leads.removeNote(business.id, id.data);
   refresh();
+}
+
+export type FollowUpFormState = { message?: string };
+
+export async function setFollowUpAction(leadId: string, _previous: FollowUpFormState, formData: FormData): Promise<FollowUpFormState> {
+  const { business } = await requireOwner();
+  if (!business) return { message: "This account has no business" };
+
+  const parsed = followUpFormSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { message: parsed.error.issues[0].message };
+
+  const saved = await getRepositories().leads.setFollowUp(business.id, leadId, parsed.data.on);
+  if (!saved) return { message: "This request no longer exists" };
+  refresh();
+  return {};
 }

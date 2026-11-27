@@ -4,6 +4,7 @@ import { getRepositories } from "@/db/get-repositories";
 import type { Business } from "@/domain/catalog/catalog";
 import { parseLeadSearch } from "@/domain/leads/lead-search";
 import { requireOwner } from "@/lib/auth/current-owner";
+import { todayInMarket } from "@/lib/calendar-day";
 import { getImageStorage } from "@/lib/storage/vercel-blob-image-storage";
 import { AccentColorForm } from "./accent-color-form";
 import { ContactsForm } from "./contacts-form";
@@ -44,6 +45,7 @@ async function OwnerDashboard({ query }: { query: LeadListQuery }) {
     }),
   ]);
   const shown = list.slice(0, PAGE_SIZE);
+  const today = todayInMarket();
 
   return (
     <>
@@ -59,7 +61,7 @@ async function OwnerDashboard({ query }: { query: LeadListQuery }) {
           {shown.length > 0 ? (
             <ul className="divide-y divide-rule overflow-hidden rounded-card border border-rule bg-field">
               {shown.map((lead) => (
-                <LeadRow key={lead.id} lead={lead} />
+                <LeadRow key={lead.id} lead={lead} today={today} />
               ))}
             </ul>
           ) : (

@@ -202,6 +202,13 @@ deleted without rewriting the others, and the list grows without a size limit on
 checks the lead belongs to the owner's business first, and deleting is scoped by business in the same
 `DELETE`, so a guessed note id of another owner removes nothing.
 
+A request can carry a follow-up day ("call back on Thursday"), set on its page with a date field or
+the Tomorrow and Next week shortcuts; the list shows "Call back today", "Overdue · Tue 25 Nov" or the
+day, and hides it once the request is won or lost. It is a `date` column, not a timestamp, because
+the owner means a day, not an hour. "Today" is taken in Dublin (`MARKET.timeZone`), not on the server,
+which runs in UTC on Vercel: in summer the two disagree for an hour each night. Once today is known,
+ISO days compare as text, so the domain needs no time zone code at all.
+
 Trade-off: messages sent before this change still link to `/dashboard#lead-<id>`, which finds the
 request only on the first page of the list.
 
