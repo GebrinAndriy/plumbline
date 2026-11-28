@@ -7,6 +7,7 @@ import { Suspense } from "react";
 const LINKS = [
   { href: "/dashboard", label: "Requests", section: "/dashboard/leads/" },
   { href: "/dashboard/services", label: "Services", section: "/dashboard/services/" },
+  { href: "/dashboard/settings", label: "Settings", section: "/dashboard/settings/" },
 ] as const;
 
 // The path of a lead page is known only at request time, so the links render first and the highlight streams in.

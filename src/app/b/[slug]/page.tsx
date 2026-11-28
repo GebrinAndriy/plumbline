@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { accentProps } from "@/components/accent-props";
 import { PlumblineLogo } from "@/components/plumbline-logo";
 import { BusinessContacts } from "./business-contacts";
 import { previewDescription, previewTitle } from "./link-preview";
-import { loadBusinessPage } from "./load-business-page";
+import { loadBusinessPageOrRedirect } from "./load-business-page";
 import { QuoteForm } from "./quote-form";
 
 export async function generateMetadata({ params }: PageProps<"/b/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const page = await loadBusinessPage(slug);
-  if (!page) notFound();
+  const page = await loadBusinessPageOrRedirect(slug);
 
   const title = previewTitle(page.business.name);
   const description = previewDescription(page.services);
@@ -42,8 +40,7 @@ export default function BusinessPage({ params }: PageProps<"/b/[slug]">) {
 }
 
 async function BusinessQuote({ slug }: { slug: string }) {
-  const page = await loadBusinessPage(slug);
-  if (!page) notFound();
+  const page = await loadBusinessPageOrRedirect(slug);
   const { business, services } = page;
 
   return (

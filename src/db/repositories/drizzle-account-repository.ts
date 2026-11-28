@@ -1,7 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { EmailTakenError, SlugTakenError, type AccountRepository } from "@/domain/auth/account";
 import type { Database } from "../database";
-import { businesses, sessions, users } from "../schema";
+import { businessSlugs, businesses, sessions, users } from "../schema";
 import { isUuid } from "./is-uuid";
 
 export function createDrizzleAccountRepository(db: Database): AccountRepository {
@@ -24,6 +24,9 @@ export function createDrizzleAccountRepository(db: Database): AccountRepository 
           .onConflictDoNothing({ target: users.email })
           .returning({ id: users.id });
         if (!user) throw new EmailTakenError();
+
+        const [reserved] = await tx.select({ slug: businessSlugs.slug }).from(businessSlugs).where(eq(businessSlugs.slug, business.slug));
+        if (reserved) throw new SlugTakenError();
 
         const [created] = await tx
           .insert(businesses)

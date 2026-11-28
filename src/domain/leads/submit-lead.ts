@@ -38,7 +38,7 @@ export async function submitLead(
   if (request.items.length === 0 || request.items.length > MAX_LEAD_ITEMS) {
     return { ok: false, reason: "invalid_input", message: `Add 1 to ${MAX_LEAD_ITEMS} items` };
   }
-  const business = await catalog.findBusinessBySlug(businessSlug);
+  const business = (await catalog.findBusinessBySlug(businessSlug)) ?? (await findMovedBusiness(catalog, businessSlug));
   if (!business) return { ok: false, reason: "not_found", message: "This service is no longer available" };
 
   const items: LeadItem[] = [];
@@ -68,4 +68,10 @@ export async function submitLead(
 
   if (created) publish({ type: "lead.created", lead, business });
   return { ok: true, leadId: lead.id, total: lead.total };
+}
+
+// The form may have been opened before the business moved to a new address.
+async function findMovedBusiness(catalog: CatalogRepository, oldSlug: string) {
+  const slug = await catalog.findMovedSlug(oldSlug);
+  return slug ? catalog.findBusinessBySlug(slug) : null;
 }

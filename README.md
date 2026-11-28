@@ -326,6 +326,18 @@ logo has an empty `alt`, because the business name follows in the heading.
 Trade-off: the link-preview image does not show the logo yet, since Satori cannot draw WebP. Without
 `BLOB_READ_WRITE_TOKEN` the dashboard says uploads are not set up instead of failing.
 
+### Settings, and page addresses that can change
+`/dashboard/settings` holds the business name and page address next to contacts, logo, colour and
+Telegram, so the dashboard itself is only requests. Changing the address must not break links,
+QR codes and search results already handed out, so the old one goes into `business_slugs`: `/b/<old>`
+redirects to the new address (also after several moves, since it points at the business, not at the
+next address), and a form opened before the move is still accepted. Link-preview bots, which wait for
+metadata, get a real 308; browsers get the prerendered shell first and then an instant meta refresh,
+because the page is partially prerendered and the move is only known once the business is loaded. Old addresses stay reserved
+for their business, so another owner can never take over a link that customers already have; the
+business itself can take one back, which then stops redirecting. The move runs in one transaction
+with the row locked, and the unique index turns a race between two owners into "already taken".
+
 ### Own pages for missing addresses and errors
 A customer who follows an old or mistyped link lands on `app/not-found.tsx` instead of Next's default
 page. It serves unknown URLs and every `notFound()` call, such as a business address that no longer
