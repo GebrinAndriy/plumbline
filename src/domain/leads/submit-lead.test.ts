@@ -71,6 +71,13 @@ function fakeCatalog(): CatalogRepository {
     updateChoiceGroup: async () => {
       throw new Error("not used");
     },
+    renameBusiness: async () => {
+      throw new Error("not used");
+    },
+    changeSlug: async () => {
+      throw new Error("not used");
+    },
+    findMovedSlug: async (slug) => (slug === "old-blinds" ? "blinds" : null),
   };
 }
 
@@ -195,6 +202,11 @@ describe("submitLead", () => {
   it("announces nothing when the request is rejected", async () => {
     await submitLead(deps, "blinds", request({ surchargeIds: ["gold-plating"] }));
     expect(published).toEqual([]);
+  });
+
+  it("accepts a form sent to the address the business used before", async () => {
+    expect(await submitLead(deps, "old-blinds", request())).toMatchObject({ ok: true });
+    expect(published[0]).toMatchObject({ business: blinds });
   });
 
   it("rejects an unknown business", async () => {

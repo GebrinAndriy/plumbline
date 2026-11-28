@@ -9,7 +9,7 @@ import {
   validateSurcharge,
 } from "@/domain/pricing/validate-service";
 import type { Database } from "../database";
-import { businesses, services } from "../schema";
+import { businessSlugs, businesses, services } from "../schema";
 import { isUuid } from "./is-uuid";
 
 type BusinessRow = typeof businesses.$inferSelect;
@@ -42,6 +42,54 @@ export function createDrizzleCatalogRepository(db: Database): CatalogRepository 
     async setAccentColor(businessId, color) {
       if (!isUuid(businessId)) return;
       await db.update(businesses).set({ accentColor: color }).where(eq(businesses.id, businessId));
+    },
+
+    async renameBusiness(businessId, name) {
+      if (!isUuid(businessId)) return;
+      await db.update(businesses).set({ name }).where(eq(businesses.id, businessId));
+    },
+
+    async changeSlug(businessId, slug) {
+      if (!isUuid(businessId)) return "not_found";
+      const change = db.transaction(async (tx) => {
+        const [current] = await tx
+          .select({ slug: businesses.slug })
+          .from(businesses)
+          .where(eq(businesses.id, businessId))
+          .for("update");
+        if (!current) return "not_found";
+        if (current.slug === slug) return "unchanged";
+
+        const [reserved] = await tx.select({ businessId: businessSlugs.businessId }).from(businessSlugs).where(eq(businessSlugs.slug, slug));
+        if (reserved && reserved.businessId !== businessId) return "taken";
+        // Taking back one of its own old addresses: it stops being a redirect.
+        if (reserved) await tx.delete(businessSlugs).where(eq(businessSlugs.slug, slug));
+
+        const moved = await tx
+          .update(businesses)
+          .set({ slug })
+          .where(and(eq(businesses.id, businessId), sql`not exists (select 1 from ${businesses} b where b.slug = ${slug})`))
+          .returning({ id: businesses.id });
+        if (moved.length === 0) return "taken";
+
+        await tx.insert(businessSlugs).values({ slug: current.slug, businessId }).onConflictDoNothing();
+        return "changed" as const;
+      });
+      // Two owners taking the same address at once: the unique index stops the second one.
+      return change.catch((error: unknown) => {
+        if (isUniqueViolation(error)) return "taken" as const;
+        throw error;
+      });
+    },
+
+    async findMovedSlug(oldSlug) {
+      const [row] = await db
+        .select({ slug: businesses.slug })
+        .from(businessSlugs)
+        .innerJoin(businesses, eq(businesses.id, businessSlugs.businessId))
+        .where(eq(businessSlugs.slug, oldSlug))
+        .limit(1);
+      return row?.slug ?? null;
     },
 
     async setLogoUrl(businessId, url) {
@@ -244,4 +292,9 @@ function toBusiness(row: BusinessRow): Business {
 
 function toService(row: ServiceRow): Service {
   return { id: row.id, name: row.name, rule: row.rule, surcharges: row.surcharges, choices: row.choices };
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  const cause = error instanceof Error && "cause" in error ? error.cause : error;
+  return typeof cause === "object" && cause !== null && "code" in cause && cause.code === "23505";
 }

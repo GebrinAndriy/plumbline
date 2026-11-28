@@ -10,13 +10,15 @@ export const slugSchema = z
   .toLowerCase()
   .regex(/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/, SLUG_RULES);
 
+export const businessNameSchema = z.string().trim().min(2, "Enter the business name").max(100, "Name is too long");
+
 // Upper bound keeps a huge password from turning scrypt into a cheap DoS.
 const newPassword = z.string().min(8, "At least 8 characters").max(128, "At most 128 characters");
 
 export const signUpSchema = z.object({
   email,
   password: newPassword,
-  businessName: z.string().trim().min(2, "Enter the business name").max(100, "Name is too long"),
+  businessName: businessNameSchema,
   slug: slugSchema,
 });
 

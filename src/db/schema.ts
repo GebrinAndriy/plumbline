@@ -68,6 +68,16 @@ export const businesses = pgTable(
   (t) => [index("businesses_owner_idx").on(t.ownerId)],
 );
 
+// Addresses a business used before; they redirect to its current one and stay reserved for it,
+// so links and QR codes already handed out never lead to another business.
+export const businessSlugs = pgTable("business_slugs", {
+  slug: text("slug").primaryKey(),
+  businessId: uuid("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  createdAt: createdAt(),
+});
+
 export const services = pgTable(
   "services",
   {

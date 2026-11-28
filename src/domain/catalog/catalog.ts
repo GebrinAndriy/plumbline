@@ -26,6 +26,8 @@ export type ServiceDetails = Pick<Service, "name" | "rule">;
 
 export type ChoiceImageTarget = { businessId: string; serviceId: string; groupId: string; optionId: string };
 
+export type ChangeSlugResult = "changed" | "unchanged" | "taken" | "not_found";
+
 export type AddSurchargeResult = "added" | "not_found" | "limit_reached";
 
 export interface CatalogRepository {
@@ -35,6 +37,11 @@ export interface CatalogRepository {
   setContacts(businessId: string, contacts: BusinessContacts): Promise<void>;
   setAccentColor(businessId: string, color: string | null): Promise<void>;
   setLogoUrl(businessId: string, url: string | null): Promise<void>;
+  renameBusiness(businessId: string, name: string): Promise<void>;
+  /** Moves the business to a new address and keeps the old one as a redirect reserved for it. */
+  changeSlug(businessId: string, slug: string): Promise<ChangeSlugResult>;
+  /** The current address of the business that used this one before, or null. */
+  findMovedSlug(oldSlug: string): Promise<string | null>;
   listActiveServices(businessId: string): Promise<Service[]>;
   findService(businessId: string, serviceId: string): Promise<Service | null>;
   createService(service: NewService): Promise<Service>;

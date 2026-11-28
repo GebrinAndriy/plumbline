@@ -23,6 +23,45 @@ async function createBusiness(slug = "blinds-dublin") {
   return catalog.createBusiness({ slug, name: "Blinds Dublin", telegramChatId: null });
 }
 
+describe("business address", () => {
+  it("renames the business", async () => {
+    const own = await createBusiness();
+    await catalog.renameBusiness(own.id, "Dublin Blinds & Shutters");
+    expect(await catalog.findBusinessBySlug("blinds-dublin")).toMatchObject({ name: "Dublin Blinds & Shutters" });
+  });
+
+  it("moves to a new address and keeps the old one as a redirect", async () => {
+    const own = await createBusiness();
+    expect(await catalog.changeSlug(own.id, "dublin-blinds")).toBe("changed");
+
+    expect(await catalog.findBusinessBySlug("blinds-dublin")).toBeNull();
+    expect(await catalog.findBusinessBySlug("dublin-blinds")).toMatchObject({ id: own.id });
+    expect(await catalog.findMovedSlug("blinds-dublin")).toBe("dublin-blinds");
+
+    // A second move still sends the first address to the newest one.
+    expect(await catalog.changeSlug(own.id, "blinds-ireland")).toBe("changed");
+    expect(await catalog.findMovedSlug("blinds-dublin")).toBe("blinds-ireland");
+  });
+
+  it("refuses an address in use or reserved by another business", async () => {
+    const own = await createBusiness();
+    const other = await createBusiness("other");
+    await catalog.changeSlug(other.id, "other-new");
+
+    expect(await catalog.changeSlug(own.id, "other-new")).toBe("taken");
+    expect(await catalog.changeSlug(own.id, "other")).toBe("taken");
+    expect(await catalog.changeSlug(own.id, "blinds-dublin")).toBe("unchanged");
+  });
+
+  it("lets a business take back its own old address, which then stops redirecting", async () => {
+    const own = await createBusiness();
+    await catalog.changeSlug(own.id, "dublin-blinds");
+    expect(await catalog.changeSlug(own.id, "blinds-dublin")).toBe("changed");
+    expect(await catalog.findMovedSlug("blinds-dublin")).toBeNull();
+    expect(await catalog.findMovedSlug("dublin-blinds")).toBe("blinds-dublin");
+  });
+});
+
 describe("businesses", () => {
   it("finds a business by slug", async () => {
     const created = await createBusiness();

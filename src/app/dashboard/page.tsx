@@ -5,16 +5,11 @@ import type { Business } from "@/domain/catalog/catalog";
 import { parseLeadSearch } from "@/domain/leads/lead-search";
 import { requireOwner } from "@/lib/auth/current-owner";
 import { todayInMarket } from "@/lib/calendar-day";
-import { getImageStorage } from "@/lib/storage/vercel-blob-image-storage";
-import { AccentColorForm } from "./accent-color-form";
-import { ContactsForm } from "./contacts-form";
 import { CopyLink } from "./copy-link";
 import { LeadSearch, Pagination } from "./lead-list-controls";
 import { leadListHref, leadListQuerySchema, type LeadListQuery } from "./lead-list-query";
 import { LeadStats, StatusFilter } from "./lead-overview";
 import { LeadRow } from "./lead-row";
-import { LogoForm } from "./logo-form";
-import { TelegramSettings } from "./telegram-settings";
 
 const PAGE_SIZE = 50;
 
@@ -51,31 +46,23 @@ async function OwnerDashboard({ query }: { query: LeadListQuery }) {
     <>
       <PageHeader business={business} />
       <LeadStats totals={totals} />
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section aria-labelledby="requests-title" className="flex min-w-0 flex-col gap-4">
-          <h2 id="requests-title" className="font-serif text-2xl font-medium">
-            Requests
-          </h2>
-          <StatusFilter current={status} q={q} totals={totals} />
-          <LeadSearch status={status} q={q} />
-          {shown.length > 0 ? (
-            <ul className="divide-y divide-rule overflow-hidden rounded-card border border-rule bg-field">
-              {shown.map((lead) => (
-                <LeadRow key={lead.id} lead={lead} today={today} />
-              ))}
-            </ul>
-          ) : (
-            <EmptyState query={query} slug={business.slug} />
-          )}
-          <Pagination query={query} shown={shown.length} pageSize={PAGE_SIZE} hasNext={list.length > PAGE_SIZE} />
-        </section>
-        <aside className="flex flex-col gap-4">
-          <ContactsForm contacts={{ phone: business.phone, address: business.address }} />
-          <LogoForm logoUrl={business.logoUrl} uploadsEnabled={getImageStorage() !== null} />
-          <AccentColorForm accentColor={business.accentColor} />
-          <TelegramSettings chatId={business.telegramChatId} chatName={business.telegramChatName} />
-        </aside>
-      </div>
+      <section aria-labelledby="requests-title" className="flex min-w-0 flex-col gap-4">
+        <h2 id="requests-title" className="font-serif text-2xl font-medium">
+          Requests
+        </h2>
+        <StatusFilter current={status} q={q} totals={totals} />
+        <LeadSearch status={status} q={q} />
+        {shown.length > 0 ? (
+          <ul className="divide-y divide-rule overflow-hidden rounded-card border border-rule bg-field">
+            {shown.map((lead) => (
+              <LeadRow key={lead.id} lead={lead} today={today} />
+            ))}
+          </ul>
+        ) : (
+          <EmptyState query={query} slug={business.slug} />
+        )}
+        <Pagination query={query} shown={shown.length} pageSize={PAGE_SIZE} hasNext={list.length > PAGE_SIZE} />
+      </section>
     </>
   );
 }

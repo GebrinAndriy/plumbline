@@ -28,6 +28,14 @@ const owner = {
 };
 
 describe("accounts", () => {
+  it("does not give a new owner an address another business used before", async () => {
+    const { userId } = await accounts.createOwner(owner);
+    const business = await accounts.findOwnedBusiness(userId);
+    await createDrizzleCatalogRepository(db).changeSlug(business!.id, "blinds-new");
+
+    await expect(accounts.createOwner({ ...owner, email: "second@example.com" })).rejects.toThrow(SlugTakenError);
+  });
+
   it("creates an owner together with their business", async () => {
     const { userId } = await accounts.createOwner(owner);
 
